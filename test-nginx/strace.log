@@ -1,0 +1,429 @@
+36281 execve("/usr/sbin/nginx", ["nginx", "-g", "daemon off;"], 0x7fff4d2d7e08 /* 13 vars */) = 0
+36281 brk(NULL)                         = 0x5edb75019000
+36281 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x75c9d9174000
+36281 access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No such file or directory)
+36281 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=48219, ...}) = 0
+36281 mmap(NULL, 48219, PROT_READ, MAP_PRIVATE, 3, 0) = 0x75c9d9168000
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libcrypt.so.1", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=198664, ...}) = 0
+36281 mmap(NULL, 233888, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x75c9d912e000
+36281 mmap(0x75c9d9130000, 86016, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0x75c9d9130000
+36281 mmap(0x75c9d9145000, 102400, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x17000) = 0x75c9d9145000
+36281 mmap(0x75c9d915e000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2f000) = 0x75c9d915e000
+36281 mmap(0x75c9d9160000, 29088, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x75c9d9160000
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libpcre2-8.so.0", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=625344, ...}) = 0
+36281 mmap(NULL, 627472, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x75c9d9094000
+36281 mmap(0x75c9d9096000, 450560, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0x75c9d9096000
+36281 mmap(0x75c9d9104000, 163840, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x70000) = 0x75c9d9104000
+36281 mmap(0x75c9d912c000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x97000) = 0x75c9d912c000
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libssl.so.3", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=696512, ...}) = 0
+36281 mmap(NULL, 694384, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x75c9d8fea000
+36281 mmap(0x75c9d9008000, 401408, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1e000) = 0x75c9d9008000
+36281 mmap(0x75c9d906a000, 114688, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x80000) = 0x75c9d906a000
+36281 mmap(0x75c9d9086000, 57344, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x9c000) = 0x75c9d9086000
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libcrypto.so.3", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=5309400, ...}) = 0
+36281 mmap(NULL, 5323728, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x75c9d8a00000
+36281 mmap(0x75c9d8ab3000, 3358720, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0xb3000) = 0x75c9d8ab3000
+36281 mmap(0x75c9d8de7000, 831488, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x3e7000) = 0x75c9d8de7000
+36281 mmap(0x75c9d8eb2000, 389120, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x4b1000) = 0x75c9d8eb2000
+36281 mmap(0x75c9d8f11000, 11216, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x75c9d8f11000
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libz.so.1", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=113000, ...}) = 0
+36281 mmap(NULL, 110744, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x75c9d8fce000
+36281 mmap(0x75c9d8fd0000, 73728, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0x75c9d8fd0000
+36281 mmap(0x75c9d8fe2000, 24576, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x14000) = 0x75c9d8fe2000
+36281 mmap(0x75c9d8fe8000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1a000) = 0x75c9d8fe8000
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\220\243\2\0\0\0\0\0"..., 832) = 832
+36281 pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+36281 fstat(3, {st_mode=S_IFREG|0755, st_size=2125328, ...}) = 0
+36281 mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x75c9d8fcc000
+36281 pread64(3, "\6\0\0\0\4\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0@\0\0\0\0\0\0\0"..., 784, 64) = 784
+36281 mmap(NULL, 2170256, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x75c9d8600000
+36281 mmap(0x75c9d8628000, 1605632, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x28000) = 0x75c9d8628000
+36281 mmap(0x75c9d87b0000, 323584, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1b0000) = 0x75c9d87b0000
+36281 mmap(0x75c9d87ff000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1fe000) = 0x75c9d87ff000
+36281 mmap(0x75c9d8805000, 52624, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x75c9d8805000
+36281 close(3)                          = 0
+36281 mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x75c9d8fc9000
+36281 arch_prctl(ARCH_SET_FS, 0x75c9d8fc9740) = 0
+36281 set_tid_address(0x75c9d8fc9a10)   = 36281
+36281 set_robust_list(0x75c9d8fc9a20, 24) = 0
+36281 rseq(0x75c9d8fca060, 0x20, 0, 0x53053053) = 0
+36281 mprotect(0x75c9d87ff000, 16384, PROT_READ) = 0
+36281 mprotect(0x75c9d8fe8000, 4096, PROT_READ) = 0
+36281 mprotect(0x75c9d8eb2000, 376832, PROT_READ) = 0
+36281 mprotect(0x75c9d9086000, 40960, PROT_READ) = 0
+36281 mprotect(0x75c9d912c000, 4096, PROT_READ) = 0
+36281 mprotect(0x75c9d915e000, 4096, PROT_READ) = 0
+36281 mprotect(0x5edb5c575000, 8192, PROT_READ) = 0
+36281 mprotect(0x75c9d91b4000, 8192, PROT_READ) = 0
+36281 prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+36281 munmap(0x75c9d9168000, 48219)     = 0
+36281 getrandom("\xf5\x7c\x4f\xfc\xf5\x36\x4f\x81", 8, GRND_NONBLOCK) = 8
+36281 brk(NULL)                         = 0x5edb75019000
+36281 brk(0x5edb7503a000)               = 0x5edb7503a000
+36281 openat(AT_FDCWD, "/etc/localtime", O_RDONLY|O_CLOEXEC) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=2298, ...}) = 0
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=2298, ...}) = 0
+36281 read(3, "TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\t\0\0\0\t\0\0\0\0"..., 4096) = 2298
+36281 lseek(3, -1449, SEEK_CUR)         = 849
+36281 read(3, "TZif2\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\t\0\0\0\t\0\0\0\0"..., 4096) = 1449
+36281 close(3)                          = 0
+36281 getpid()                          = 36281
+36281 getppid()                         = 36278
+36281 futex(0x75c9d8f113ec, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f113e0, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f113d8, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f114e0, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f113c8, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f113c0, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 openat(AT_FDCWD, "/proc/sys/crypto/fips_enabled", O_RDONLY) = -1 ENOENT (No such file or directory)
+36281 futex(0x75c9d8f110ec, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f10f08, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f10e44, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f11424, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f10e38, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f113d0, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 openat(AT_FDCWD, "/usr/lib/ssl/openssl.cnf", O_RDONLY) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=12324, ...}) = 0
+36281 read(3, "#\n# OpenSSL example configuratio"..., 4096) = 4096
+36281 read(3, "d attributes must be the same, a"..., 4096) = 4096
+36281 read(3, "coding of an extension: beware e"..., 4096) = 4096
+36281 read(3, " = $insta::certout # insta.cert."..., 4096) = 36
+36281 read(3, "", 4096)                 = 0
+36281 close(3)                          = 0
+36281 futex(0x75c9d8f10bf8, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f10c54, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f11394, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f10bd8, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d8f113b8, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d9093844, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 futex(0x75c9d9093864, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36281 uname({sysname="Linux", nodename="LAPTOP-QR0E6CIG", ...}) = 0
+36281 openat(AT_FDCWD, "/sys/devices/system/cpu/online", O_RDONLY|O_CLOEXEC) = 3
+36281 read(3, "0-7\n", 1024)            = 4
+36281 close(3)                          = 0
+36281 prlimit64(0, RLIMIT_NOFILE, NULL, {rlim_cur=1024, rlim_max=1024*1024}) = 0
+36281 newfstatat(AT_FDCWD, "/etc/localtime", {st_mode=S_IFREG|0644, st_size=2298, ...}, 0) = 0
+36281 uname({sysname="Linux", nodename="LAPTOP-QR0E6CIG", ...}) = 0
+36281 brk(0x5edb7505c000)               = 0x5edb7505c000
+36281 openat(AT_FDCWD, "/etc/nginx/nginx.conf", O_RDONLY) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=653, ...}) = 0
+36281 pread64(3, "http {\n\n\tinclude mime.types;\n\n\ts"..., 653, 0) = 653
+36281 openat(AT_FDCWD, "/etc/nginx/mime.types", O_RDONLY) = 4
+36281 fstat(4, {st_mode=S_IFREG|0644, st_size=5465, ...}) = 0
+36281 pread64(4, "\ntypes {\n    text/html          "..., 4096, 0) = 4096
+36281 pread64(4, " application/octet-stream       "..., 1369, 4096) = 1369
+36281 close(4)                          = 0
+36281 brk(0x5edb7507e000)               = 0x5edb7507e000
+36281 epoll_create(100)                 = 4
+36281 close(4)                          = 0
+36281 close(3)                          = 0
+36281 geteuid()                         = 0
+36281 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
+36281 connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+36281 close(3)                          = 0
+36281 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
+36281 connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+36281 close(3)                          = 0
+36281 newfstatat(AT_FDCWD, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=526, ...}, 0) = 0
+36281 newfstatat(AT_FDCWD, "/", {st_mode=S_IFDIR|0755, st_size=4096, ...}, 0) = 0
+36281 openat(AT_FDCWD, "/etc/nsswitch.conf", O_RDONLY|O_CLOEXEC) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=526, ...}) = 0
+36281 read(3, "# /etc/nsswitch.conf\n#\n# Example"..., 4096) = 526
+36281 read(3, "", 4096)                 = 0
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=526, ...}) = 0
+36281 close(3)                          = 0
+36281 openat(AT_FDCWD, "/etc/passwd", O_RDONLY|O_CLOEXEC) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=1714, ...}) = 0
+36281 lseek(3, 0, SEEK_SET)             = 0
+36281 read(3, "root:x:0:0:root:/root:/bin/bash\n"..., 4096) = 1714
+36281 close(3)                          = 0
+36281 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
+36281 connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+36281 close(3)                          = 0
+36281 socket(AF_UNIX, SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK, 0) = 3
+36281 connect(3, {sa_family=AF_UNIX, sun_path="/var/run/nscd/socket"}, 110) = -1 ENOENT (No such file or directory)
+36281 close(3)                          = 0
+36281 newfstatat(AT_FDCWD, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=526, ...}, 0) = 0
+36281 openat(AT_FDCWD, "/etc/group", O_RDONLY|O_CLOEXEC) = 3
+36281 fstat(3, {st_mode=S_IFREG|0644, st_size=918, ...}) = 0
+36281 lseek(3, 0, SEEK_SET)             = 0
+36281 read(3, "root:x:0:\ndaemon:x:1:\nbin:x:2:\ns"..., 4096) = 918
+36281 close(3)                          = 0
+36281 mkdir("/var/lib/nginx/body", 0700) = -1 EEXIST (File exists)
+36281 newfstatat(AT_FDCWD, "/var/lib/nginx/body", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+36281 mkdir("/var/lib/nginx/proxy", 0700) = -1 EEXIST (File exists)
+36281 newfstatat(AT_FDCWD, "/var/lib/nginx/proxy", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+36281 mkdir("/var/lib/nginx/fastcgi", 0700) = -1 EEXIST (File exists)
+36281 newfstatat(AT_FDCWD, "/var/lib/nginx/fastcgi", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+36281 mkdir("/var/lib/nginx/uwsgi", 0700) = -1 EEXIST (File exists)
+36281 newfstatat(AT_FDCWD, "/var/lib/nginx/uwsgi", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+36281 mkdir("/var/lib/nginx/scgi", 0700) = -1 EEXIST (File exists)
+36281 newfstatat(AT_FDCWD, "/var/lib/nginx/scgi", {st_mode=S_IFDIR|0700, st_size=4096, ...}, 0) = 0
+36281 openat(AT_FDCWD, "/var/log/nginx/access.log", O_WRONLY|O_CREAT|O_APPEND, 0644) = 3
+36281 fcntl(3, F_SETFD, FD_CLOEXEC)     = 0
+36281 socket(AF_INET, SOCK_STREAM, IPPROTO_IP) = 4
+36281 setsockopt(4, SOL_SOCKET, SO_REUSEADDR, [1], 4) = 0
+36281 ioctl(4, FIONBIO, [1])            = 0
+36281 bind(4, {sa_family=AF_INET, sin_port=htons(8080), sin_addr=inet_addr("0.0.0.0")}, 16) = 0
+36281 listen(4, 511)                    = 0
+36281 listen(4, 511)                    = 0
+36281 prlimit64(0, RLIMIT_NOFILE, NULL, {rlim_cur=1024, rlim_max=1024*1024}) = 0
+36281 mmap(NULL, 1280, PROT_READ|PROT_WRITE, MAP_SHARED|MAP_ANONYMOUS, -1, 0) = 0x75c9d9173000
+36281 rt_sigaction(SIGHUP, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGUSR1, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGWINCH, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGTERM, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGQUIT, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGUSR2, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGALRM, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGINT, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGIO, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGCHLD, {sa_handler=0x5edb5c4a3960, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGSYS, {sa_handler=SIG_IGN, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 rt_sigaction(SIGPIPE, {sa_handler=SIG_IGN, sa_mask=[], sa_flags=SA_RESTORER, sa_restorer=0x75c9d8645330}, NULL, 8) = 0
+36281 openat(AT_FDCWD, "/run/nginx.pid", O_RDWR|O_CREAT|O_TRUNC, 0644) = 5
+36281 pwrite64(5, "36281\n", 6, 0)      = 6
+36281 close(5)                          = 0
+36281 rt_sigprocmask(SIG_BLOCK, [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], NULL, 8) = 0
+36281 socketpair(AF_UNIX, SOCK_STREAM, 0, [5, 6]) = 0
+36281 ioctl(5, FIONBIO, [1])            = 0
+36281 ioctl(6, FIONBIO, [1])            = 0
+36281 ioctl(5, FIOASYNC, [1])           = 0
+36281 fcntl(5, F_SETOWN, 36281)         = 0
+36281 fcntl(5, F_SETFD, FD_CLOEXEC)     = 0
+36281 fcntl(6, F_SETFD, FD_CLOEXEC)     = 0
+36281 clone(child_stack=NULL, flags=CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD, child_tidptr=0x75c9d8fc9a10) = 36282
+36282 set_robust_list(0x75c9d8fc9a20, 24) = 0
+36281 rt_sigsuspend([], 8 <unfinished ...>
+36282 getpid()                          = 36282
+36282 geteuid()                         = 0
+36282 setgid(65534)                     = 0
+36282 openat(AT_FDCWD, "/proc/sys/kernel/ngroups_max", O_RDONLY|O_CLOEXEC) = 7
+36282 read(7, "65536\n", 31)            = 6
+36282 close(7)                          = 0
+36282 newfstatat(AT_FDCWD, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=526, ...}, 0) = 0
+36282 newfstatat(AT_FDCWD, "/etc/nsswitch.conf", {st_mode=S_IFREG|0644, st_size=526, ...}, 0) = 0
+36282 openat(AT_FDCWD, "/etc/group", O_RDONLY|O_CLOEXEC) = 7
+36282 fstat(7, {st_mode=S_IFREG|0644, st_size=918, ...}) = 0
+36282 lseek(7, 0, SEEK_SET)             = 0
+36282 read(7, "root:x:0:\ndaemon:x:1:\nbin:x:2:\ns"..., 4096) = 918
+36282 read(7, "", 4096)                 = 0
+36282 close(7)                          = 0
+36282 openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 7
+36282 fstat(7, {st_mode=S_IFREG|0644, st_size=48219, ...}) = 0
+36282 mmap(NULL, 48219, PROT_READ, MAP_PRIVATE, 7, 0) = 0x75c9d8fbd000
+36282 close(7)                          = 0
+36282 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libnss_systemd.so.2", O_RDONLY|O_CLOEXEC) = 7
+36282 read(7, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36282 fstat(7, {st_mode=S_IFREG|0644, st_size=371112, ...}) = 0
+36282 mmap(NULL, 375344, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 7, 0) = 0x75c9d8f61000
+36282 mmap(0x75c9d8f69000, 258048, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x8000) = 0x75c9d8f69000
+36282 mmap(0x75c9d8fa8000, 65536, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x47000) = 0x75c9d8fa8000
+36282 mmap(0x75c9d8fb8000, 20480, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x56000) = 0x75c9d8fb8000
+36282 close(7)                          = 0
+36282 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libcap.so.2", O_RDONLY|O_CLOEXEC) = 7
+36282 read(7, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\320\202\0\0\0\0\0\0"..., 832) = 832
+36282 fstat(7, {st_mode=S_IFREG|0644, st_size=51536, ...}) = 0
+36282 mmap(NULL, 49224, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 7, 0) = 0x75c9d8f54000
+36282 mmap(0x75c9d8f57000, 24576, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x3000) = 0x75c9d8f57000
+36282 mmap(0x75c9d8f5d000, 8192, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x9000) = 0x75c9d8f5d000
+36282 mmap(0x75c9d8f5f000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0xb000) = 0x75c9d8f5f000
+36282 close(7)                          = 0
+36282 openat(AT_FDCWD, "/lib/x86_64-linux-gnu/libm.so.6", O_RDONLY|O_CLOEXEC) = 7
+36282 read(7, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\0\0\0\0\0\0\0\0"..., 832) = 832
+36282 fstat(7, {st_mode=S_IFREG|0644, st_size=952616, ...}) = 0
+36282 mmap(NULL, 950296, PROT_READ, MAP_PRIVATE|MAP_DENYWRITE, 7, 0) = 0x75c9d8917000
+36282 mmap(0x75c9d8927000, 520192, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x10000) = 0x75c9d8927000
+36282 mmap(0x75c9d89a6000, 360448, PROT_READ, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0x8f000) = 0x75c9d89a6000
+36282 mmap(0x75c9d89fe000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 7, 0xe7000) = 0x75c9d89fe000
+36282 close(7)                          = 0
+36282 mprotect(0x75c9d89fe000, 4096, PROT_READ) = 0
+36282 mprotect(0x75c9d8f5f000, 4096, PROT_READ) = 0
+36282 mprotect(0x75c9d8fb8000, 16384, PROT_READ) = 0
+36282 prctl(PR_CAPBSET_READ, CAP_MAC_OVERRIDE) = 1
+36282 prctl(PR_CAPBSET_READ, 0x30 /* CAP_??? */) = -1 EINVAL (Invalid argument)
+36282 prctl(PR_CAPBSET_READ, CAP_CHECKPOINT_RESTORE) = 1
+36282 prctl(PR_CAPBSET_READ, 0x2c /* CAP_??? */) = -1 EINVAL (Invalid argument)
+36282 prctl(PR_CAPBSET_READ, 0x2a /* CAP_??? */) = -1 EINVAL (Invalid argument)
+36282 prctl(PR_CAPBSET_READ, 0x29 /* CAP_??? */) = -1 EINVAL (Invalid argument)
+36282 munmap(0x75c9d8fbd000, 48219)     = 0
+36282 rt_sigprocmask(SIG_BLOCK, [HUP USR1 USR2 PIPE ALRM CHLD TSTP URG VTALRM PROF WINCH IO], [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], 8) = 0
+36282 futex(0x75c9d8fbc9d8, FUTEX_WAKE_PRIVATE, 2147483647) = 0
+36282 rt_sigprocmask(SIG_SETMASK, [HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO], NULL, 8) = 0
+36282 setgroups(1, [65534])             = 0
+36282 setuid(65534)                     = 0
+36282 prctl(PR_SET_DUMPABLE, SUID_DUMP_USER) = 0
+36282 rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+36282 epoll_create(256)                 = 7
+36282 eventfd2(0, 0)                    = 8
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 8, {events=EPOLLIN|EPOLLET, data={u32=1549456384, u64=104296240305152}}) = 0
+36282 socketpair(AF_UNIX, SOCK_STREAM, 0, [9, 10]) = 0
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 9, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1549456384, u64=104296240305152}}) = 0
+36282 close(10)                         = 0
+36282 epoll_wait(7, [{events=EPOLLIN|EPOLLHUP|EPOLLRDHUP, data={u32=1549456384, u64=104296240305152}}], 1, 5000) = 1
+36282 close(9)                          = 0
+36282 brk(0x5edb750a2000)               = 0x5edb750a2000
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 4, {events=EPOLLIN|EPOLLRDHUP, data={u32=1963343152, u64=104296654191920}}) = 0
+36282 close(5)                          = 0
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 6, {events=EPOLLIN|EPOLLRDHUP, data={u32=1963343392, u64=104296654192160}}) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343152, u64=104296654191920}}], 512, -1) = 1
+36282 accept4(4, {sa_family=AF_INET, sin_port=htons(55548), sin_addr=inet_addr("127.0.0.1")}, [112 => 16], SOCK_NONBLOCK) = 5
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 5, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1963343632, u64=104296654192400}}) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 60000) = 1
+36282 recvfrom(5, "hi\n", 1024, 0, NULL, NULL) = 3
+36282 writev(5, [{iov_base="HTTP/1.1 400 Bad Request\r\nServer"..., iov_len=161}, {iov_base="<html>\r\n<head><title>400 Bad Req"..., iov_len=104}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}], 3) = 327
+36282 shutdown(5, SHUT_WR)              = 0
+36282 epoll_wait(7, [], 512, 5000)      = 0
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:27"..., 64) = 64
+36282 close(5)                          = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343152, u64=104296654191920}}], 512, -1) = 1
+36282 accept4(4, {sa_family=AF_INET, sin_port=htons(42578), sin_addr=inet_addr("127.0.0.1")}, [112 => 16], SOCK_NONBLOCK) = 5
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 5, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1963343633, u64=104296654192401}}) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343633, u64=104296654192401}}], 512, 60000) = 1
+36282 recvfrom(5, "GET / HTTP/1.1\r\nHost: localhost:"..., 1024, 0, NULL, NULL) = 726
+36282 newfstatat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/index.html", {st_mode=S_IFREG|0644, st_size=294, ...}, 0) = 0
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/index.html", O_RDONLY|O_NONBLOCK) = 9
+36282 fstat(9, {st_mode=S_IFREG|0644, st_size=294, ...}) = 0
+36282 pread64(9, "<!DOCTYPE html>\n<html lang=\"en\">"..., 294, 0) = 294
+36282 writev(5, [{iov_base="HTTP/1.1 200 OK\r\nServer: nginx/1"..., iov_len=247}, {iov_base="<!DOCTYPE html>\n<html lang=\"en\">"..., iov_len=294}], 2) = 541
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 186) = 186
+36282 close(9)                          = 0
+36282 setsockopt(5, SOL_TCP, TCP_NODELAY, [1], 4) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343152, u64=104296654191920}}], 512, 75000) = 1
+36282 accept4(4, {sa_family=AF_INET, sin_port=htons(42584), sin_addr=inet_addr("127.0.0.1")}, [112 => 16], SOCK_NONBLOCK) = 9
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 9, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1963343872, u64=104296654192640}}) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343633, u64=104296654192401}}], 512, 60000) = 1
+36282 recvfrom(5, "GET /style.css HTTP/1.1\r\nHost: l"..., 1024, 0, NULL, NULL) = 604
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/style.css", O_RDONLY|O_NONBLOCK) = 10
+36282 fstat(10, {st_mode=S_IFREG|0644, st_size=69, ...}) = 0
+36282 pread64(10, "h1 {\n\tbackground-color: rgb(196,"..., 69, 0) = 69
+36282 writev(5, [{iov_base="HTTP/1.1 200 OK\r\nServer: nginx/1"..., iov_len=244}, {iov_base="h1 {\n\tbackground-color: rgb(196,"..., iov_len=69}], 2) = 313
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 215) = 215
+36282 close(10)                         = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343152, u64=104296654191920}}], 512, 59945) = 1
+36282 accept4(4, {sa_family=AF_INET, sin_port=htons(42592), sin_addr=inet_addr("127.0.0.1")}, [112 => 16], SOCK_NONBLOCK) = 10
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 10, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1963344112, u64=104296654192880}}) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343633, u64=104296654192401}}], 512, 59728) = 1
+36282 recvfrom(5, "GET /fruits HTTP/1.1\r\nHost: loca"..., 1024, 0, NULL, NULL) = 732
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/fruits", O_RDONLY|O_NONBLOCK) = 11
+36282 fstat(11, {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+36282 close(11)                         = 0
+36282 writev(5, [{iov_base="HTTP/1.1 301 Moved Permanently\r\n"..., iov_len=213}, {iov_base="<html>\r\n<head><title>301 Moved P"..., iov_len=116}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}], 3) = 391
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 192) = 192
+36282 epoll_wait(7, [{events=EPOLLIN|EPOLLRDHUP, data={u32=1963344112, u64=104296654192880}}, {events=EPOLLIN|EPOLLRDHUP, data={u32=1963343872, u64=104296654192640}}], 512, 54112) = 2
+36282 recvfrom(10, "", 1024, 0, NULL, NULL) = 0
+36282 close(10)                         = 0
+36282 recvfrom(9, "", 1024, 0, NULL, NULL) = 0
+36282 close(9)                          = 0
+36282 epoll_wait(7, [{events=EPOLLIN|EPOLLRDHUP, data={u32=1963343633, u64=104296654192401}}], 512, 71626) = 1
+36282 recvfrom(5, "", 1024, 0, NULL, NULL) = 0
+36282 close(5)                          = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343152, u64=104296654191920}}], 512, -1) = 1
+36282 accept4(4, {sa_family=AF_INET, sin_port=htons(41218), sin_addr=inet_addr("127.0.0.1")}, [112 => 16], SOCK_NONBLOCK) = 5
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 5, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1963343632, u64=104296654192400}}) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 60000) = 1
+36282 recvfrom(5, "GET /crops HTTP/1.1\r\nHost: local"..., 1024, 0, NULL, NULL) = 764
+36282 writev(5, [{iov_base="HTTP/1.1 307 Temporary Redirect\r"..., iov_len=214}, {iov_base="<html>\r\n<head><title>307 Tempora"..., iov_len=118}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}], 3) = 394
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 191) = 191
+36282 setsockopt(5, SOL_TCP, TCP_NODELAY, [1], 4) = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /carbs HTTP/1.1\r\nHost: local"..., 1024, 0, NULL, NULL) = 764
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/fruits", O_RDONLY|O_NONBLOCK) = 9
+36282 fstat(9, {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+36282 close(9)                          = 0
+36282 writev(5, [{iov_base="HTTP/1.1 301 Moved Permanently\r\n"..., iov_len=212}, {iov_base="<html>\r\n<head><title>301 Moved P"..., iov_len=116}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}], 3) = 390
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 191) = 191
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /carbs/ HTTP/1.1\r\nHost: loca"..., 1024, 0, NULL, NULL) = 765
+36282 newfstatat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/fruits/index.html", {st_mode=S_IFREG|0644, st_size=277, ...}, 0) = 0
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/fruits/index.html", O_RDONLY|O_NONBLOCK) = 9
+36282 fstat(9, {st_mode=S_IFREG|0644, st_size=277, ...}) = 0
+36282 pread64(9, "<!DOCTYPE html>\n<html lang=\"en\">"..., 277, 0) = 277
+36282 writev(5, [{iov_base="HTTP/1.1 200 OK\r\nServer: nginx/1"..., iov_len=247}, {iov_base="<!DOCTYPE html>\n<html lang=\"en\">"..., iov_len=277}], 2) = 524
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 192) = 192
+36282 close(9)                          = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /crops HTTP/1.1\r\nHost: local"..., 1024, 0, NULL, NULL) = 764
+36282 writev(5, [{iov_base="HTTP/1.1 307 Temporary Redirect\r"..., iov_len=214}, {iov_base="<html>\r\n<head><title>307 Tempora"..., iov_len=118}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}], 3) = 394
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 191) = 191
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /number/1 HTTP/1.1\r\nHost: lo"..., 1024, 0, NULL, NULL) = 767
+36282 newfstatat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/index.html", {st_mode=S_IFREG|0644, st_size=294, ...}, 0) = 0
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/index.html", O_RDONLY|O_NONBLOCK) = 9
+36282 fstat(9, {st_mode=S_IFREG|0644, st_size=294, ...}) = 0
+36282 pread64(9, "<!DOCTYPE html>\n<html lang=\"en\">"..., 294, 0) = 294
+36282 writev(5, [{iov_base="HTTP/1.1 200 OK\r\nServer: nginx/1"..., iov_len=247}, {iov_base="<!DOCTYPE html>\n<html lang=\"en\">"..., iov_len=294}], 2) = 541
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 194) = 194
+36282 close(9)                          = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /number/style.css HTTP/1.1\r\n"..., 1024, 0, NULL, NULL) = 652
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/count/style", O_RDONLY|O_NONBLOCK) = -1 ENOENT (No such file or directory)
+36282 gettid()                          = 36282
+36282 write(2, "2026/07/31 14:28:43 [error] 3628"..., 291) = 291
+36282 writev(5, [{iov_base="HTTP/1.1 404 Not Found\r\nServer: "..., iov_len=164}, {iov_base="<html>\r\n<head><title>404 Not Fou"..., iov_len=100}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}, {iov_base="<!-- a padding to disable MSIE a"..., iov_len=402}], 4) = 728
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 231) = 231
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /number/3 HTTP/1.1\r\nHost: lo"..., 1024, 0, NULL, NULL) = 734
+36282 newfstatat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/index.html", {st_mode=S_IFREG|0644, st_size=294, ...}, 0) = 0
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/index.html", O_RDONLY|O_NONBLOCK) = 9
+36282 fstat(9, {st_mode=S_IFREG|0644, st_size=294, ...}) = 0
+36282 pread64(9, "<!DOCTYPE html>\n<html lang=\"en\">"..., 294, 0) = 294
+36282 writev(5, [{iov_base="HTTP/1.1 200 OK\r\nServer: nginx/1"..., iov_len=247}, {iov_base="<!DOCTYPE html>\n<html lang=\"en\">"..., iov_len=294}], 2) = 541
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 194) = 194
+36282 close(9)                          = 0
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343632, u64=104296654192400}}], 512, 75000) = 1
+36282 recvfrom(5, "GET /number/style.css HTTP/1.1\r\n"..., 1024, 0, NULL, NULL) = 619
+36282 openat(AT_FDCWD, "/home/pcg91/projects/42/core/webserv/test-nginx/count/style", O_RDONLY|O_NONBLOCK) = -1 ENOENT (No such file or directory)
+36282 gettid()                          = 36282
+36282 write(2, "2026/07/31 14:28:46 [error] 3628"..., 291) = 291
+36282 writev(5, [{iov_base="HTTP/1.1 404 Not Found\r\nServer: "..., iov_len=164}, {iov_base="<html>\r\n<head><title>404 Not Fou"..., iov_len=100}, {iov_base="<hr><center>nginx/1.24.0 (Ubuntu"..., iov_len=62}, {iov_base="<!-- a padding to disable MSIE a"..., iov_len=402}], 4) = 728
+36282 write(3, "127.0.0.1 - - [31/Jul/2026:14:28"..., 231) = 231
+36282 epoll_wait(7, [{events=EPOLLIN, data={u32=1963343152, u64=104296654191920}}], 512, 75000) = 1
+36282 accept4(4, {sa_family=AF_INET, sin_port=htons(36938), sin_addr=inet_addr("127.0.0.1")}, [112 => 16], SOCK_NONBLOCK) = 9
+36282 epoll_ctl(7, EPOLL_CTL_ADD, 9, {events=EPOLLIN|EPOLLRDHUP|EPOLLET, data={u32=1963343873, u64=104296654192641}}) = 0
+36282 epoll_wait(7, [], 512, 60000)     = 0
+36282 close(9)                          = 0
+36282 epoll_wait(7,  <unfinished ...>
+36281 <... rt_sigsuspend resumed>)      = ? ERESTARTNOHAND (To be restarted if no handler)
+36282 <... epoll_wait resumed>0x5edb75040710, 512, 14685) = -1 EINTR (Interrupted system call)
+36281 --- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
+36282 --- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
+36281 rt_sigreturn({mask=[HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO]} <unfinished ...>
+36282 rt_sigreturn({mask=[]} <unfinished ...>
+36281 <... rt_sigreturn resumed>)       = -1 EINTR (Interrupted system call)
+36282 <... rt_sigreturn resumed>)       = -1 EINTR (Interrupted system call)
+36281 sendmsg(5, {msg_name=NULL, msg_namelen=0, msg_iov=[{iov_base="\4\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\377\377\377\377\0\0\0\0", iov_len=32}], msg_iovlen=1, msg_controllen=0, msg_flags=0}, 0) = 32
+36281 setitimer(ITIMER_REAL, {it_interval={tv_sec=0, tv_usec=0}, it_value={tv_sec=0, tv_usec=50000}}, NULL) = 0
+36281 rt_sigsuspend([], 8 <unfinished ...>
+36282 exit_group(0)                     = ?
+36282 +++ exited with 0 +++
+36281 <... rt_sigsuspend resumed>)      = ? ERESTARTNOHAND (To be restarted if no handler)
+36281 --- SIGCHLD {si_signo=SIGCHLD, si_code=CLD_EXITED, si_pid=36282, si_uid=65534, si_status=0, si_utime=0, si_stime=3 /* 0.03 s */} ---
+36281 wait4(-1, [{WIFEXITED(s) && WEXITSTATUS(s) == 0}], WNOHANG, NULL) = 36282
+36281 wait4(-1, 0x7ffe15d2f534, WNOHANG, NULL) = -1 ECHILD (No child processes)
+36281 rt_sigreturn({mask=[HUP INT QUIT USR1 USR2 ALRM TERM CHLD WINCH IO]}) = -1 EINTR (Interrupted system call)
+36281 close(5)                          = 0
+36281 close(6)                          = 0
+36281 unlink("/run/nginx.pid")          = 0
+36281 close(4)                          = 0
+36281 brk(0x5edb75054000)               = 0x5edb75054000
+36281 exit_group(0)                     = ?
+36281 +++ exited with 0 +++
