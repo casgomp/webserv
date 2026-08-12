@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/07 12:27:13 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/10 16:51:14 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ int	server()
 	int						byte_count;
 	char					buf[BUFFER_SIZE];
 	// int						bytes_read;
-	std::string 			response;
+	std::string 			response = "hello from server!";
 	int						bytes_sent;
 
 	memset(&hints, 0, sizeof(hints));
@@ -101,7 +101,7 @@ int	server()
 	}
 	for (p = servinfo; p != NULL; p = p->ai_next)
 	{
-	servsock = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
+		servsock = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
 		if (servsock < 0)
 			continue;
 		yes = 1;
@@ -181,6 +181,8 @@ int	server()
 				}
 				clients[clientsock] = new_client;
 				clients[clientsock].fd = clientsock;
+				// clients[clientsock].request.clear();
+				// clients[clientsock].response.clear();
 				clients[clientsock].bytes_sent = 0;
 			}
 			else
@@ -188,17 +190,20 @@ int	server()
 				/********CLIENT**********/
 				if (evs[i].events & EPOLLERR)
 				{
+					std::cout << "EPOLLERR: " << std::endl;
 					closeConnection(evs[i].data.fd, clients, EPOLLERR);
 					continue ;
 				}
 				else if (evs[i].events & EPOLLHUP)
 				{
+					std::cout << "EPOLLHUP: " << std::endl;
 					closeConnection(evs[i].data.fd, clients, EPOLLHUP);
 					continue ;
 				}
 				else if (evs[i].events & EPOLLIN)
 				{
 					/********CLIENT: RECEIVE**********/
+					std::cout << "Server ready to receive" << std::endl;
 					byte_count = recv(evs[i].data.fd, buf, sizeof(buf), 0);
 					if (byte_count == 0)
 					{
@@ -216,6 +221,7 @@ int	server()
 					//parse request to check for r/n/r/n/
 					if (request_complete)
 					{
+						std::cout << "we received from client: " << clients[evs[i].data.fd].request << std::endl;
 						ev.events = EPOLLOUT;
 						ev.data.fd = evs[i].data.fd;
 						if (epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd, &ev) < 0)
@@ -228,23 +234,38 @@ int	server()
 				else if (evs[i].events & EPOLLOUT)
 				{
 					/********CLIENT: RESPOND**********/
+					
+					//////////////////////////////////////////////////////////test
+					char buf2[1024];
+					memset(buf2, 0, sizeof(buf2));
+					std::cout << "read is happening... " << std::endl;
+					read(0, buf2, sizeof(buf2));
+					clients[evs[i].data.fd].response.append(buf2, strlen(buf2));
+					std::cout << "read happened... " << std::endl;
+					//////////////////////////////////////////////////////////
+
 					byte_count = 0;
 					response = clients[evs[i].data.fd].response;
 					bytes_sent = clients[evs[i].data.fd].bytes_sent;
+					std::cout << "Server ready to send" << std::endl;
 					byte_count = send(evs[i].data.fd, response.c_str() + bytes_sent, response.size() - bytes_sent, 0);
+					std::cout << "send happend, byte count: " << byte_count << std::endl;
 					if (byte_count < 0)
 					{
+						std::cout << "byte count < 0 " << std::endl;
 						closeConnection(evs[i].data.fd, clients, errno);
 						continue ;
 					}
 					clients[evs[i].data.fd].bytes_sent += byte_count;
 					if (clients[evs[i].data.fd].bytes_sent == response.size())
 					{
+						std::cout << "response completed..." << std::endl;
 						clients[evs[i].data.fd].bytes_sent = 0;
 						ev.events = EPOLLIN;
 						ev.data.fd = evs[i].data.fd;
 						if (epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd, &ev) < 0)
 						{
+							std::cout << "it will finish on modify..." << std::endl;
 							closeConnection(evs[i].data.fd, clients, errno);
 							continue ;
 						}
