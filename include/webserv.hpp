@@ -17,6 +17,6 @@ typedef struct	Client {
 int		main();
 int		server();
 void	closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
-void	cleanupServ(int servsock, int epfd, std::map<int, t_client> clients, int flag_err);
+void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
 
 #endif

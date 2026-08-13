@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/12 11:53:19 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/13 14:45:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void	closeConnection(int fd, std::map<int, t_client> &clients, int flag_err)
 	//WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
 }
 
-void	cleanupServ(int servsock, int epfd, std::map<int, t_client> clients, int flag_err)
+void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err)
 {
 	std::cerr << "Error: " << flag_err <<std::endl;
 	if (servsock >= 0)
