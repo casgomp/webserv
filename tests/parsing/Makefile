@@ -8,7 +8,8 @@ OBJ_DIR = objs
 # is added later once it actually exists.
 
 SRCS = ../TestSuite.cpp \
-		ConfigParserTests.cpp
+		ConfigParserTests.cpp \
+		HttpRequestParserTests.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 
