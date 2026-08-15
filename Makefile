@@ -1,6 +1,7 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 NAME = webserv
+MAKEFLAGS += --no-print-directory
 
 SRC_DIR = src
 OBJ_DIR	= objs
@@ -38,11 +39,11 @@ $(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
 
 clean:
 	@rm -rf $(OBJ_DIR)
-	$(MAKE) -C tests clean
+	@$(MAKE) -C tests clean
 
 fclean: clean
 	@rm -f $(NAME)
-	$(MAKE) -C tests fclean
+	@$(MAKE) -C tests fclean
 
 re: fclean all
 
