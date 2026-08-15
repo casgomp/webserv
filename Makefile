@@ -14,6 +14,9 @@ vpath %.cpp $(SRC_DIR)
 
 all: $(NAME)
 
+test: $(NAME)
+	$(MAKE) -C tests
+
 valgrind: CXXFLAGS += -g
 valgrind: fclean $(NAME)
 
@@ -35,9 +38,11 @@ $(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
 
 clean:
 	@rm -rf $(OBJ_DIR)
+	$(MAKE) -C tests clean
 
 fclean: clean
 	@rm -f $(NAME)
+	$(MAKE) -C tests fclean
 
 re: fclean all
 
