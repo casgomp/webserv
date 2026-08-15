@@ -4,7 +4,7 @@ This document describes the full workflow for working on this project, from pick
 
 **Status legend used below:**
 - ✅ Works today with plain Git/GitHub — no setup needed
-- 🔧 Requires setup we haven't built yet — tracked as issues #14–#18 (see "CI & Automation Status" section at the bottom)
+- 🔧 Requires setup we haven't built yet — see "CI & Automation Status" section at the bottom for current progress
 
 ---
 
@@ -27,7 +27,7 @@ Make sure you have push access to the repo and are added as a collaborator, and 
 2. If the task doesn't have an issue yet, create one:
    - Clear, action-oriented title (e.g. "Parse HTTP request headers", not "headers")
    - Description: what needs to be done
-   - **Acceptance criteria**: a short checklist (`- [ ]` items) describing exactly how we'll know it's done — see examples in past issues (#8–#18)
+   - **Acceptance criteria**: a short checklist (`- [ ]` items) describing exactly how we'll know it's done
 3. Assign yourself to the issue.
 4. On the Kanban board, move the issue card from **Todo → In Progress**.
 5. Note the issue number (e.g. `#12`) — you'll need it for your branch and commits.
@@ -41,10 +41,10 @@ Create a branch **from an up-to-date `main`**, named to describe the work:
 | Type | Prefix | Example |
 |---|---|---|
 | New feature | `feature/` | `feature/http-parser` |
-| Bug fix | `bugfix/` | `bugfix/testcase-44` |
+| Bug fix | `bugfix/` or `fix/` | `fix/apply-clang-format` |
 | Refactor (no behavior change) | `refactor/` | `refactor/cleanup-poll-loop` |
 | Test-only work | `test/` | `test/chunked-encoding` |
-| CI/tooling/docs | `chore/` | `chore/add-ci-workflow` |
+| CI/tooling/docs/infra | `chore/` | `chore/add-ci-workflow` |
 
 Commands:
 
@@ -54,7 +54,7 @@ git pull origin main
 git checkout -b feature/http-parser
 ```
 
-> **Double-check spelling before pushing.** A typo in a branch name (e.g. `stucture` vs `structure`) doesn't break anything functionally, but makes later cleanup commands (`git push origin --delete ...`) fail if you type the *corrected* spelling instead of the *actual* one. Not fatal — just re-run the delete with the branch's real name — but easy to avoid by checking `git branch` right after creating it.
+> **Double-check spelling before pushing.** A typo in a branch name doesn't break anything functionally, but makes later cleanup commands (`git push origin --delete ...`) fail if you type the *corrected* spelling instead of the *actual* one. Not fatal — just re-run the delete with the branch's real name — but easy to avoid by checking `git branch` right after creating it.
 
 ---
 
@@ -83,19 +83,25 @@ Use `refs #12` for commits that are progress on the issue but don't finish it. U
 git commit -m "Complete HTTP request parsing (Closes #12)"
 ```
 
-**Multiple references in one commit/PR are fine** — e.g. a commit that finishes one issue but also references a small unrelated fix. Put each on its own line if referencing more than one; GitHub parses them independently:
+**Multiple references in one commit/PR are fine** — put each on its own line; GitHub parses them independently:
 ```
 Scaffold tests/ directory structure (Closes #3)
 refs #5
 ```
 
+Referencing an already-closed issue (via `refs #N`) is safe and useful for traceability — it does not reopen it. Only `Closes`/`Fixes`/`Resolves` change an issue's state.
+
 > **Important nuance:** the auto-close trigger fires when the commit merges into the **default branch** (`main`), not the moment you commit on your feature branch. Don't be surprised if the issue stays open until after your PR is merged.
 
 ### 3.3 Small unrelated fixes noticed while working ✅
 
-If you notice something small and unrelated while working (e.g. a stale comment, a leftover typo) — it's fine to fix it as its **own separate commit** on the same branch, with its own message referencing the *original* issue via `refs #N` (not `Closes`, since that issue may already be closed). Don't bundle it silently into an unrelated commit.
+If you notice something small and unrelated while working (e.g. a stale comment, a leftover typo) — it's fine to fix it as its **own separate commit** on the same branch, with its own message referencing the *original* issue via `refs #N`. Don't bundle it silently into an unrelated commit.
 
-### 3.4 Adding tests ✅ (test runner itself: 🔧 #14–#16)
+### 3.4 Scope can legitimately grow mid-issue ✅
+
+Sometimes an issue's original description doesn't fully cover what's actually needed to satisfy its own acceptance criteria (e.g. #13 needed `tests/Makefile` filled in, which had been assumed-but-not-actually-completed under #12). When this happens: don't reopen the earlier issue — just do the necessary work under the **current** issue, note the context in the commit message (`refs #<earlier issue>`), and move on. This is normal, not a mistake to fix retroactively.
+
+### 3.5 Adding tests ✅
 
 New tests for a feature belong on the **same branch** as the feature they test — not a separate "tests branch." `main` should always have a fully passing test suite; your branch inherits that and adds to it.
 
@@ -106,15 +112,16 @@ git commit -m "Add tests for request-line parsing (refs #12)"
 
 If you think of **new test cases for something already merged**, that's its own small, separate issue + branch + PR — not a reopening of old, already-merged work.
 
-### 3.5 Run checks locally BEFORE pushing ✅ (once tooling exists: 🔧)
+### 3.6 Run checks locally BEFORE pushing ✅
 
 ```bash
 make            # build must succeed
-make test       # 🔧 pending #14–#17
-make style      # 🔧 pending #18 — likely: clang-format --dry-run --Werror ...
+make test       # runs the full test suite (delegates through tests/ -> tests/parsing/)
 ```
 
 Fix anything that fails locally — don't rely on CI to catch it first.
+
+> There is deliberately **no** `make style` / automated style-check target — see "Style checking" under CI & Automation Status for why this was tried and dropped.
 
 ---
 
@@ -130,7 +137,7 @@ For subsequent pushes on the same branch:
 git push
 ```
 
-🔧 Once #18 (CI workflow) is set up: pushing triggers a GitHub Actions run that builds, tests, and style-checks automatically. Status shows on the branch/commit and later on the PR.
+🔧 Once #15 (CI workflow) is set up: pushing triggers a GitHub Actions run that builds and tests automatically. Status shows on the branch/commit and later on the PR.
 
 ---
 
@@ -139,10 +146,10 @@ git push
 1. Go to the **Pull requests** tab → **New pull request** (or click the "Compare & pull request" banner if GitHub shows it). This works regardless of which branch you currently have checked out locally or selected in GitHub's UI — PRs are independent of "current branch view."
 2. Confirm `base: main` ← `compare: <your-branch>` — **this is the step most likely to be wrong** (both sides can default to `main`); double check before creating.
 3. Title: short summary. Description: what changed, why, plus the closing keyword(s).
-4. **Explicitly request your classmate as reviewer** (sidebar → **Reviewers**) — don't skip this. Assigning yourself as **Assignee** is fine and separate, but does not substitute for requesting a **Reviewer**.
+4. **Explicitly request your classmate as reviewer** (sidebar → **Reviewers**) — don't skip this. Assigning yourself as **Assignee** is fine and separate, but does not substitute for requesting a **Reviewer**. Note: GitHub will not let you select yourself as reviewer on your own PR — this is intentional.
 5. Move the issue's Kanban card to **In Review**.
 
-🔧 Once branch protection requires status checks (issue #18 → then update the ruleset), the PR page will show required checks and block merge until they pass.
+🔧 Once branch protection requires status checks (after #15 is verified working), the PR page will show required checks and block merge until they pass.
 
 ---
 
@@ -156,7 +163,7 @@ git push
    git push
    ```
    Updates the same PR automatically.
-3. **Before merging, visually confirm you can see an actual green "Approved" review from your classmate on the PR page** — do not merge your own PR without this, even if the merge button appears clickable. (Branch protection should enforce this via "Required approvals" ≥ 1 under Settings → Rulesets → your ruleset → "Require a pull request before merging" → "Show additional settings" — but don't rely on the setting alone; check visually too.)
+3. **Before merging, visually confirm you can see an actual green "Approved" review from your classmate on the PR page** — do not merge your own PR without this. (Branch protection enforces this via "Required approvals" ≥ 1 under Settings → Rulesets → your ruleset → "Require a pull request before merging" → "Show additional settings" — but check visually too, don't rely on the setting alone.)
 4. Merge via **Squash and merge** (team convention — keeps `main`'s history to one commit per feature).
 5. **Click "Delete branch" on the PR page immediately after merging** — easy to forget in the moment; do it before navigating away.
 6. Because the merge commit/PR description contains `Closes #12`, the issue auto-closes.
@@ -196,12 +203,12 @@ git add <files>
 git commit -m "Add request-line parsing (refs #12)"
 
 # 4. Local checks before pushing
-make && make test && make style          # 🔧 test/style targets pending
+make && make test
 
 # 5. Push
 git push -u origin feature/http-parser
 
-# 6. Open PR on GitHub (base: main ← compare: feature/http-parser)
+# 6. Open PR on GitHub (base: main <- compare: feature/http-parser)
 #    description includes "Closes #12", REQUEST REVIEW from classmate
 
 # 7. Wait for actual approval (check visually), then merge (squash) on GitHub,
@@ -218,43 +225,57 @@ git remote prune origin
 
 ## CI & Automation Status
 
-Tracking issues #14–#18 build out the full CI pipeline. This section is the "how the machinery works / what's left" reference (folded in here rather than a separate doc, to keep one source of truth).
-
-### Test suite architecture
+### Test suite architecture — ✅ DONE
 
 ```
 tests/
-├── Makefile                # orchestrator — scales as more testers are added
+├── Makefile                # orchestrator — delegates to each tester, scales as more are added
 ├── TestSuite.hpp/.cpp        # shared pass/fail base class
 └── parsing/
-    ├── Makefile
+    ├── Makefile               # compiles + links this tester into run_parsing_tests
     ├── ConfigParserTests.hpp/.cpp
     ├── HttpRequestParserTests.hpp/.cpp
-    └── main_parsing_tests.cpp
+    └── main_parsing_tests.cpp  # aggregates both classes' results, returns correct exit code
 ```
 
-**Design principle:** adding a new tester (e.g. `server/`, `response/`) later requires only a new subfolder with its own small Makefile, plus one line added to `TESTERS` in `tests/Makefile` — no changes to the root Makefile or CI workflow.
+**Design principle:** adding a new tester (e.g. `server/`, `response/`) later requires only a new subfolder with its own Makefile, plus one name added to `TESTERS` in `tests/Makefile` — no changes to the root Makefile or CI workflow.
 
-**Exit code contract:** every `main_*_tests.cpp` must return `0` if all tests passed, non-zero if any failed. This is what `make test` and CI actually key off of — verify this explicitly (temporarily force a failing `check()` and confirm the exit code) before considering a tester "done."
+**Exit code contract:** every `main_*_tests.cpp` returns `0` if all tests passed, non-zero if any failed — verified by temporarily forcing a failing `check()` and confirming propagation. This is what `make test` and CI key off of.
 
-### Root Makefile addition
+**Recursive Make output:** `MAKEFLAGS += --no-print-directory` is set at the top of the root Makefile, which cascades down through every nested `$(MAKE) -C ...` call automatically — suppresses the "Entering/Leaving directory" noise across the whole chain (root → tests → tests/parsing) from one place.
 
+**Root Makefile — full chain:**
 ```makefile
+MAKEFLAGS += --no-print-directory
+# ...
 test: $(NAME)
 	$(MAKE) -C tests
+
+clean:
+	@rm -rf $(OBJ_DIR)
+	@$(MAKE) -C tests clean
+
+fclean: clean
+	@rm -f $(NAME)
+	@$(MAKE) -C tests fclean
 ```
+`clean`/`fclean` cascading into `tests/` too means a single `make fclean` (or `make re`) from the repo root resets *everything*, not just webserv's own build artifacts.
 
-Making `test` depend on `$(NAME)` means `make test` alone always works correctly — no need to remember to run plain `make` first.
+### Style checking — ❌ ATTEMPTED, DROPPED
 
-### Style checking (pending #18)
+A `.clang-format` config was built and tested (targeting the school environment's `clang-format` v14) attempting to approximate the project's established hand-written style: tabs, Allman braces, `&name` reference style, and 42-C-norm conventions like `# define` (indented preprocessor directive) and multi-space alignment between return type and function name.
 
-Planned approach: `.clang-format` config at repo root, approximating 42's C-norm style (indentation, brace placement). CI step:
-```bash
-clang-format --dry-run --Werror $(find src include -name '*.cpp' -o -name '*.hpp')
-```
-`--dry-run` = report only, don't modify files. `--Werror` = non-zero exit if anything doesn't match, which is what makes this usable as a CI gate.
+**Result:** v14 could not be configured to reliably reproduce several of these without side effects — most notably:
+- `# define` inside header guards was unconditionally collapsed to `#define`, with no working v14 option found to prevent it
+- Class member/access-modifier indentation (`private:`, etc.) came out mixing spaces and tabs regardless of `AccessModifierOffset` settings tried
+- Multi-line stream expressions (`std::cout << ... << ...`) got re-indented using spaces, again mixing with the project's tabs
+- The classic 42-style multi-space column alignment between return type and function name (`void    functionName(...)`) has no clang-format equivalent at all — it only aligns *consecutive* declarations with no blank lines/other code between them, not whole-file column alignment across separate function definitions
 
-### CI workflow (pending #18)
+**Decision:** rather than force the codebase into `clang-format`'s defaults (a real, working option, just not matching the team's existing style) or keep fighting version-specific config limitations, automated style enforcement was dropped entirely. `.clang-format` was removed from the repo. Style consistency is maintained by convention and PR review instead, not tooling.
+
+**If revisited later:** worth checking whether a newer `clang-format` version (or an alternative tool) has better support for `IndentPPDirectives` and cross-declaration alignment before trying again — this was specifically a v14 limitation, not necessarily true of all versions.
+
+### CI workflow (`.github/workflows/ci.yml`) — 🔧 IN PROGRESS (#15)
 
 ```yaml
 name: CI
@@ -278,39 +299,37 @@ jobs:
       - name: Set up C++ environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential clang-format
+          sudo apt-get install -y build-essential
         # Also starting from scratch every run — the fresh VM has no compiler
-        # or tools installed by default.
+        # installed by default. No clang-format install needed — style checking
+        # was dropped (see above).
 
       - name: Build the project
         run: make
 
       - name: Run tests
         run: make test
-
-      - name: Check code style
-        run: clang-format --dry-run --Werror $(find src include -name '*.cpp' -o -name '*.hpp')
 ```
 
-Kept as **separate steps** (not one combined `make && make test`) so the Actions log clearly shows *which* stage failed (build vs. test vs. style) rather than one opaque combined step.
+No style-check step (dropped, see above). Kept build and test as **separate steps** so the Actions log clearly shows which stage failed, rather than one opaque combined step.
 
 ### Branch protection sequencing — why order matters
 
-Do **not** enable "Require status checks to pass" on the `main` ruleset until after #18's workflow has been verified working on a real PR. Enabling it before any check exists can block all merging, including legitimate ones, since there's nothing for the rule to reference as "passing." Sequence: build tests → build CI workflow (#18) → verify it runs and reports correctly on a real PR → **then** go back and enable the status-check requirement.
+Do **not** enable "Require status checks to pass" on the `main` ruleset until after the CI workflow above has been verified working on a real PR. Enabling it before any check exists can block all merging, since there's nothing for the rule to reference as "passing." Sequence: build the workflow → verify it runs and reports correctly on a real PR → **then** enable the status-check requirement.
 
 ### Known gap fixed during setup
 
 Early on, "Require a pull request before merging" was enabled without also setting "Required approvals" ≥ 1 (a collapsed sub-setting under "Show additional settings"). This allowed a PR to be merged by its own author with no actual review (happened once, on PR #7 — low-risk content, left as-is rather than reverted). Confirmed fixed by setting Required approvals to 1. **Always visually confirm an approval exists before merging**, in addition to relying on the ruleset.
 
-### Remaining issues (see GitHub Issues #14–#18 for exact numbers/scope)
+### Status summary
 
-- [ ] `TestSuite` base class
-- [ ] `ConfigParserTests` class + Makefile
-- [ ] `HttpRequestParserTests` class
-- [ ] Parsing test runner + `tests/Makefile` orchestrator
-- [ ] `make test` wired into root Makefile
-- [ ] `.clang-format` config
-- [ ] `.github/workflows/ci.yml`
-- [ ] Enable "require status checks" on `main` ruleset (after the above is verified working)
+- [x] `TestSuite` base class
+- [x] `ConfigParserTests` class + Makefile
+- [x] `HttpRequestParserTests` class
+- [x] Parsing test runner + `tests/Makefile` orchestrator
+- [x] `make test` wired into root Makefile (including cascading `clean`/`fclean`)
+- [x] `.clang-format` config — attempted, dropped (see above)
+- [ ] `.github/workflows/ci.yml` — in progress, #15
+- [ ] Enable "require status checks" on `main` ruleset (after #15 is verified working)
 - [ ] Server behavior tester (`tests/server/`) — placeholder issue created, not started
 - [ ] Response tester (`tests/response/`) — placeholder issue created, not started
