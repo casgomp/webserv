@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/15 11:52:13 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/17 14:43:05 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,10 @@
 ConfigParserTests::ConfigParserTests() : TestSuite("ConfigParserTests") {}
 
 //add test methods here
+
+//basic stucture
+
+//port
 
 void ConfigParserTests::run_all()
 {

@@ -1,31 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigParserTests.hpp                              :+:      :+:    :+:   */
+/*   configParser.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/15 11:28:56 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/17 15:48:50 by pecastro         ###   ########.fr       */
+/*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
+/*   Updated: 2026/08/17 18:18:20 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_PARSER_TESTS_HPP
-# define CONFIG_PARSER_TESTS_HPP
+#include "../include/webserv.hpp"
 
-#include "../TestSuite.hpp"
+std::vector<t_servconf>	configParser(char *filename)
+{
+	std::vector<t_servconf>	conf;
 
-class ConfigParserTests : public TestSuite {
-	public:
-		ConfigParserTests();
-
-		//add test methods here
-
-		//basic stucture
-
-		//port
-
-		void run_all();
-};
-
-#endif
+	// open file and create a ifstream, getline, stringstream
+	// 
+}

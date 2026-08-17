@@ -7,16 +7,29 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 
-typedef struct	Client {
+//config parser
+#include <vector>
+
+//configparser
+typedef struct	s_servconf {
+	int	port;
+} t_servconf;
+
+//server
+typedef struct	s_client {
 	int			fd;
 	std::string	request;
 	std::string	response;
 	size_t		bytes_sent;
 } t_client;
 
-int		main();
-int		server();
-void	closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
-void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
+//main
+int						main();
+//server
+int						server();
+void					closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
+void					cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
+//config_parser
+std::vector<t_servconf>	configParser(char *filename);
 
 #endif
