@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/13 15:55:37 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/17 18:22:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int f
 {
 	std::cerr << "Error: " << flag_err <<std::endl;
 	if (servsock >= 0)
-		close (servsock);
+		close (servsock); //will have to handle multiple servsockets in the future, so here should also loop
 	if (epfd >= 0)
 		close (epfd);
 	std::map<int, t_client>::iterator it = clients.begin();
@@ -62,7 +62,7 @@ void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int f
 	}
 }
 
-int	server()
+int	server()//server should receive the data structure containing the info from the config file.
 {
 	//server socket: getaddrinfo(), socket(), bind(), listen();
 	int						status;
@@ -89,6 +89,7 @@ int	server()
 	// int						bytes_read;
 	std::string 			response = "hello from server!";
 	int						bytes_sent;
+
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
