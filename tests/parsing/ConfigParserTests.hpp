@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:28:56 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/17 15:48:50 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/24 16:59:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,11 +21,10 @@ class ConfigParserTests : public TestSuite {
 
 		//add test methods here
 
-		//basic stucture
+		void	test_split_chunk();
+		void	test_read_valid_file_correctly();
 
-		//port
-
-		void run_all();
+		void	run_all();
 };
 
 #endif

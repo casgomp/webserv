@@ -4,25 +4,17 @@ NAME = run_parsing_tests
 
 OBJ_DIR = objs
 
-# Sources for THIS tester. TestSuite.cpp lives one directory up (shared by
-# every tester); ConfigParserTests.cpp lives right here. main_parsing_tests.cpp
-# is added later once it actually exists.
-
 SRCS = main_parsing_tests.cpp \
 		../TestSuite.cpp \
 		ConfigParserTests.cpp \
-		HttpRequestParserTests.cpp
+		HttpRequestParserTests.cpp \
+		../../src/configParser.cpp \
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 
-vpath %.cpp . ..
+vpath %.cpp . .. ../../src
 
 all: $(NAME)
-
-# Default target: compile-only for now. No main() exists yet, so there is
-# nothing to link into a runnable binary until main_parsing_tests.cpp
-# is added — at that point, add a $(NAME): $(OBJS) link rule here, same
-# pattern as the root Makefile.
 
 $(NAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(OBJS) -o $(NAME)

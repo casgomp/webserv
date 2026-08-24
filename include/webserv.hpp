@@ -10,6 +10,12 @@
 //config parser
 #include <vector>
 
+//directive blocks
+typedef struct	s_block {
+	std::vector<std::pair<std::string, std::string> >	directives;
+	std::vector<std::pair<std::string, s_block> >		children;
+} t_block;
+
 //configparser
 typedef struct	s_servconf {
 	int	port;
@@ -24,12 +30,15 @@ typedef struct	s_client {
 } t_client;
 
 //main
-int						main();
+int										main(int argc, char **argv);
 //server
-int						server();
-void					closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
-void					cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
+int										server();
+void									closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
+void									cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
 //config_parser
-std::vector<t_servconf>	configParser(char *filename);
+t_block									processConfigFile(const char *filename);//return type should change so vectorcontains t_blocks?
+int										readConfigFileToString(const char *filename, std::string &str);
+t_block									parseConfigFile(const std::string &str);
+std::pair<std::string, std:: string>	splitter(const std::string &chunk);
 
 #endif
