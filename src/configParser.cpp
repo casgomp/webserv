@@ -15,6 +15,11 @@
 #include <fstream>
 #include <string>
 
+std::string something(std::string str)
+{
+	return (str);
+}
+
 void	printConf(t_block conf)
 {
 	size_t	i;
@@ -44,6 +49,7 @@ void	printConf(t_block conf)
 		}
 		i ++;
 	}
+	something ("hello");///////////////////////////////////////////
 }
 
 std::pair<std::string, std:: string>	splitter(const std::string &chunk)
