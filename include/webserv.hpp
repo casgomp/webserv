@@ -41,6 +41,4 @@ int										readConfigFileToString(const char *filename, std::string &str);
 t_block									parseConfigFile(const std::string &str);
 std::pair<std::string, std:: string>	splitter(const std::string &chunk);
 
-std::string something(std::string str);
-
 #endif
