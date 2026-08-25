@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/24 17:44:26 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/25 16:04:18 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,33 +15,57 @@
 #include <fstream>
 #include <string>
 
-void	printConf(t_block conf)
-{
-	size_t	i;
+// void	printConf(t_block conf)
+// {
+// 	size_t	i;
 
-	std::cout << "*************printing conf:" << std::endl;
-	std::cout << "*******block starts" << std::endl;
+// 	std::cout << "*******printConf function call starts" << std::endl;
+// 	if (conf.directives.size() > 0)
+// 	std::cout << "**directives" << std::endl;
+// 	i = 0;
+// 	while (i < conf.directives.size())
+// 	{
+// 		// std::cout << "first:" << std::endl;
+// 		std::cout << conf.directives[i].first << std::endl;
+// 		// std::cout << "second:" << std::endl;
+// 		std::cout << conf.directives[i].second << std::endl;
+// 		i ++;
+// 	}
+// 	i = 0;
+// 	if (conf.children.size() > 0)
+// 		std::cout << "**children" << std::endl;
+// 	while (i < conf.children.size())
+// 	{
+// 		// std::cout << "first:" << std::endl;
+// 		std::cout << conf.children[i].first << std::endl;
+// 		if (!(conf.children[i].second.directives.empty() && conf.children[i].second.children.empty()))
+// 		{
+// 			// std::cout << "second (recurse):" << std::endl;
+// 			printConf(conf.children[i].second);
+// 		}
+// 		i ++;
+// 	}
+// }
+
+void	printConf(t_block conf, int depth = 0)
+{
+	std::string	indent(depth * 2, ' ');
+	size_t		i;
+
 	i = 0;
 	while (i < conf.directives.size())
 	{
-		std::cout << "**directives" << std::endl;
-		std::cout << "first:" << std::endl;
-		std::cout << conf.directives[i].first << std::endl;
-		std::cout << "second:" << std::endl;
-		std::cout << conf.directives[i].second << std::endl;
+		std::cout << indent << conf.directives[i].first << " = " << conf.directives[i].second << std::endl;
 		i ++;
 	}
+	if (!conf.children.empty())
+		std::cout << indent << "**children" << std::endl;
 	i = 0;
 	while (i < conf.children.size())
 	{
-		std::cout << "**children" << std::endl;
-		std::cout << "first:" << std::endl;
-		std::cout << conf.children[i].first << std::endl;
+		std::cout << indent << "  " << conf.children[i].first << std::endl;
 		if (!(conf.children[i].second.directives.empty() && conf.children[i].second.children.empty()))
-		{
-			std::cout << "second:" << std::endl;
-			printConf(conf.children[i].second);
-		}
+			printConf(conf.children[i].second, depth + 1);
 		i ++;
 	}
 }
@@ -164,7 +188,7 @@ t_block	processConfigFile(const char *filename)  //don't return a t_block conf..
 	}
 	conf = parseConfigFile(str);
 	//check if conf is valid
-	printConf(conf);//printConf function at the top of the file
+	printConf(conf);//printConf function at the top of the file for debugging
 
 	//maybe here continue with next step of parsing, i.e., call function that will do semantic analysis
 
