@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/25 16:04:18 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/27 11:46:01 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,38 +14,6 @@
 
 #include <fstream>
 #include <string>
-
-// void	printConf(t_block conf)
-// {
-// 	size_t	i;
-
-// 	std::cout << "*******printConf function call starts" << std::endl;
-// 	if (conf.directives.size() > 0)
-// 	std::cout << "**directives" << std::endl;
-// 	i = 0;
-// 	while (i < conf.directives.size())
-// 	{
-// 		// std::cout << "first:" << std::endl;
-// 		std::cout << conf.directives[i].first << std::endl;
-// 		// std::cout << "second:" << std::endl;
-// 		std::cout << conf.directives[i].second << std::endl;
-// 		i ++;
-// 	}
-// 	i = 0;
-// 	if (conf.children.size() > 0)
-// 		std::cout << "**children" << std::endl;
-// 	while (i < conf.children.size())
-// 	{
-// 		// std::cout << "first:" << std::endl;
-// 		std::cout << conf.children[i].first << std::endl;
-// 		if (!(conf.children[i].second.directives.empty() && conf.children[i].second.children.empty()))
-// 		{
-// 			// std::cout << "second (recurse):" << std::endl;
-// 			printConf(conf.children[i].second);
-// 		}
-// 		i ++;
-// 	}
-// }
 
 void	printConf(t_block conf, int depth = 0)
 {
@@ -58,12 +26,12 @@ void	printConf(t_block conf, int depth = 0)
 		std::cout << indent << conf.directives[i].first << " = " << conf.directives[i].second << std::endl;
 		i ++;
 	}
-	if (!conf.children.empty())
+	if (!(conf.children.empty()))
 		std::cout << indent << "**children" << std::endl;
 	i = 0;
 	while (i < conf.children.size())
 	{
-		std::cout << indent << "  " << conf.children[i].first << std::endl;
+		std::cout << indent << "  " << conf.children[i].first.first << " = " << conf.children[i].first.second << std::endl;
 		if (!(conf.children[i].second.directives.empty() && conf.children[i].second.children.empty()))
 			printConf(conf.children[i].second, depth + 1);
 		i ++;
@@ -82,11 +50,12 @@ std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 	end = chunk.find_last_not_of(" \t\n", std::string::npos) + 1;
 	start = chunk.find_first_not_of(" \t\n", 0);
 	chunkTrimmed = chunk.substr(start, end - start);
-	found = chunkTrimmed.find(" ", 0);//check in nginx config file if it is possible also to have tabs or other white spaces between keyword and param
+	found = chunkTrimmed.find_first_of(" \t\n", 0);
 	if (found != std::string::npos)
 	{
 		keyword = chunkTrimmed.substr(0, found);
-		params = chunkTrimmed.substr(found + 1, end - found);
+		start = chunkTrimmed.find_first_not_of(" \t\n", found);
+		params = chunkTrimmed.substr(start, end - start);
 	}
 	else
 		keyword = chunkTrimmed.substr(0, end);
@@ -120,7 +89,7 @@ t_block	parseConfigFile(const std::string &str)
 
 		if (terminator == ";")
 		{
-			parsedData.directives.push_back(pairDirective); //could even call splitter directly.
+			parsedData.directives.push_back(pairDirective);
 			start = found + 1;
 		}
 		else if (terminator == "{")
@@ -146,9 +115,9 @@ t_block	parseConfigFile(const std::string &str)
 			}
 			if (depthCounter == 0)
 			{
-				std::string blockName = pairDirective.first;
+				std::pair<std::string, std::string> blockNameParams = std::make_pair(pairDirective.first, pairDirective.second);
 				t_block blockChild = parseConfigFile(str.substr(startBlockDepthCounter, terminatorDepthCounter - startBlockDepthCounter));
-				std::pair<std::string, t_block> pairChild = std::make_pair(blockName, blockChild);
+				std::pair<std::pair<std::string, std::string>, t_block> pairChild = std::make_pair(blockNameParams, blockChild);
 				parsedData.children.push_back(pairChild);
 				start = terminatorDepthCounter + 1;
 			}
