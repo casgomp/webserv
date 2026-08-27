@@ -13,7 +13,6 @@
 //directive blocks
 typedef struct	s_block {
 	std::vector<std::pair<std::string, std::string> >	directives;
-	// std::vector<std::pair<std::string, s_block> >		children;
 	std::vector<std::pair<std::pair<std::string, std::string>, s_block> >		children;
 } t_block;
 
