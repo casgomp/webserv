@@ -6,39 +6,14 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/08/24 18:55:45 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/08/28 19:19:53 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-#include <map>
-#include <string>
+#include "httpRequestParser.hpp"
+
 #include <cctype>
 #include <limits>
-
-struct StartLine
-{
-    std::string method;
-    std::string target;
-    std::string version;
-};
-
-struct HttpRequest
-{
-    StartLine requestLine;
-    std::map<std::string, std::string> headers;
-    std::string body;
-    size_t expectedBodyLength;
-	size_t	consumedBytes;
-};
-
-enum ParseResult
-{
-    PARSE_COMPLETE,
-    PARSE_INCOMPLETE,
-    PARSE_BAD_REQUEST
-};
-
 
 int countSpaces(const std::string &str)
 {
@@ -75,7 +50,7 @@ bool isValidParsedStartLineValues(const StartLine &line)
         return false;
 
     if (line.version != "HTTP/1.1")
-        return false;
+		return false;
 
     return true;
 }
@@ -390,49 +365,3 @@ ParseResult parseRequest(
 
     return parseBody(buffer, request);
 }
-
-int main()
-{
-    std::string buffer =
-        "POST /first HTTP/1.1\r\n"
-        "Host: localhost\r\n"
-        "Content-Length: 5\r\n"
-        "\r\n"
-        "Hello"
-        "GET /second HTTP/1.1\r\n"
-        "Host: localhost\r\n"
-        "\r\n";
-
-    HttpRequest request;
-
-    ParseResult result = parseRequest(buffer, request);
-
-    if (result == PARSE_COMPLETE)
-    {
-        std::cout << "FIRST REQUEST COMPLETE\n";
-        std::cout << "Target: " << request.requestLine.target << "\n";
-        std::cout << "Body: " << request.body << "\n";
-        std::cout << "Consumed: " << request.consumedBytes << "\n";
-
-        buffer.erase(0, request.consumedBytes);
-
-        std::cout << "\n--- BUFFER LEFT ---\n";
-        std::cout << buffer << "\n";
-    }
-	result = parseRequest(buffer, request);
-	if (result == PARSE_COMPLETE)
-    {
-        std::cout << "SECOND REQUEST COMPLETE\n";
-        std::cout << "Target: " << request.requestLine.target << "\n";
-        std::cout << "Body: " << request.body << "\n";
-        std::cout << "Consumed: " << request.consumedBytes << "\n";
-
-        buffer.erase(0, request.consumedBytes);
-
-        std::cout << "\n--- BUFFER LEFT ---\n";
-        std::cout << buffer << "\n";
-    }
-
-    return 0;
-}
-
