@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/17 18:22:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/31 13:34:49 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ int	server()//server should receive the data structure containing the info from 
 	int						bytes_sent;
 
 
+//THIS SHOULD BE ON A LOOP TO CREATE MULTIPLE SERVERS IF NECESSARY, AND ALL THEIR SPECIFIED LISTENING PORTS(i.e. MUTIPLE LISTENING SOCKETS IN SAME SERVER)
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
@@ -139,6 +140,7 @@ int	server()//server should receive the data structure containing the info from 
 		std::cerr << "Error: " << errno <<std::endl;
 		return (1);
 	}
+	//THIS SHOULD ALSO BE A WHILE LOOP TO ADD WITH EPOLL_CTL ALL THE LISTENING SERVER SOCKETS (I.E. ALL LISTENING PORTS)
 	ev.events = EPOLLIN;
 	ev.data.fd = servsock;
 	if (epoll_ctl(epfd, EPOLL_CTL_ADD, servsock, &ev) < 0)

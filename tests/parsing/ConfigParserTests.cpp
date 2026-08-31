@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/27 11:34:07 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/08/31 13:35:33 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,8 @@ void	ConfigParserTests::test_read_valid_file_correctly()
 {
 	std::string str;
 	std::string str_neg;
-	int			ret = readConfigFileToString("../config/minimal.conf", str);
-	int			ret_neg = readConfigFileToString("non_existing_file", str_neg);
+	int			ret = readConfigToString("../config/minimal.conf", str);
+	int			ret_neg = readConfigToString("non_existing_file", str_neg);
 	
 	check(ret == 0, "reading an existing file returns success code 0");
 	check(ret_neg == 1, "reading a non exisiting file returns error code 1");

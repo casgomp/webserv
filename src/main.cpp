@@ -2,12 +2,13 @@
 
 int	main(int argc, char **argv)
 {
-	t_block	conf;
+	t_block		configParseTree;
+	t_httpConf	httpConf;
 
 	if (argc == 1)
-		conf = processConfigFile("config/minimal.conf");
+		configParseTree = parseConfig("config/minimal.conf");
 	else if (argc == 2)
-		conf = processConfigFile(argv[1]);
+		configParseTree = parseConfig(argv[1]);
 	else
 	{
 		std::cerr << "./webserv <file.conf>" << std::endl;
@@ -16,6 +17,11 @@ int	main(int argc, char **argv)
 
 	return (0);//for now to test parsing only***************
 
+	httpConf = getConfigInterface(configParseTree);//process config file returns a conf
+	
+	//get the ports return map of all ports that will listen
+	//serverInit (ports, conf?)
+	//serverEvents (ports, conf?)
 
 	//if conf is invalid
 		//return (1);
