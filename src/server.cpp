@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/31 13:34:49 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/01 19:05:09 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,19 +110,19 @@ int	server()//server should receive the data structure containing the info from 
 		if (setsockopt(servsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
 		{
 			close(servsock);
-			std::cerr << "Error: " << errno <<std::endl;
+			std::cerr << "Error: " << strerror(errno) <<std::endl;
 			continue ;
 		}
 		if (bind(servsock, p->ai_addr, p->ai_addrlen) < 0)
 		{
 			close(servsock);
-			std::cerr << "Error: " << errno <<std::endl;
+			std::cerr << "Error: " << strerror(errno) <<std::endl;
 			continue ;
 		}
 		if (listen(servsock, backlog) < 0)
 		{
 			close(servsock);
-			std::cerr << "Error: " << errno <<std::endl;
+			std::cerr << "Error: " << strerror(errno) <<std::endl;
 			continue ;
 		}
 		break ;
@@ -137,7 +137,7 @@ int	server()//server should receive the data structure containing the info from 
 	if (epfd < 0)
 	{
 		close(servsock);
-		std::cerr << "Error: " << errno <<std::endl;
+		std::cerr << "Error: " << strerror(errno) <<std::endl;
 		return (1);
 	}
 	//THIS SHOULD ALSO BE A WHILE LOOP TO ADD WITH EPOLL_CTL ALL THE LISTENING SERVER SOCKETS (I.E. ALL LISTENING PORTS)

@@ -1,14 +1,24 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
+#include <cctype>
+#include <dirent.h>
 #include <fstream>
 #include <iostream>
 #include <map>
 #include <netdb.h>
+#include <stdlib.h>
 #include <string>
+#include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <vector>
+
+//config macros?
+#define FALLBACK_ROOT "content/"
+#define	FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
+#define	FALLBACK_AUTOINDEX false
 
 //server macros?
 
@@ -20,35 +30,43 @@ typedef struct	s_block {
 	std::vector<std::pair<std::pair<std::string, std::string>, s_block> >	children;
 } t_block;
 
-typedef struct	s_location {
+typedef struct	s_locationConf {
+	std::string							level;
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
 	bool								autoindex; //inherit
 	std::vector<std::string>			allowedMethods;
-	s_location() : clientMaxBodySize(0), autoindex(false)
+	s_locationConf() : clientMaxBodySize(0), autoindex(false)
 	{
 		allowedMethods.push_back("GET");
 		allowedMethods.push_back("POST");
 		allowedMethods.push_back("DELETE");
 	}
-} t_location;
+} t_locationConf;
 
-typedef struct	s_server {
+typedef struct	s_serverConf {
+	std::string											level;
 	std::string											root; //inherit
 	size_t												clientMaxBodySize; //inherit
 	bool												autoindex; //inherit
 	std::vector<std::string>							serverNames;
-	std::vector<t_location>								locations;
 	std::vector<std::pair<std::string, std::string> >	listen;
 	std::map<int, std::string>							errorPages;
-	s_server() : clientMaxBodySize(0), autoindex(false) {}
-} t_server;
+	std::vector<t_locationConf>							locations;
+	s_serverConf() : clientMaxBodySize(0), autoindex(false) {}
+} t_serverConf;
 
 typedef struct	s_httpConf {
+	std::string							level;
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
+	// Sets the maximum allowed size of the client request body. 
+	// If the size in a request exceeds the configured value, the 413 
+	// (Request Entity Too Large) error is returned to the client. 
+	// Please be aware that browsers cannot correctly display this error. 
+	// Setting size to 0 disables checking of client request body size. 
 	bool								autoindex; //inherit
-	std::vector<t_server>				servers;
+	std::vector<t_serverConf>			servers;
 	s_httpConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_httpConf;
 
@@ -70,12 +88,15 @@ int										server();
 void									closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
 void									cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
 //configParse
-t_block									parseConfig(const char *filename);//return type should change so vectorcontains t_blocks?
+t_block									parseConfig(const char *filename);
 int										readConfigToString(const char *filename, std::string &str);
 t_block									recurseConfig(const std::string &str);
 std::pair<std::string, std:: string>	splitter(const std::string &chunk);
+void									printConfig(t_block conf, int depth = 0);
 //configInterface
-t_httpConf								getConfigInterface(t_block ptreeConf);
-
+t_httpConf								getConfigInterface(const t_block &ptreeConf);
+int										checkIfValidDir(const std::string &path);
+int										strToNum(const std::string &str);
+t_serverConf							getServerConfig(const t_block &serverTreeConf, const t_httpConf &httpConf);
 
 #endif

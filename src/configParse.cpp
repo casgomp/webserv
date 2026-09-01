@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   configParser.cpp                                   :+:      :+:    :+:   */
+/*   configParse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/31 13:33:37 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/01 19:05:07 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-void	printConfig(t_block conf, int depth = 0)
+void	printConfig(t_block conf, int depth)
 {
 	std::string	indent(depth * 2, ' ');
 	size_t		i;
@@ -112,6 +112,7 @@ t_block	recurseConfig(const std::string &str)
 			}
 			if (depthCounter == 0)
 			{
+				//why not just do blockNameParams = pairDirective? or just use pairDirective straight away?
 				std::pair<std::string, std::string> blockNameParams = std::make_pair(pairDirective.first, pairDirective.second);
 				t_block blockChild = recurseConfig(str.substr(startBlockDepthCounter, terminatorDepthCounter - startBlockDepthCounter));
 				std::pair<std::pair<std::string, std::string>, t_block> pairChild = std::make_pair(blockNameParams, blockChild);
