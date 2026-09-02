@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/01 19:05:09 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/02 12:04:40 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,6 +92,7 @@ int	server()//server should receive the data structure containing the info from 
 
 
 //THIS SHOULD BE ON A LOOP TO CREATE MULTIPLE SERVERS IF NECESSARY, AND ALL THEIR SPECIFIED LISTENING PORTS(i.e. MUTIPLE LISTENING SOCKETS IN SAME SERVER)
+//for getaddrinfo, check manually: char *port ... if the address is "" or "*" then port == NULL....else port = addr.c_str();
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;

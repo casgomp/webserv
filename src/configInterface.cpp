@@ -6,13 +6,87 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/01 19:05:01 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/02 14:21:03 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-//getMimeTypes() //to be called when doing response and mapping extension (e.g. html) to get mime type (e.g. text/html)		
+//getMimeTypes() //to be called when doing response and mapping extension (e.g. html) to get mime type (e.g. text/html)
+
+void	addErrorPages(t_serverConf &serverConf, const std::string &input)
+{
+	if (input.empty())
+	{
+		std::cerr << "Error: Empty string" << std::endl;
+		return ;
+	}
+	std::istringstream			ss(input);
+	std::string					str;
+	std::vector<std::string>	vec;
+	int							num;
+	std::map<int, std::string>	errorMap;
+	
+	while (ss >> str)
+		vec.push_back(str);
+	if (vec.back().at(0) != '/')
+	{
+		std::cerr << "Error: invalid uri (error_page)" << std::endl;
+		return ;
+	}
+	for (size_t i = 0; i < vec.size() - 1; i ++)
+	{
+		num = strToNum(vec.at(i));
+		if (!(num >= 400 && num < 600))
+		{
+			std::cerr << "Error: invalid code (error_page)" << std::endl;
+			return ;
+		}
+		errorMap[num] = vec.back();
+	}
+	serverConf.errorPages = errorMap;
+}
+
+void	addListenAddressPort(t_serverConf &serverConf, const std::string &input)
+{
+	// listen 127.0.0.1:8000;
+	// listen 127.0.0.1;
+	// listen 8000;
+	// listen *:8000;
+	// listen localhost:8000;
+	std::pair<std::string, std::string>	pair;
+	size_t								found;
+
+	if (input.empty())
+	{
+		std::cerr << "Error: Empty string" << std::endl;
+		return ;
+	}
+	found = input.find(":");
+	if (found != std::string::npos)
+	{
+		pair.first = input.substr(0, found);
+		pair.second = input.substr(found + 1, input.length() - found + 1);
+	}
+	else if (input.find("."))
+		pair.first = input;
+	else
+		pair.second = input;
+	serverConf.listen.push_back(pair);
+}
+
+void	addServerNames(t_serverConf &serverConf, const std::string &input)
+{
+	if (input.empty())
+	{
+		std::cerr << "Error: Empty string" << std::endl;
+		return ;
+	}
+	std::istringstream ss(input);
+	std::string	name;
+	while (ss >> name)
+		serverConf.serverNames.push_back(name);
+}
 
 int	checkAutoindex(const std::string &autoindex)
 {
@@ -28,7 +102,7 @@ int	strToNum(const std::string &str)
 {
 	if (str.empty())
 	{
-		std::cerr << "Error: String is empty" << std::endl;
+		std::cerr << "Error: Empty string" << std::endl;
 		return(-1);
 	}
 	for (size_t i = 0; i < str.size(); i++)
@@ -48,13 +122,13 @@ int	checkIfValidDir(const std::string &path)
 	dir = opendir(path.c_str());
 	if (dir == NULL)
 	{
-		std::cerr << "Error opendir: " << strerror(errno) << std::endl;
+		std::cerr << "Error: " << strerror(errno) << std::endl;
 		return (1);
 	}
 	closedir(dir);
 	if (access(path.c_str(), X_OK) == -1)
 	{
-		std::cerr << "Error x: " << strerror(errno) << std::endl;
+		std::cerr << "Error: " << strerror(errno) << std::endl;
 		return (1);
 	}
 	return (0);
@@ -68,7 +142,7 @@ t_locationConf	getLocationConfig(const t_block &locationTreeConf)
 	//location level:
 		//parse directives
 			//inherited: (root, client_max_body_size, autoindex)
-			//others: (allowed_method)
+			//others: (allowed_method) (and return for redirections?)
 	return (locationConf);
 }
 
@@ -78,18 +152,18 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 	int				maxSize;
 	int 			autoidx;
 
-	//for loop directives...start with inherited and use functions
 	//inherited: (root, client_max_body_size, autoindex)
 	//others: (server_name, listen, error_page)
+	
 	serverConf.root = httpConf.root;
 	serverConf.clientMaxBodySize = httpConf.clientMaxBodySize;
 	serverConf.autoindex = httpConf.autoindex;
-	std::cout << serverConf.root << std::endl;
-	std::cout << serverConf.clientMaxBodySize << std::endl;
-	std::cout << serverConf.autoindex << std::endl;
+	// std::cout << "serverConf.root = " << serverConf.root << std::endl;
+	// std::cout << "serverConf.clientMaxBodySize = " << serverConf.clientMaxBodySize << std::endl;
+	// std::cout << "serverConf.autoindex = " << serverConf.autoindex << std::endl;
 	for (size_t i = 0; i < serverTreeConf.directives.size(); i ++)
 	{
-		std::cout << "serverTreeConf for loop************" << std::endl;
+		std::cout << "serverTreeConf for loop************directive = " << serverTreeConf.directives[i].first << std::endl;
 		if (serverTreeConf.directives.at(i).first == "root")
 		{
 			if (checkIfValidDir(serverTreeConf.directives.at(i).second.c_str()))
@@ -113,17 +187,54 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			serverConf.autoindex = autoidx;
 			std::cout << "autoindex = " << serverConf.autoindex << std::endl;
 		}
+		if (serverTreeConf.directives.at(i).first == "server_name")
+		{
+			addServerNames(serverConf, serverTreeConf.directives.at(i).second);
+			if (serverConf.serverNames.empty())
+				return t_serverConf();
+			for (size_t i = 0; i < serverConf.serverNames.size(); i++)
+					std::cout << "server_name " << i << " = " << serverConf.serverNames.at(i) << std::endl;
+		}
+		if (serverTreeConf.directives.at(i).first == "listen")
+		{
+			addListenAddressPort(serverConf, serverTreeConf.directives.at(i).second);
+			if (serverConf.listen.empty())
+			{
+				std::cout << "serverConf.listen was returned empty from the parser*****" << std::endl;
+				return t_serverConf();
+			}
+			for (size_t i = 0; i < serverConf.listen.size(); i++)
+					std::cout << "portpair(listen) " << i << " = " << serverConf.listen.at(i).first << ":" << serverConf.listen.at(i).second << std::endl;
+		}
+		if (serverTreeConf.directives.at(i).first == "error_page")
+		{
+			std::cout << "error_page = " << serverTreeConf.directives.at(i).first << " = " << serverTreeConf.directives.at(i).second << std::endl;
+			addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
+			if (serverConf.errorPages.empty())
+				return t_serverConf();
+
+
+			std::map<int, std::string>::iterator it;
+
+			for (it = serverConf.errorPages.begin(); it != serverConf.errorPages.end(); it++)
+			{
+				std::cout << it->first    // string (key)
+						<< ':'
+						<< it->second   // string's value 
+						<< std::endl;
+}
+
+			
+		}
 	}
 
 
-
 	//check if there are children ...loop children calling getLocationConfig
-	
 
 
 	//for every location call the location function with its block...
 	//for location must check both children.first.first, and children.first.second
-	//check validity and 
+	//check validity and
 	//push to serverConf.locations.push_back();
 	return (serverConf);
 }

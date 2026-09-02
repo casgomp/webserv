@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <string>
 #include <string.h>
+#include <sstream>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -97,6 +98,12 @@ void									printConfig(t_block conf, int depth = 0);
 t_httpConf								getConfigInterface(const t_block &ptreeConf);
 int										checkIfValidDir(const std::string &path);
 int										strToNum(const std::string &str);
+int										checkAutoindex(const std::string &autoindex);
 t_serverConf							getServerConfig(const t_block &serverTreeConf, const t_httpConf &httpConf);
+void									addServerNames(t_serverConf &serverConf, const std::string &input);
+void									addListenAddressPort(t_serverConf &serverConf, const std::string &input);
+void									addErrorPages(t_serverConf &serverConf, const std::string &input);
+
+t_locationConf							getLocationConfig(const t_block &locationTreeConf);
 
 #endif
