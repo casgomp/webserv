@@ -5,22 +5,35 @@ int	main(int argc, char **argv)
 	t_block		pTreeConf;
 	t_httpConf	httpConf;
 
-	if (argc == 1)
-		pTreeConf = parseConfig("config/minimal.conf");
-	else if (argc == 2)
-		pTreeConf = parseConfig(argv[1]);
-	else
+	try
 	{
-		std::cerr << "./webserv <file.conf>" << std::endl;
+		if (argc == 1)
+			pTreeConf = parseConfig("config/minimal.conf");
+		else if (argc == 2)
+			pTreeConf = parseConfig(argv[1]);
+		else
+		{
+			std::cerr << "./webserv <file.conf>" << std::endl;
+			return (1);
+		}
+		
+		if (pTreeConf.children.empty() || pTreeConf.children[0].first.first != "http")
+		{
+			std::cerr << "Error: Invalid config, expected (http) block directive name" << std::endl;
+			return (1);
+		}
+
+		// printConfig(pTreeConf);
+
+		httpConf = getConfigInterface(pTreeConf);
+		if (httpConf.level.empty())
+			return(1);
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << "Config Error: " << e.what() << std::endl;
 		return (1);
 	}
-	
-	printConfig(pTreeConf);
-	std::cout << "pTreeConf.children[0].first.first = " << pTreeConf.children[0].first.first << std::endl;
-	
-	httpConf = getConfigInterface(pTreeConf);//process config file returns a conf
-	if (httpConf.level.empty())
-		return(1);
 	
 	
 	

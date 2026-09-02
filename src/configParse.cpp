@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/01 19:05:07 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/02 18:04:33 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,12 @@ std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 	std::string	keyword;
 	std::string	params;
 
-	end = chunk.find_last_not_of(" \t\n", std::string::npos) + 1;
+	// std::cout << "chunk = " << chunk << std::endl;
 	start = chunk.find_first_not_of(" \t\n", 0);
+	if (start == std::string::npos)
+			return (std::make_pair("", ""));
+	end = chunk.find_last_not_of(" \t\n", std::string::npos) + 1;
+	// std::cout << "start = " << start << " ...end = " << end << std::endl;
 	chunkTrimmed = chunk.substr(start, end - start);
 	found = chunkTrimmed.find_first_of(" \t\n", 0);
 	if (found != std::string::npos)
@@ -56,7 +60,7 @@ std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 	}
 	else
 		keyword = chunkTrimmed.substr(0, end);
-	return (make_pair(keyword, params));
+	return (std::make_pair(keyword, params));
 }
 
 t_block	recurseConfig(const std::string &str)
@@ -83,6 +87,9 @@ t_block	recurseConfig(const std::string &str)
 		chunk = str.substr(start, found - start);
 
 		pairDirective = splitter(chunk);
+		std::cout << "pairDirective.first = " << pairDirective.first << std::endl;
+		if (pairDirective.first.empty())
+			throw std::runtime_error("empty block directive name in config");
 
 		if (terminator == ";")
 		{
@@ -120,10 +127,7 @@ t_block	recurseConfig(const std::string &str)
 				start = terminatorDepthCounter + 1;
 			}
 			else
-			{
-				std::cerr << "parseConfigFile: unmatched '{' found starting at index " << found << std::endl;
-				return (parsedData);//check if return correct and if empty?
-			}
+				throw std::runtime_error("unmatched '{' in config");
 		}
 	}
 	return (parsedData);
@@ -154,8 +158,6 @@ t_block	parseConfig(const char *filename)
 		return (conf);//check if return correct and if empty?
 	}
 	conf = recurseConfig(str);
-	//check if conf is valid
-	printConfig(conf);//printConf function at the top of the file for debugging
 
 	//call function to create config-server interface
 	//somestructure confInt = confInterface(conf);
