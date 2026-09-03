@@ -1,21 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   configParser.cpp                                   :+:      :+:    :+:   */
+/*   configParse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/08/24 17:44:26 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/03 16:49:10 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-#include <fstream>
-#include <string>
-
-void	printConf(t_block conf, int depth = 0)
+void	printConfig(t_block conf, int depth)
 {
 	std::string	indent(depth * 2, ' ');
 	size_t		i;
@@ -33,7 +30,7 @@ void	printConf(t_block conf, int depth = 0)
 	{
 		std::cout << indent << "  " << conf.children[i].first.first << " = " << conf.children[i].first.second << std::endl;
 		if (!(conf.children[i].second.directives.empty() && conf.children[i].second.children.empty()))
-			printConf(conf.children[i].second, depth + 1);
+			printConfig(conf.children[i].second, depth + 1);
 		i ++;
 	}
 }
@@ -47,8 +44,10 @@ std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 	std::string	keyword;
 	std::string	params;
 
-	end = chunk.find_last_not_of(" \t\n", std::string::npos) + 1;
 	start = chunk.find_first_not_of(" \t\n", 0);
+	if (start == std::string::npos)
+		throw std::runtime_error("empty block directive name in config file");
+	end = chunk.find_last_not_of(" \t\n", std::string::npos) + 1;
 	chunkTrimmed = chunk.substr(start, end - start);
 	found = chunkTrimmed.find_first_of(" \t\n", 0);
 	if (found != std::string::npos)
@@ -59,10 +58,10 @@ std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 	}
 	else
 		keyword = chunkTrimmed.substr(0, end);
-	return (make_pair(keyword, params));
+	return (std::make_pair(keyword, params));
 }
 
-t_block	parseConfigFile(const std::string &str)
+t_block	recurseConfig(const std::string &str)
 {
 	std::string							terminator;
 	size_t								found;
@@ -115,51 +114,46 @@ t_block	parseConfigFile(const std::string &str)
 			}
 			if (depthCounter == 0)
 			{
+				//why not just do blockNameParams = pairDirective? or just use pairDirective straight away?
 				std::pair<std::string, std::string> blockNameParams = std::make_pair(pairDirective.first, pairDirective.second);
-				t_block blockChild = parseConfigFile(str.substr(startBlockDepthCounter, terminatorDepthCounter - startBlockDepthCounter));
+				t_block blockChild = recurseConfig(str.substr(startBlockDepthCounter, terminatorDepthCounter - startBlockDepthCounter));
 				std::pair<std::pair<std::string, std::string>, t_block> pairChild = std::make_pair(blockNameParams, blockChild);
 				parsedData.children.push_back(pairChild);
 				start = terminatorDepthCounter + 1;
 			}
 			else
-			{
-				std::cerr << "parseConfigFile: unmatched '{' found starting at index " << found << std::endl;
-				return (parsedData);//check if return correct and if empty?
-			}
+				throw std::runtime_error("unmatched '{' in config file");
 		}
 	}
 	return (parsedData);
 }
 
-int	readConfigFileToString(const char *filename, std::string &str)
+void	readConfigToString(const char *filename, std::string &str)
 {
 	std::ifstream	ifs;
 	std::string		tmp;
 
 	ifs.open(filename);
 	if (!ifs.is_open())
-		return (1);
+		throw std::runtime_error("processConfigFile: failed to open/read config file: " + std::string(filename));
 	while(getline(ifs, tmp))
 		str += tmp;
 	// std::cout << str << std::endl;//debugging
-	return(0);
 }
 
-t_block	processConfigFile(const char *filename)  //don't return a t_block conf....return after semantic check
+t_block	parseConfig(const char *filename)
 {
 	t_block		conf;
 	std::string	str;
 
-	if (readConfigFileToString(filename, str) != 0)
-	{
-		std::cerr << "processConfigFile: failed to open/read config file: " << filename << std::endl;
-		return (conf);//check if return correct and if empty?
-	}
-	conf = parseConfigFile(str);
-	//check if conf is valid
-	printConf(conf);//printConf function at the top of the file for debugging
+	readConfigToString(filename, str);
+	
+	conf = recurseConfig(str);
+
+	//call function to create config-server interface
+	//somestructure confInt = confInterface(conf);
 
 	//maybe here continue with next step of parsing, i.e., call function that will do semantic analysis
 
-	return (conf);
+	return (conf);//return confInterface
 }

@@ -8,7 +8,9 @@ OBJ_DIR	= objs
 
 SRCS = main.cpp \
 		server.cpp \
-		configParser.cpp
+		configParse.cpp \
+		configInterface.cpp \
+		configInterfaceUtils.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
