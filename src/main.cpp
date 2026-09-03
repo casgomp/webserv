@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.cpp                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pecastro <pecastro@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/03 18:26:36 by pecastro         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../include/webserv.hpp"
 
 int	main(int argc, char **argv)
@@ -16,18 +28,8 @@ int	main(int argc, char **argv)
 			std::cerr << "./webserv <file.conf>" << std::endl;
 			return (1);
 		}
-		
-		if (pTreeConf.children.empty() || pTreeConf.children[0].first.first != "http")
-		{
-			std::cerr << "Error: Invalid config, expected (http) block directive name" << std::endl;
-			return (1);
-		}
-
 		// printConfig(pTreeConf);
-
 		httpConf = getConfigInterface(pTreeConf);
-		if (httpConf.level.empty())
-			return(1);
 	}
 	catch (const std::exception &e)
 	{

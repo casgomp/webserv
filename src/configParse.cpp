@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/02 18:04:33 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/03 16:49:10 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,12 +44,10 @@ std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 	std::string	keyword;
 	std::string	params;
 
-	// std::cout << "chunk = " << chunk << std::endl;
 	start = chunk.find_first_not_of(" \t\n", 0);
 	if (start == std::string::npos)
-			return (std::make_pair("", ""));
+		throw std::runtime_error("empty block directive name in config file");
 	end = chunk.find_last_not_of(" \t\n", std::string::npos) + 1;
-	// std::cout << "start = " << start << " ...end = " << end << std::endl;
 	chunkTrimmed = chunk.substr(start, end - start);
 	found = chunkTrimmed.find_first_of(" \t\n", 0);
 	if (found != std::string::npos)
@@ -87,9 +85,6 @@ t_block	recurseConfig(const std::string &str)
 		chunk = str.substr(start, found - start);
 
 		pairDirective = splitter(chunk);
-		std::cout << "pairDirective.first = " << pairDirective.first << std::endl;
-		if (pairDirective.first.empty())
-			throw std::runtime_error("empty block directive name in config");
 
 		if (terminator == ";")
 		{
@@ -127,24 +122,23 @@ t_block	recurseConfig(const std::string &str)
 				start = terminatorDepthCounter + 1;
 			}
 			else
-				throw std::runtime_error("unmatched '{' in config");
+				throw std::runtime_error("unmatched '{' in config file");
 		}
 	}
 	return (parsedData);
 }
 
-int	readConfigToString(const char *filename, std::string &str)
+void	readConfigToString(const char *filename, std::string &str)
 {
 	std::ifstream	ifs;
 	std::string		tmp;
 
 	ifs.open(filename);
 	if (!ifs.is_open())
-		return (1);
+		throw std::runtime_error("processConfigFile: failed to open/read config file: " + std::string(filename));
 	while(getline(ifs, tmp))
 		str += tmp;
 	// std::cout << str << std::endl;//debugging
-	return(0);
 }
 
 t_block	parseConfig(const char *filename)
@@ -152,11 +146,8 @@ t_block	parseConfig(const char *filename)
 	t_block		conf;
 	std::string	str;
 
-	if (readConfigToString(filename, str) != 0)
-	{
-		std::cerr << "processConfigFile: failed to open/read config file: " << filename << std::endl;
-		return (conf);//check if return correct and if empty?
-	}
+	readConfigToString(filename, str);
+	
 	conf = recurseConfig(str);
 
 	//call function to create config-server interface

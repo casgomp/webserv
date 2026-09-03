@@ -1,25 +1,37 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   webserv.hpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: pecastro <pecastro@student.42berlin.d      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/03 18:26:59 by pecastro         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-#include <cctype>
-#include <dirent.h>
-#include <fstream>
-#include <iostream>
-#include <map>
-#include <netdb.h>
-#include <stdlib.h>
-#include <string>
-#include <string.h>
-#include <sstream>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <vector>
+# include <cctype>
+# include <dirent.h>
+# include <fstream>
+# include <iostream>
+# include <map>
+# include <netdb.h>
+# include <stdlib.h>
+# include <string>
+# include <string.h>
+# include <sstream>
+# include <sys/types.h>
+# include <sys/socket.h>
+# include <unistd.h>
+# include <vector>
 
-//config macros?
-#define FALLBACK_ROOT "content/"
-#define	FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
-#define	FALLBACK_AUTOINDEX false
+//config macros
+# define FALLBACK_ROOT "content/"
+# define	FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
+# define	FALLBACK_AUTOINDEX false
 
 //server macros?
 
@@ -32,11 +44,12 @@ typedef struct	s_block {
 } t_block;
 
 typedef struct	s_locationConf {
-	std::string							level;
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
 	bool								autoindex; //inherit
+	std::string							path;
 	std::vector<std::string>			allowedMethods;
+	std::pair<int, std::string>			redirection;
 	s_locationConf() : clientMaxBodySize(0), autoindex(false)
 	{
 		allowedMethods.push_back("GET");
@@ -46,7 +59,6 @@ typedef struct	s_locationConf {
 } t_locationConf;
 
 typedef struct	s_serverConf {
-	std::string											level;
 	std::string											root; //inherit
 	size_t												clientMaxBodySize; //inherit
 	bool												autoindex; //inherit
@@ -58,7 +70,6 @@ typedef struct	s_serverConf {
 } t_serverConf;
 
 typedef struct	s_httpConf {
-	std::string							level;
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
 	// Sets the maximum allowed size of the client request body. 
@@ -90,20 +101,22 @@ void									closeConnection(int fd, std::map<int, t_client> &clients, int flag_
 void									cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
 //configParse
 t_block									parseConfig(const char *filename);
-int										readConfigToString(const char *filename, std::string &str);
+void									readConfigToString(const char *filename, std::string &str);
 t_block									recurseConfig(const std::string &str);
 std::pair<std::string, std:: string>	splitter(const std::string &chunk);
 void									printConfig(t_block conf, int depth = 0);
 //configInterface
 t_httpConf								getConfigInterface(const t_block &ptreeConf);
-int										checkIfValidDir(const std::string &path);
+t_serverConf							getServerConfig(const t_block &serverTreeConf, const t_httpConf &httpConf);
+t_locationConf							getLocationConfig(const t_block &locationTreeConf, const t_serverConf &serverConf);
+//configInterfaceUtils
+void									checkIfValidDir(const std::string &path);
 int										strToNum(const std::string &str);
 int										checkAutoindex(const std::string &autoindex);
-t_serverConf							getServerConfig(const t_block &serverTreeConf, const t_httpConf &httpConf);
 void									addServerNames(t_serverConf &serverConf, const std::string &input);
 void									addListenAddressPort(t_serverConf &serverConf, const std::string &input);
 void									addErrorPages(t_serverConf &serverConf, const std::string &input);
-
-t_locationConf							getLocationConfig(const t_block &locationTreeConf);
+void									addAllowedMethods(t_locationConf &locationConf, const std::string &input);
+void									addRedirection(t_locationConf &locationConf, const std::string &input);
 
 #endif
