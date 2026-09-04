@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   webserv.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42berlin.d      +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/03 18:26:59 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/04 17:21:52 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ typedef struct	s_block {
 	std::vector<std::pair<std::pair<std::string, std::string>, s_block> >	children;
 } t_block;
 
+//config
 typedef struct	s_locationConf {
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
@@ -82,15 +83,13 @@ typedef struct	s_httpConf {
 	s_httpConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_httpConf;
 
-//listen pairs map
-
 //server events
 typedef struct	s_client {
-	int			fd;
-	//int		port;
-	std::string	request;
-	std::string	response;
-	size_t		bytes_sent;
+	int									fd;
+	std::pair<std::string, std::string>	pairAddressPort;
+	std::string							request;
+	std::string							response;
+	size_t								bytes_sent;
 } t_client;
 
 //main
@@ -118,5 +117,8 @@ void									addListenAddressPort(t_serverConf &serverConf, const std::string &i
 void									addErrorPages(t_serverConf &serverConf, const std::string &input);
 void									addAllowedMethods(t_locationConf &locationConf, const std::string &input);
 void									addRedirection(t_locationConf &locationConf, const std::string &input);
+//
+std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	getListeningServers(t_httpConf &httpConf);
+
 
 #endif

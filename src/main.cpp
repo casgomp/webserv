@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42berlin.d      +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/03 18:26:36 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/04 17:26:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@ int	main(int argc, char **argv)
 {
 	t_block		pTreeConf;
 	t_httpConf	httpConf;
+	std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	listenServers;
+
 
 	try
 	{
@@ -34,6 +36,27 @@ int	main(int argc, char **argv)
 	catch (const std::exception &e)
 	{
 		std::cerr << "Config Error: " << e.what() << std::endl;
+		return (1);
+	}
+	try
+	{
+		listenServers = getListeningServers(httpConf);
+		
+		// serverInit(listenServers);
+
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr  << "Server Init Error: " << e.what() << std::endl;
+		return (1);
+	}
+	try
+	{
+		//get port pair map
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr  << "Server Events Error: " << e.what() << std::endl;
 		return (1);
 	}
 	
