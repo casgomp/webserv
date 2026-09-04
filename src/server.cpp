@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/03 18:26:15 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/04 15:34:44 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ int	server()//server should receive the data structure containing the info from 
 	struct addrinfo			hints;
 	struct addrinfo			*servinfo;
 	struct addrinfo			*p;
-	int						servsock = -1;
+	int						servsock = -1;//change name to listening socket maybe should be a map<int, pair<str,str> >? to easily find based on fd.
 	int						yes;
 	int						backlog = 32;
 	struct sockaddr_storage	client_addr;
@@ -185,6 +185,8 @@ int	server()//server should receive the data structure containing the info from 
 				}
 				clients[clientsock] = new_client;
 				clients[clientsock].fd = clientsock;
+				// store the client[clientsock].pairAddressPort too ...evs[i].data.fd contains the server socket fd associated to this client
+
 				// clients[clientsock].request.clear();
 				// clients[clientsock].response.clear();
 				clients[clientsock].bytes_sent = 0;

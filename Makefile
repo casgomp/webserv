@@ -10,7 +10,8 @@ SRCS = main.cpp \
 		server.cpp \
 		configParse.cpp \
 		configInterface.cpp \
-		configInterfaceUtils.cpp
+		configInterfaceUtils.cpp \
+		serverInit.cpp \
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 

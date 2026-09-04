@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/03 16:49:10 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/04 15:01:40 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,6 @@ t_block	recurseConfig(const std::string &str)
 			}
 			if (depthCounter == 0)
 			{
-				//why not just do blockNameParams = pairDirective? or just use pairDirective straight away?
 				std::pair<std::string, std::string> blockNameParams = std::make_pair(pairDirective.first, pairDirective.second);
 				t_block blockChild = recurseConfig(str.substr(startBlockDepthCounter, terminatorDepthCounter - startBlockDepthCounter));
 				std::pair<std::pair<std::string, std::string>, t_block> pairChild = std::make_pair(blockNameParams, blockChild);
@@ -138,7 +137,6 @@ void	readConfigToString(const char *filename, std::string &str)
 		throw std::runtime_error("processConfigFile: failed to open/read config file: " + std::string(filename));
 	while(getline(ifs, tmp))
 		str += tmp;
-	// std::cout << str << std::endl;//debugging
 }
 
 t_block	parseConfig(const char *filename)
@@ -147,13 +145,6 @@ t_block	parseConfig(const char *filename)
 	std::string	str;
 
 	readConfigToString(filename, str);
-	
 	conf = recurseConfig(str);
-
-	//call function to create config-server interface
-	//somestructure confInt = confInterface(conf);
-
-	//maybe here continue with next step of parsing, i.e., call function that will do semantic analysis
-
-	return (conf);//return confInterface
+	return (conf);
 }
