@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 17:21:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/04 19:28:18 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,10 @@
 # define WEBSERV_HPP
 
 # include <cctype>
+# include <cstring>
 # include <dirent.h>
+# include <errno.h>
+# include <fcntl.h>
 # include <fstream>
 # include <iostream>
 # include <map>
@@ -23,17 +26,25 @@
 # include <string>
 # include <string.h>
 # include <sstream>
+# include <sys/epoll.h>
 # include <sys/types.h>
 # include <sys/socket.h>
 # include <unistd.h>
 # include <vector>
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 
 //config macros
 # define FALLBACK_ROOT "content/"
 # define	FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
 # define	FALLBACK_AUTOINDEX false
 
-//server macros?
+//server macros
+#define PORT "3490"
+#define MAX_EVENTS 64
+#define BUFFER_SIZE 1024
 
 //error message macros? like the ones in closeConnection()?
 
@@ -83,6 +94,10 @@ typedef struct	s_httpConf {
 	s_httpConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_httpConf;
 
+//server init
+typedef std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	t_listenServers;
+typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSockets;
+
 //server events
 typedef struct	s_client {
 	int									fd;
@@ -118,7 +133,8 @@ void									addErrorPages(t_serverConf &serverConf, const std::string &input);
 void									addAllowedMethods(t_locationConf &locationConf, const std::string &input);
 void									addRedirection(t_locationConf &locationConf, const std::string &input);
 //
-std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	getListeningServers(t_httpConf &httpConf);
+t_listenServers							getListenServers(t_httpConf &httpConf);
+t_listeningSockets						serverInit(const t_listenServers &listenServers);
 
 
 #endif

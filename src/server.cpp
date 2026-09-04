@@ -6,74 +6,24 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 15:34:44 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/04 19:28:17 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-#include <cstring>
-#include <errno.h>
-#include <fcntl.h>
-#include <iostream>
-#include <map>
-#include <netdb.h>
-#include <string>
-#include <sys/epoll.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
-#define PORT "3490"
-#define MAX_EVENTS 64
-#define BUFFER_SIZE 1024
-
-void	closeConnection(int fd, std::map<int, t_client> &clients, int flag_err)
-{
-	if (fd >= 0)
-	{
-		clients.erase(fd);
-		close(fd);
-	}
-
-	if (flag_err == EPOLLERR)
-		std::cerr << "Connection: Error condition happened on the associated file descriptor." << std::endl;
-	else if (flag_err == EPOLLHUP)
-		std::cerr << "Connection: Abrupt close happened on the associated file descriptor" << std::endl;
-	else if (flag_err == EPOLLIN)
-		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
-	else
-		std::cerr << "Error: " << strerror(flag_err) << std::endl; 
-	//WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
-}
-
-void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err)
-{
-	std::cerr << "Error: " << flag_err <<std::endl;
-	if (servsock >= 0)
-		close (servsock); //will have to handle multiple servsockets in the future, so here should also loop
-	if (epfd >= 0)
-		close (epfd);
-	std::map<int, t_client>::iterator it = clients.begin();
-	while (it != clients.end())
-	{
-		close(it->first);
-		it ++;
-	}
-}
-
 int	server()//server should receive the data structure containing the info from the config file.
 {
-	//server socket: getaddrinfo(), socket(), bind(), listen();
-	int						status;
-	struct addrinfo			hints;
-	struct addrinfo			*servinfo;
-	struct addrinfo			*p;
-	int						servsock = -1;//change name to listening socket maybe should be a map<int, pair<str,str> >? to easily find based on fd.
-	int						yes;
-	int						backlog = 32;
-	struct sockaddr_storage	client_addr;
-	socklen_t				addr_size;
+	// //server socket: getaddrinfo(), socket(), bind(), listen();
+	// int						status;
+	// struct addrinfo			hints;
+	// struct addrinfo			*servinfo;
+	// struct addrinfo			*p;
+	// int						servsock = -1;//change name to listening socket maybe should be a map<int, pair<str,str> >? to easily find based on fd.
+	// int						yes;
+	// int						backlog = 32;
+	// struct sockaddr_storage	client_addr;
+	// socklen_t				addr_size;
 	//epoll()
 	int						epfd = -1;
 	struct epoll_event		ev;
@@ -93,44 +43,46 @@ int	server()//server should receive the data structure containing the info from 
 
 //THIS SHOULD BE ON A LOOP TO CREATE MULTIPLE SERVERS IF NECESSARY, AND ALL THEIR SPECIFIED LISTENING PORTS(i.e. MUTIPLE LISTENING SOCKETS IN SAME SERVER)
 //for getaddrinfo, check manually: char *port ... if the address is "" or "*" then port == NULL....else port = addr.c_str();
-	memset(&hints, 0, sizeof(hints));
-	hints.ai_family = AF_INET;
-	hints.ai_socktype = SOCK_STREAM;
-	hints.ai_flags = AI_PASSIVE;
-	if ((status = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
-	{
-		std::cerr << gai_strerror(status) << std::endl;
-		return (1);
-	}
-	for (p = servinfo; p != NULL; p = p->ai_next)
-	{
-		servsock = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
-		if (servsock < 0)
-			continue;
-		yes = 1;
-		if (setsockopt(servsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
-		{
-			close(servsock);
-			std::cerr << "Error: " << strerror(errno) <<std::endl;
-			continue ;
-		}
-		if (bind(servsock, p->ai_addr, p->ai_addrlen) < 0)
-		{
-			close(servsock);
-			std::cerr << "Error: " << strerror(errno) <<std::endl;
-			continue ;
-		}
-		if (listen(servsock, backlog) < 0)
-		{
-			close(servsock);
-			std::cerr << "Error: " << strerror(errno) <<std::endl;
-			continue ;
-		}
-		break ;
-	}
-	freeaddrinfo(servinfo);
-	if (p == NULL)
-		return (1);
+
+
+	// memset(&hints, 0, sizeof(hints));
+	// hints.ai_family = AF_INET;
+	// hints.ai_socktype = SOCK_STREAM;
+	// hints.ai_flags = AI_PASSIVE;
+	// if ((status = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
+	// {
+	// 	std::cerr << gai_strerror(status) << std::endl;
+	// 	return (1);
+	// }
+	// for (p = servinfo; p != NULL; p = p->ai_next)
+	// {
+	// 	servsock = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
+	// 	if (servsock < 0)
+	// 		continue;
+	// 	yes = 1;
+	// 	if (setsockopt(servsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
+	// 	{
+	// 		close(servsock);
+	// 		std::cerr << "Error: " << strerror(errno) <<std::endl;
+	// 		continue ;
+	// 	}
+	// 	if (bind(servsock, p->ai_addr, p->ai_addrlen) < 0)
+	// 	{
+	// 		close(servsock);
+	// 		std::cerr << "Error: " << strerror(errno) <<std::endl;
+	// 		continue ;
+	// 	}
+	// 	if (listen(servsock, backlog) < 0)
+	// 	{
+	// 		close(servsock);
+	// 		std::cerr << "Error: " << strerror(errno) <<std::endl;
+	// 		continue ;
+	// 	}
+	// 	break ;
+	// }
+	// freeaddrinfo(servinfo);
+	// if (p == NULL)
+	// 	return (1);
 	/*******************************************************************/
 	/*EPOLL*/
 	/*******************************************************************/
