@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 19:28:16 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/05 16:16:26 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ int	main(int argc, char **argv)
 	}
 	try
 	{
-		//get port pair map
+		//serverEvents(listenServers, listeningSockets);
 	}
 	catch (const std::exception &e)
 	{
@@ -72,7 +72,7 @@ int	main(int argc, char **argv)
 
 	//if conf is invalid
 		//return (1);
-	if (server() == 1) //pass config struct/object to server
-		return (1);
+	// if (server() == 1) //pass config struct/object to server
+		// return (1);
 	return(0);
 }

@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 19:28:18 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/05 14:42:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,17 +32,13 @@
 # include <unistd.h>
 # include <vector>
 
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-
 //config macros
 # define FALLBACK_ROOT "content/"
-# define	FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
-# define	FALLBACK_AUTOINDEX false
+# define FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
+# define FALLBACK_AUTOINDEX false
 
 //server macros
-#define PORT "3490"
+// #define PORT "3490" //not needed anymore
 #define MAX_EVENTS 64
 #define BUFFER_SIZE 1024
 
@@ -134,7 +130,6 @@ void									addAllowedMethods(t_locationConf &locationConf, const std::string &
 void									addRedirection(t_locationConf &locationConf, const std::string &input);
 //
 t_listenServers							getListenServers(t_httpConf &httpConf);
-t_listeningSockets						serverInit(const t_listenServers &listenServers);
-
+t_listeningSockets						serverInit(t_listenServers &listenServers);
 
 #endif

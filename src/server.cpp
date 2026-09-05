@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 19:28:17 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/05 16:22:06 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,11 @@ int	server()//server should receive the data structure containing the info from 
 	epfd = epoll_create(1);
 	if (epfd < 0)
 	{
-		close(servsock);
+		close(servsock);//should create function to close all listening sockets
 		std::cerr << "Error: " << strerror(errno) <<std::endl;
 		return (1);
 	}
-	//THIS SHOULD ALSO BE A WHILE LOOP TO ADD WITH EPOLL_CTL ALL THE LISTENING SERVER SOCKETS (I.E. ALL LISTENING PORTS)
+	//ADDING LISTENING SOCKETS WITH EPOLL_CTL SHOULD BE IN LOOP FOR EACH LISTENING SOCKET
 	ev.events = EPOLLIN;
 	ev.data.fd = servsock;
 	if (epoll_ctl(epfd, EPOLL_CTL_ADD, servsock, &ev) < 0)
@@ -101,6 +101,7 @@ int	server()//server should receive the data structure containing the info from 
 		cleanupServ(servsock, epfd, clients, errno);
 		return(1);
 	}
+	
 	while (1)
 	{
 		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);

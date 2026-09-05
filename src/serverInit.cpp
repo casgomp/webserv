@@ -6,83 +6,86 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 19:28:17 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/05 18:27:03 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-
-t_listeningSockets	serverInit(const t_listenServers &listenServers)
+t_listeningSockets	serverInit(t_listenServers &listenServers)
 {
-	//listening socket: getaddrinfo(), socket(), bind(), listen();
+	const char											*address;
+	const char											*port;
 	int													status;
 	struct addrinfo										hints;
 	struct addrinfo										*servinfo;
 	struct addrinfo										*p;
-	// int													servsock = -1;//change name to listening socket maybe should be a map<int, pair<str,str> >? to easily find based on fd.
-	std::map<int, std::pair<std::string, std::string> >	listeningSockets; // make typedef
+	int													sockfd = -1;
 	int													yes;
 	int													backlog = 32;
-	struct sockaddr_storage								client_addr;
-	socklen_t											addr_size;
-	
-	for (t_listenServers::iterator	it = listenServers.begin(); it != listenServers.end(); it ++)
-	{
-		//for loop for every key in the map of address:port pairs
-		//set separate const char* vars for address and port....if any are empty, set to NULL
-		//pass as arguments to getaddrinfo
-		//enter nested for loop 
-			//when socket() is called, store the fd in some tmp int (currently servsock)
-		//end of for loop, enter the fd number in the listeningSockets key, and with its address and port pair as value
-	}
+	t_listeningSockets									listeningSockets;
 
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
-	if ((status = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0)
+	for (t_listenServers::iterator it = listenServers.begin(); it != listenServers.end(); it ++)//loop for every key in address:port pairs map
 	{
-		std::cerr << gai_strerror(status) << std::endl;
-		return (1);
+		if (it->first.first == "")
+			address = NULL;
+		else
+			address = it->first.first.c_str();
+		if (it->first.second == "")
+			port = NULL;
+		else
+			port = it->first.second.c_str();
+		if ((status = getaddrinfo(address, port, &hints, &servinfo)) != 0)
+			throw std::runtime_error(gai_strerror(status));
+		for (p = servinfo; p != NULL; p = p ->ai_next)
+		{
+			sockfd = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
+			if (sockfd < 0)
+			{
+				// std::cout << "socket" << std::endl;//DEBUGGING
+				continue;
+			}
+			yes = 1;
+			if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
+			{
+				close(sockfd);
+				// std::cout << "setsockopt" << std::endl;//DEBUGGING
+				std::cerr << "Error: " << strerror(errno) <<std::endl;
+				continue ;
+			}
+			if (bind(sockfd, p->ai_addr, p->ai_addrlen) < 0)
+			{
+				close(sockfd);
+				// std::cout << "bind " << address << ":" << port << std::endl;//DEBUGGING
+				std::cerr << "Error: " << strerror(errno) <<std::endl;
+				continue ;
+			}
+			if (listen(sockfd, backlog) < 0)
+			{
+				close(sockfd);
+				// std::cout << "listen" << std::endl;//DEBUGGING
+				std::cerr << "Error: " << strerror(errno) <<std::endl;
+				continue ;
+			}
+			break ;
+		}
+		freeaddrinfo(servinfo);
+		if (p == NULL)
+			throw std::runtime_error("could not create listening socket");
+		listeningSockets[sockfd] = std::make_pair(it->first.first, it->first.second);
+		// std::cout << "listeningSockets[" << sockfd << "] = " << listeningSockets[sockfd].first << ":" << listeningSockets[sockfd].second << std::endl;
 	}
-	for (p = servinfo; p != NULL; p = p->ai_next)
-	{
-		servsock = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
-		if (servsock < 0)
-			continue;
-		yes = 1;
-		if (setsockopt(servsock, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
-		{
-			close(servsock);
-			std::cerr << "Error: " << strerror(errno) <<std::endl;
-			continue ;
-		}
-		if (bind(servsock, p->ai_addr, p->ai_addrlen) < 0)
-		{
-			close(servsock);
-			std::cerr << "Error: " << strerror(errno) <<std::endl;
-			continue ;
-		}
-		if (listen(servsock, backlog) < 0)
-		{
-			close(servsock);
-			std::cerr << "Error: " << strerror(errno) <<std::endl;
-			continue ;
-		}
-		break ;
-	}
-	freeaddrinfo(servinfo);
-	if (p == NULL)
-		return (1);
+	return (listeningSockets);
 }
-
-
 
 t_listenServers	getListenServers(t_httpConf &httpConf)
 {
-	std::pair<std::string, std::string>													pairPortAddress;
-	std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >			listenServers;
+	std::pair<std::string, std::string>	pairPortAddress;
+	t_listenServers						listenServers;
 
 	for (size_t i = 0; i < httpConf.servers.size(); i ++)
 	{
