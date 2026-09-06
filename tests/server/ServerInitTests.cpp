@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 17:14:04 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/06 15:32:00 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,72 @@
 
 ServerInitTests::ServerInitTests() : TestSuite("ServerInitTests") {}
 
-void	ServerInitTests::test_getListeningServers()
+void	ServerInitTests::test_serverInit()
+{
+	t_httpConf					httpConf1;
+	t_httpConf					httpConf2;
+	std::vector<t_serverConf>	vecServerConf1;
+	std::vector<t_serverConf>	vecServerConf2;
+	t_serverConf				server0;
+	t_serverConf				server1;
+	t_serverConf				server2;
+	t_serverConf				server3;
+	t_serverConf				server4;
+	t_serverConf				server5;
+	t_serverConf				server6;
+	t_serverConf				server7;
+	t_listenServers				listenServers1;
+	t_listenServers				listenServers2;
+	t_listeningSockets			listeningSockets1;
+	t_listeningSockets			listeningSockets2;
+	bool						success = true;
+	bool						fail = false;
+
+	server0.listen.push_back(std::make_pair("*", "8080"));
+	server1.listen.push_back(std::make_pair("127.0.0.1", "5173"));
+	server2.listen.push_back(std::make_pair("127.0.0.1", "5173"));
+	server3.listen.push_back(std::make_pair("localhost", "8081"));
+
+	server4.listen.push_back(std::make_pair("*", "5174"));
+	server5.listen.push_back(std::make_pair("127.0.0.1", "5174"));
+	server6.listen.push_back(std::make_pair("127.0.0.1", "8080"));
+	server7.listen.push_back(std::make_pair("localhost", "8080"));
+
+	vecServerConf1.push_back(server0);
+	vecServerConf1.push_back(server1);
+	vecServerConf1.push_back(server2);
+	vecServerConf1.push_back(server3);
+	httpConf1.servers = vecServerConf1;
+
+	vecServerConf2.push_back(server4);
+	vecServerConf2.push_back(server5);
+	vecServerConf2.push_back(server6);
+	vecServerConf2.push_back(server7);
+	httpConf2.servers = vecServerConf2;
+
+	listenServers1 = getListenServers(httpConf1);
+	try {
+		listeningSockets1 = serverInit(listenServers1);
+	} catch (const std::exception &e) {
+		success = false;
+	}
+	for (t_listeningSockets::iterator it = listeningSockets1.begin(); it != listeningSockets1.end(); it ++)
+		close(it->first);
+
+	listenServers2 = getListenServers(httpConf2);
+	try {
+		listeningSockets2 = serverInit(listenServers2);
+	} catch (const std::exception &e) {
+		fail = true;
+	}
+	for (t_listeningSockets::iterator it = listeningSockets2.begin(); it != listeningSockets2.end(); it ++)
+		close(it->first);
+
+	check(success && listeningSockets1.size() == 3, "listening sockets contains 1 fd per unique addres:port pair");
+	check(fail, "listening sockets fail due to non-unique pair (same address but different naming, same port)");
+}
+
+void	ServerInitTests::test_getListenServers()
 {
 	t_httpConf					httpConf;
 	std::vector<t_serverConf>	vecServerConf;
@@ -23,6 +88,7 @@ void	ServerInitTests::test_getListeningServers()
 	t_serverConf				server1;
 	t_serverConf				server2;
 	t_serverConf				server3;
+	t_listenServers				listServ;
 
 	server0.listen.push_back(std::make_pair("localhost", "8080"));
 	server0.serverNames.push_back("myserver.com");
@@ -42,10 +108,9 @@ void	ServerInitTests::test_getListeningServers()
 	vecServerConf.push_back(server3);
 	httpConf.servers = vecServerConf;
 
-	std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> > listServ;
-	listServ = getListeningServers(httpConf);
+	listServ = getListenServers(httpConf);
 
-	check(listServ.size() == 3, "getListeningServers produces 3 distinct address:port keys");
+	check(listServ.size() == 3, "getListenServers produces 3 distinct address:port keys");
 
 	std::pair<std::string, std::string> keyLocalhost = std::make_pair("localhost", "8080");
 	std::pair<std::string, std::string> keyWildcard = std::make_pair("", "8080");
@@ -59,19 +124,17 @@ void	ServerInitTests::test_getListeningServers()
 	check(listServ[keyWildcard].size() == 1, "wildcard:8080 has exactly 1 server");
 	check(listServ[keyLoopback].size() == 2, "127.0.0.1:80 has exactly 2 servers sharing the port");
 
-	check(listServ[keyLocalhost].at(0)->serverNames.at(0) == "myserver.com",
-		"localhost:8080 maps to correct server");
-	check(listServ[keyLoopback].at(0)->serverNames.at(0) == "www.hello.com",
-		"127.0.0.1:80 first entry is correct server");
-	check(listServ[keyLoopback].at(1)->serverNames.at(0) == "something.com",
-		"127.0.0.1:80 second entry is correct server");
+	check(listServ[keyLocalhost].at(0)->serverNames.at(0) == "myserver.com", "localhost:8080 maps to correct server");
+	check(listServ[keyLoopback].at(0)->serverNames.at(0) == "www.hello.com", "127.0.0.1:80 first entry is correct server");
+	check(listServ[keyLoopback].at(1)->serverNames.at(0) == "something.com", "127.0.0.1:80 second entry is correct server");
 }
 
 void	ServerInitTests::run_all()
 {
 	std::cout << "\n\033[30;105mRunning ServerInitTests...\033[0m\n" << std::endl;
 
-	test_getListeningServers();
+	test_getListenServers();
+	test_serverInit();
 
 	printSummary();
 }

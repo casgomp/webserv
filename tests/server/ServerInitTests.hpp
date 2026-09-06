@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:28:56 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 16:43:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/05 18:26:54 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,8 @@ class ServerInitTests : public TestSuite {
 		ServerInitTests();
 
 		//add test methods here
-		void	test_getListeningServers();
+		void	test_getListenServers();
+		void	test_serverInit();
 
 		void	run_all();
 };

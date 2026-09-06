@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/03 18:04:27 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/06 14:13:03 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,6 +138,7 @@ void	ConfigParserTests::test_addListenAddressPort()
 	t_serverConf	serverConf;
 	bool			success = true;
 	bool			fail = false;
+	bool			fail2 = false;
 
 	try {
 		addListenAddressPort(serverConf, "127.0.0.1:8000");
@@ -153,9 +154,15 @@ void	ConfigParserTests::test_addListenAddressPort()
 	} catch (const std::exception &e) {
 		fail = true;
 	}
+	try {
+		addListenAddressPort(serverConf, "localhost:*");
+	} catch (const std::exception &e) {
+		fail2 = true;
+	}
 
 	check(success, "addListenAddressPort accepts all valid listen forms without throwing");
 	check(fail, "addListenAddressPort throws on empty string");
+	check(fail2, "addListenAddressPort throws on port containing non-numeric characters");
 	check(serverConf.listen.size() == 5, "addListenAddressPort stores correct number of entries");
 
 	check(serverConf.listen.at(0).first == "127.0.0.1" && serverConf.listen.at(0).second == "8000",

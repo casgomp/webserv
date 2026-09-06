@@ -6,26 +6,83 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 17:23:40 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/06 15:31:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-
-
-
-
-
-
-
-
-
-
-std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	getListeningServers(t_httpConf &httpConf)
+t_listeningSockets	serverInit(t_listenServers &listenServers)
 {
-	std::pair<std::string, std::string>													pairPortAddress;
-	std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >			listenServers;
+	const char											*address;
+	const char											*port;
+	int													status;
+	struct addrinfo										hints;
+	struct addrinfo										*servinfo;
+	struct addrinfo										*p;
+	int													sockfd = -1;
+	int													yes;
+	int													backlog = 32;
+	t_listeningSockets									listeningSockets;
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+	for (t_listenServers::iterator it = listenServers.begin(); it != listenServers.end(); it ++)//loop for every key in address:port pairs map
+	{
+		if (it->first.first == "")
+			address = NULL;
+		else
+			address = it->first.first.c_str();
+		if (it->first.second == "")
+			port = NULL;
+		else
+			port = it->first.second.c_str();
+		if ((status = getaddrinfo(address, port, &hints, &servinfo)) != 0)
+			throw std::runtime_error(gai_strerror(status));
+		for (p = servinfo; p != NULL; p = p ->ai_next)
+		{
+			sockfd = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
+			if (sockfd < 0)
+			{
+				// std::cout << "socket" << std::endl;//DEBUGGING
+				continue;
+			}
+			yes = 1;
+			if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
+			{
+				close(sockfd);
+				// std::cout << "setsockopt" << std::endl;//DEBUGGING
+				continue ;
+			}
+			if (bind(sockfd, p->ai_addr, p->ai_addrlen) < 0)
+			{
+				close(sockfd);
+				// std::cout << "bind " << address << ":" << port << std::endl;//DEBUGGING
+				continue ;
+			}
+			if (listen(sockfd, backlog) < 0)
+			{
+				close(sockfd);
+				// std::cout << "listen" << std::endl;//DEBUGGING
+				continue ;
+			}
+			break ;
+		}
+		freeaddrinfo(servinfo);
+		if (p == NULL)
+			throw std::runtime_error(strerror(errno));
+		listeningSockets[sockfd] = std::make_pair(it->first.first, it->first.second);
+		// std::cout << "listeningSockets[" << sockfd << "] = " << listeningSockets[sockfd].first << ":" << listeningSockets[sockfd].second << std::endl;
+	}
+	return (listeningSockets);
+}
+
+t_listenServers	getListenServers(t_httpConf &httpConf)
+{
+	std::pair<std::string, std::string>	pairPortAddress;
+	t_listenServers						listenServers;
 
 	for (size_t i = 0; i < httpConf.servers.size(); i ++)
 	{
@@ -36,7 +93,6 @@ std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	getL
 			else
 				pairPortAddress.first = httpConf.servers[i].listen[j].first;
 			pairPortAddress.second = httpConf.servers[i].listen[j].second;
-			// std::cout << "Server: " << httpConf.servers[i].serverNames.at(0) << " @" << pairPortAddress.first << ":" << pairPortAddress.second << std::endl;
 			listenServers[pairPortAddress].push_back(&httpConf.servers[i]);
 		}
 	}

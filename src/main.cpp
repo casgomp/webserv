@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 17:26:25 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/06 14:13:17 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 int	main(int argc, char **argv)
 {
-	t_block		pTreeConf;
-	t_httpConf	httpConf;
-	std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *> >	listenServers;
+	t_block			pTreeConf;
+	t_httpConf		httpConf;
+	t_listenServers	listenServers;
 
 
 	try
@@ -40,9 +40,11 @@ int	main(int argc, char **argv)
 	}
 	try
 	{
-		listenServers = getListeningServers(httpConf);
+		listenServers = getListenServers(httpConf);
 		
-		// serverInit(listenServers);
+		t_listeningSockets listeningSockets = serverInit(listenServers);
+
+		// sleep(100);
 
 	}
 	catch (const std::exception &e)
@@ -52,7 +54,7 @@ int	main(int argc, char **argv)
 	}
 	try
 	{
-		//get port pair map
+		//serverEvents(listenServers, listeningSockets);
 	}
 	catch (const std::exception &e)
 	{
@@ -72,7 +74,7 @@ int	main(int argc, char **argv)
 
 	//if conf is invalid
 		//return (1);
-	if (server() == 1) //pass config struct/object to server
-		return (1);
+	// if (server() == 1) //pass config struct/object to server
+		// return (1);
 	return(0);
 }
