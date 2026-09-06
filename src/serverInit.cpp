@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/05 18:27:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/06 15:31:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,28 +54,25 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 			{
 				close(sockfd);
 				// std::cout << "setsockopt" << std::endl;//DEBUGGING
-				std::cerr << "Error: " << strerror(errno) <<std::endl;
 				continue ;
 			}
 			if (bind(sockfd, p->ai_addr, p->ai_addrlen) < 0)
 			{
 				close(sockfd);
 				// std::cout << "bind " << address << ":" << port << std::endl;//DEBUGGING
-				std::cerr << "Error: " << strerror(errno) <<std::endl;
 				continue ;
 			}
 			if (listen(sockfd, backlog) < 0)
 			{
 				close(sockfd);
 				// std::cout << "listen" << std::endl;//DEBUGGING
-				std::cerr << "Error: " << strerror(errno) <<std::endl;
 				continue ;
 			}
 			break ;
 		}
 		freeaddrinfo(servinfo);
 		if (p == NULL)
-			throw std::runtime_error("could not create listening socket");
+			throw std::runtime_error(strerror(errno));
 		listeningSockets[sockfd] = std::make_pair(it->first.first, it->first.second);
 		// std::cout << "listeningSockets[" << sockfd << "] = " << listeningSockets[sockfd].first << ":" << listeningSockets[sockfd].second << std::endl;
 	}
@@ -96,7 +93,6 @@ t_listenServers	getListenServers(t_httpConf &httpConf)
 			else
 				pairPortAddress.first = httpConf.servers[i].listen[j].first;
 			pairPortAddress.second = httpConf.servers[i].listen[j].second;
-			// std::cout << "Server: " << httpConf.servers[i].serverNames.at(0) << " @" << pairPortAddress.first << ":" << pairPortAddress.second << std::endl;
 			listenServers[pairPortAddress].push_back(&httpConf.servers[i]);
 		}
 	}

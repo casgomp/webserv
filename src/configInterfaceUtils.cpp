@@ -6,11 +6,21 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/03 18:39:16 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/06 14:13:06 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
+
+bool	isNumeric(const std::string &str)
+{
+	for (size_t i = 0; i < str.size(); i++)
+	{
+		if (!std::isdigit(str.at(i)))
+			return(false);
+	}
+	return (true);
+}
 
 void	addRedirection(t_locationConf &locationConf, const std::string &input)
 {
@@ -101,6 +111,8 @@ void	addListenAddressPort(t_serverConf &serverConf, const std::string &input)
 		pair.first = input;
 	else
 		pair.second = input;
+	if (!isNumeric(pair.second))
+		throw std::runtime_error("string (port) contains non numeric character");
 	serverConf.listen.push_back(pair);
 }
 
@@ -127,11 +139,8 @@ int	strToNum(const std::string &str)
 {
 	if (str.empty())
 		throw std::runtime_error("empty string for int conversion");
-	for (size_t i = 0; i < str.size(); i++)
-	{
-		if (!std::isdigit(str.at(i)))
-			throw std::runtime_error("string contains non numeric character");
-	}
+	if (!isNumeric(str))
+		throw std::runtime_error("string (client_max_body_size) contains non numeric character");
 	return (atoi(str.c_str()));
 }
 
