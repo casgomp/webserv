@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/06 15:31:25 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/07 13:51:38 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 	struct addrinfo										hints;
 	struct addrinfo										*servinfo;
 	struct addrinfo										*p;
-	int													sockfd = -1;
+	int													fdServer = -1;
 	int													yes;
 	int													backlog = 32;
 	t_listeningSockets									listeningSockets;
@@ -43,28 +43,28 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 			throw std::runtime_error(gai_strerror(status));
 		for (p = servinfo; p != NULL; p = p ->ai_next)
 		{
-			sockfd = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
-			if (sockfd < 0)
+			fdServer = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
+			if (fdServer < 0)
 			{
 				// std::cout << "socket" << std::endl;//DEBUGGING
 				continue;
 			}
 			yes = 1;
-			if (setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
+			if (setsockopt(fdServer, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
 			{
-				close(sockfd);
+				close(fdServer);
 				// std::cout << "setsockopt" << std::endl;//DEBUGGING
 				continue ;
 			}
-			if (bind(sockfd, p->ai_addr, p->ai_addrlen) < 0)
+			if (bind(fdServer, p->ai_addr, p->ai_addrlen) < 0)
 			{
-				close(sockfd);
+				close(fdServer);
 				// std::cout << "bind " << address << ":" << port << std::endl;//DEBUGGING
 				continue ;
 			}
-			if (listen(sockfd, backlog) < 0)
+			if (listen(fdServer, backlog) < 0)
 			{
-				close(sockfd);
+				close(fdServer);
 				// std::cout << "listen" << std::endl;//DEBUGGING
 				continue ;
 			}
@@ -73,8 +73,8 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 		freeaddrinfo(servinfo);
 		if (p == NULL)
 			throw std::runtime_error(strerror(errno));
-		listeningSockets[sockfd] = std::make_pair(it->first.first, it->first.second);
-		// std::cout << "listeningSockets[" << sockfd << "] = " << listeningSockets[sockfd].first << ":" << listeningSockets[sockfd].second << std::endl;
+		listeningSockets[fdServer] = std::make_pair(it->first.first, it->first.second);
+		// std::cout << "listeningSockets[" << fdServer << "] = " << listeningSockets[fdServer].first << ":" << listeningSockets[fdServer].second << std::endl;
 	}
 	return (listeningSockets);
 }

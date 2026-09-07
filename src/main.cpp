@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/06 14:13:17 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/07 13:52:08 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,10 @@
 
 int	main(int argc, char **argv)
 {
-	t_block			pTreeConf;
-	t_httpConf		httpConf;
-	t_listenServers	listenServers;
-
+	t_block				pTreeConf;
+	t_httpConf			httpConf;
+	t_listenServers		listenServers;
+	t_listeningSockets	listeningSockets;
 
 	try
 	{
@@ -42,10 +42,9 @@ int	main(int argc, char **argv)
 	{
 		listenServers = getListenServers(httpConf);
 		
-		t_listeningSockets listeningSockets = serverInit(listenServers);
+		listeningSockets = serverInit(listenServers);
 
 		// sleep(100);
-
 	}
 	catch (const std::exception &e)
 	{
@@ -54,11 +53,11 @@ int	main(int argc, char **argv)
 	}
 	try
 	{
-		//serverEvents(listenServers, listeningSockets);
+		serverEvent(listenServers, listeningSockets);
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr  << "Server Events Error: " << e.what() << std::endl;
+		std::cerr  << "Server Event Error: " << e.what() << std::endl;
 		return (1);
 	}
 	

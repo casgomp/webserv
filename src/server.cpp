@@ -6,14 +6,14 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/03 11:39:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/05 16:22:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/07 13:51:44 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-int	server()//server should receive the data structure containing the info from the config file.
-{
+// int	server()//server should receive the data structure containing the info from the config file.
+// {
 	// //server socket: getaddrinfo(), socket(), bind(), listen();
 	// int						status;
 	// struct addrinfo			hints;
@@ -25,20 +25,20 @@ int	server()//server should receive the data structure containing the info from 
 	// struct sockaddr_storage	client_addr;
 	// socklen_t				addr_size;
 	//epoll()
-	int						epfd = -1;
-	struct epoll_event		ev;
-	struct epoll_event		evs[MAX_EVENTS];
-	int						nreadyfds;
-	//accept();
-	int						clientsock;
-	t_client 				new_client;
-	std::map<int, t_client>	clients;
-	//recv(),send()
-	int						byte_count;
-	char					buf[BUFFER_SIZE];
-	// int						bytes_read;
-	std::string 			response = "hello from server!";
-	int						bytes_sent;
+	// int						epfd = -1;
+	// struct epoll_event		ev;
+	// struct epoll_event		evs[MAX_EVENTS];
+	// int						nreadyfds;
+	// //accept();
+	// int						clientsock;
+	// t_client 				new_client;
+	// std::map<int, t_client>	clients;
+	// //recv(),send()
+	// int						byte_count;
+	// char					buf[BUFFER_SIZE];
+	// // int						bytes_read;
+	// std::string 			response = "hello from server!";
+	// int						bytes_sent;
 
 
 //THIS SHOULD BE ON A LOOP TO CREATE MULTIPLE SERVERS IF NECESSARY, AND ALL THEIR SPECIFIED LISTENING PORTS(i.e. MUTIPLE LISTENING SOCKETS IN SAME SERVER)
@@ -86,157 +86,157 @@ int	server()//server should receive the data structure containing the info from 
 	/*******************************************************************/
 	/*EPOLL*/
 	/*******************************************************************/
-	epfd = epoll_create(1);
-	if (epfd < 0)
-	{
-		close(servsock);//should create function to close all listening sockets
-		std::cerr << "Error: " << strerror(errno) <<std::endl;
-		return (1);
-	}
-	//ADDING LISTENING SOCKETS WITH EPOLL_CTL SHOULD BE IN LOOP FOR EACH LISTENING SOCKET
-	ev.events = EPOLLIN;
-	ev.data.fd = servsock;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, servsock, &ev) < 0)
-	{
-		cleanupServ(servsock, epfd, clients, errno);
-		return(1);
-	}
+// 	epfd = epoll_create(1);
+// 	if (epfd < 0)
+// 	{
+// 		close(servsock);//should create function to close all listening sockets
+// 		std::cerr << "Error: " << strerror(errno) <<std::endl;
+// 		return (1);
+// 	}
+// 	//ADDING LISTENING SOCKETS WITH EPOLL_CTL SHOULD BE IN LOOP FOR EACH LISTENING SOCKET
+// 	ev.events = EPOLLIN;
+// 	ev.data.fd = servsock;
+// 	if (epoll_ctl(epfd, EPOLL_CTL_ADD, servsock, &ev) < 0)
+// 	{
+// 		cleanupServ(servsock, epfd, clients, errno);
+// 		return(1);
+// 	}
 	
-	while (1)
-	{
-		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);
-		if (nreadyfds < 0)
-		{
-			cleanupServ(servsock, epfd, clients, errno);
-			return (1);
-		}
-		for (int i = 0; i < nreadyfds; i++)
-		{
-			/********SERVER: ACCEPT A CONNECTING CLIENT**********/
-			if (evs[i].data.fd == servsock)
-			{
-				if (!(evs[i].events & EPOLLIN))
-					continue ;
-				addr_size = sizeof(client_addr);
-				clientsock = accept(servsock, (struct sockaddr *)&client_addr, &addr_size);
-				if (clientsock < 0)
-				{
-					closeConnection(clientsock, clients, errno);
-					continue ;
-				}
-				if (fcntl(clientsock, F_SETFL, O_NONBLOCK) < 0)
-				{
-					closeConnection(clientsock, clients, errno);
-					continue ;
-				}
-				ev.events = EPOLLIN;
-				ev.data.fd = clientsock;
-				if (epoll_ctl(epfd, EPOLL_CTL_ADD, clientsock, &ev) < 0)
-				{
-					closeConnection(clientsock, clients, errno);
-					continue ;
-				}
-				clients[clientsock] = new_client;
-				clients[clientsock].fd = clientsock;
-				// store the client[clientsock].pairAddressPort too ...evs[i].data.fd contains the server socket fd associated to this client
+// 	while (1)
+// 	{
+// 		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);
+// 		if (nreadyfds < 0)
+// 		{
+// 			cleanupServ(servsock, epfd, clients, errno);
+// 			return (1);
+// 		}
+// 		for (int i = 0; i < nreadyfds; i++)
+// 		{
+// 			/********SERVER: ACCEPT A CONNECTING CLIENT**********/
+// 			if (evs[i].data.fd == servsock)
+// 			{
+// 				if (!(evs[i].events & EPOLLIN))
+// 					continue ;
+// 				addr_size = sizeof(client_addr);
+// 				clientsock = accept(servsock, (struct sockaddr *)&client_addr, &addr_size);
+// 				if (clientsock < 0)
+// 				{
+// 					closeConnection(clientsock, clients, errno);
+// 					continue ;
+// 				}
+// 				if (fcntl(clientsock, F_SETFL, O_NONBLOCK) < 0)
+// 				{
+// 					closeConnection(clientsock, clients, errno);
+// 					continue ;
+// 				}
+// 				ev.events = EPOLLIN;
+// 				ev.data.fd = clientsock;
+// 				if (epoll_ctl(epfd, EPOLL_CTL_ADD, clientsock, &ev) < 0)
+// 				{
+// 					closeConnection(clientsock, clients, errno);
+// 					continue ;
+// 				}
+// 				clients[clientsock] = new_client;
+// 				clients[clientsock].fd = clientsock;
+// 				// store the client[clientsock].pairAddressPort too ...evs[i].data.fd contains the server socket fd associated to this client
 
-				// clients[clientsock].request.clear();
-				// clients[clientsock].response.clear();
-				clients[clientsock].bytes_sent = 0;
-			}
-			else
-			{
-				/********CLIENT**********/
-				if (evs[i].events & EPOLLERR)
-				{
-					std::cout << "EPOLLERR: " << std::endl;
-					closeConnection(evs[i].data.fd, clients, EPOLLERR);
-					continue ;
-				}
-				else if (evs[i].events & EPOLLHUP)
-				{
-					std::cout << "EPOLLHUP: " << std::endl;
-					closeConnection(evs[i].data.fd, clients, EPOLLHUP);
-					continue ;
-				}
-				else if (evs[i].events & EPOLLIN)
-				{
-					/********CLIENT: RECEIVE**********/
-					std::cout << "Server ready to receive" << std::endl;
-					byte_count = recv(evs[i].data.fd, buf, sizeof(buf), 0);
-					if (byte_count == 0)
-					{
-						closeConnection(evs[i].data.fd, clients, EPOLLIN);
-						continue ;
-					}
-					if (byte_count < 0)
-					{
-						closeConnection(evs[i].data.fd, clients, errno);
-						continue ;
-					}
-					clients[evs[i].data.fd].request.append(buf, byte_count);
-					memset(buf, 0, BUFFER_SIZE);
-					int request_complete = 1;//should be a function call
-					//parse request to check for r/n/r/n/
-					if (request_complete)
-					{
-						std::cout << "we received from client: " << clients[evs[i].data.fd].request << std::endl;
-						ev.events = EPOLLOUT;
-						ev.data.fd = evs[i].data.fd;
-						if (epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd, &ev) < 0)
-						{
-							closeConnection(evs[i].data.fd, clients, errno);
-							continue ;
-						}
-					}
-				}
-				else if (evs[i].events & EPOLLOUT)
-				{
-					/********CLIENT: RESPOND**********/
+// 				// clients[clientsock].request.clear();
+// 				// clients[clientsock].response.clear();
+// 				clients[clientsock].bytes_sent = 0;
+// 			}
+// 			else
+// 			{
+// 				/********CLIENT**********/
+// 				if (evs[i].events & EPOLLERR)
+// 				{
+// 					std::cout << "EPOLLERR: " << std::endl;
+// 					closeConnection(evs[i].data.fd, clients, EPOLLERR);
+// 					continue ;
+// 				}
+// 				else if (evs[i].events & EPOLLHUP)
+// 				{
+// 					std::cout << "EPOLLHUP: " << std::endl;
+// 					closeConnection(evs[i].data.fd, clients, EPOLLHUP);
+// 					continue ;
+// 				}
+// 				else if (evs[i].events & EPOLLIN)
+// 				{
+// 					/********CLIENT: RECEIVE**********/
+// 					std::cout << "Server ready to receive" << std::endl;
+// 					byte_count = recv(evs[i].data.fd, buf, sizeof(buf), 0);
+// 					if (byte_count == 0)
+// 					{
+// 						closeConnection(evs[i].data.fd, clients, EPOLLIN);
+// 						continue ;
+// 					}
+// 					if (byte_count < 0)
+// 					{
+// 						closeConnection(evs[i].data.fd, clients, errno);
+// 						continue ;
+// 					}
+// 					clients[evs[i].data.fd].request.append(buf, byte_count);
+// 					memset(buf, 0, BUFFER_SIZE);
+// 					int request_complete = 1;//should be a function call
+// 					//parse request to check for r/n/r/n/
+// 					if (request_complete)
+// 					{
+// 						std::cout << "we received from client: " << clients[evs[i].data.fd].request << std::endl;
+// 						ev.events = EPOLLOUT;
+// 						ev.data.fd = evs[i].data.fd;
+// 						if (epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd, &ev) < 0)
+// 						{
+// 							closeConnection(evs[i].data.fd, clients, errno);
+// 							continue ;
+// 						}
+// 					}
+// 				}
+// 				else if (evs[i].events & EPOLLOUT)
+// 				{
+// 					/********CLIENT: RESPOND**********/
 					
-					//////////////////////////////////////////////////////////test
-					char buf2[1024];
-					memset(buf2, 0, sizeof(buf2));
-					std::cout << "read is happening... " << std::endl;
-					read(0, buf2, sizeof(buf2));
-					clients[evs[i].data.fd].response.append(buf2, strlen(buf2));
-					std::cout << "read happened... " << std::endl;
-					//////////////////////////////////////////////////////////
+// 					//////////////////////////////////////////////////////////test
+// 					char buf2[1024];
+// 					memset(buf2, 0, sizeof(buf2));
+// 					std::cout << "read is happening... " << std::endl;
+// 					read(0, buf2, sizeof(buf2));
+// 					clients[evs[i].data.fd].response.append(buf2, strlen(buf2));
+// 					std::cout << "read happened... " << std::endl;
+// 					//////////////////////////////////////////////////////////
 
-					byte_count = 0;
-					response = clients[evs[i].data.fd].response;
-					bytes_sent = clients[evs[i].data.fd].bytes_sent;
-					std::cout << "Server ready to send" << std::endl;
-					byte_count = send(evs[i].data.fd, response.c_str() + bytes_sent, response.size() - bytes_sent, 0);
-					std::cout << "send happend, byte count: " << byte_count << std::endl;
-					if (byte_count < 0)
-					{
-						std::cout << "byte count < 0 " << std::endl;
-						closeConnection(evs[i].data.fd, clients, errno);
-						continue ;
-					}
-					clients[evs[i].data.fd].bytes_sent += byte_count;
-					if (clients[evs[i].data.fd].bytes_sent == response.size())
-					{
-						std::cout << "response completed..." << std::endl;
-						clients[evs[i].data.fd].bytes_sent = 0;
-						ev.events = EPOLLIN;
-						ev.data.fd = evs[i].data.fd;
-						if (epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd, &ev) < 0)
-						{
-							std::cout << "it will finish on modify..." << std::endl;
-							closeConnection(evs[i].data.fd, clients, errno);
-							continue ;
-						}
-					}
-				}
-				//when deciding whether to terminate a connection, check also:
-				//timeout?
-				//http request header connection: keep-alive or close?
-			}
-		}
-	}
-}
+// 					byte_count = 0;
+// 					response = clients[evs[i].data.fd].response;
+// 					bytes_sent = clients[evs[i].data.fd].bytes_sent;
+// 					std::cout << "Server ready to send" << std::endl;
+// 					byte_count = send(evs[i].data.fd, response.c_str() + bytes_sent, response.size() - bytes_sent, 0);
+// 					std::cout << "send happend, byte count: " << byte_count << std::endl;
+// 					if (byte_count < 0)
+// 					{
+// 						std::cout << "byte count < 0 " << std::endl;
+// 						closeConnection(evs[i].data.fd, clients, errno);
+// 						continue ;
+// 					}
+// 					clients[evs[i].data.fd].bytes_sent += byte_count;
+// 					if (clients[evs[i].data.fd].bytes_sent == response.size())
+// 					{
+// 						std::cout << "response completed..." << std::endl;
+// 						clients[evs[i].data.fd].bytes_sent = 0;
+// 						ev.events = EPOLLIN;
+// 						ev.data.fd = evs[i].data.fd;
+// 						if (epoll_ctl(epfd, EPOLL_CTL_MOD, evs[i].data.fd, &ev) < 0)
+// 						{
+// 							std::cout << "it will finish on modify..." << std::endl;
+// 							closeConnection(evs[i].data.fd, clients, errno);
+// 							continue ;
+// 						}
+// 					}
+// 				}
+// 				//when deciding whether to terminate a connection, check also:
+// 				//timeout?
+// 				//http request header connection: keep-alive or close?
+// 			}
+// 		}
+// 	}
+// }
 
 // struct epoll_event {
 //     uint32_t events;    // Bitmask of events (EPOLLIN, EPOLLOUT...)
