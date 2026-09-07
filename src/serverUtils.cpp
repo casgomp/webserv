@@ -6,42 +6,45 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 18:17:29 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/07 13:51:36 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
-void	closeConnection(int fd, std::map<int, t_client> &clients, int flag_err)
+void	closeClientConnection(int fd, std::map<int, t_client> &clients, int err)
 {
 	if (fd >= 0)
 	{
 		clients.erase(fd);
 		close(fd);
 	}
-
-	if (flag_err == EPOLLERR)
+	if (err == EPOLLERR)
 		std::cerr << "Connection: Error condition happened on the associated file descriptor." << std::endl;
-	else if (flag_err == EPOLLHUP)
+	else if (err == EPOLLHUP)
 		std::cerr << "Connection: Abrupt close happened on the associated file descriptor" << std::endl;
-	else if (flag_err == EPOLLIN)
+	else if (err == EPOLLIN)
 		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
 	else
-		std::cerr << "Error: " << strerror(flag_err) << std::endl; 
+		std::cerr << "Error: " << strerror(err) << std::endl; 
 	//WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
 }
 
-void	cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err)
+void	closeListeningSockets(t_listeningSockets &listeningSockets)
 {
-	std::cerr << "Error: " << flag_err <<std::endl;
-	if (servsock >= 0)
-		close (servsock); //will have to handle multiple servsockets in the future, so here should also loop
+	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
+	{
+		// std::cout << "cleanupServ cleaned fd = " << it->first << std::endl;
+		if (it->first >= 0)
+			close (it->first);
+	}
+}
+
+void	cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients)
+{
+	closeListeningSockets(listeningSockets);
 	if (epfd >= 0)
 		close (epfd);
-	std::map<int, t_client>::iterator it = clients.begin();
-	while (it != clients.end())
-	{
+	for (std::map<int, t_client>::iterator it = clients.begin(); it != clients.end(); it ++)
 		close(it->first);
-		it ++;
-	}
 }

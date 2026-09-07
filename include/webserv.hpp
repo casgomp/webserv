@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/05 14:42:41 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/07 13:52:14 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 
 //server events
 typedef struct	s_client {
-	int									fd;
+	// int									fd;//not needed?
 	std::pair<std::string, std::string>	pairAddressPort;
 	std::string							request;
 	std::string							response;
@@ -106,9 +106,10 @@ typedef struct	s_client {
 //main
 int										main(int argc, char **argv);
 //server -->divide in init and events
-int										server();
-void									closeConnection(int fd, std::map<int, t_client> &clients, int flag_err);
-void									cleanupServ(int servsock, int epfd, std::map<int, t_client> &clients, int flag_err);
+// int										server();
+void									closeClientConnection(int fd, std::map<int, t_client> &clients, int flag_err);
+void									cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients);
+void									closeListeningSockets(t_listeningSockets &listeningSockets);
 //configParse
 t_block									parseConfig(const char *filename);
 void									readConfigToString(const char *filename, std::string &str);
@@ -128,8 +129,11 @@ void									addListenAddressPort(t_serverConf &serverConf, const std::string &i
 void									addErrorPages(t_serverConf &serverConf, const std::string &input);
 void									addAllowedMethods(t_locationConf &locationConf, const std::string &input);
 void									addRedirection(t_locationConf &locationConf, const std::string &input);
-//
+//serverInit
 t_listenServers							getListenServers(t_httpConf &httpConf);
 t_listeningSockets						serverInit(t_listenServers &listenServers);
+//serverEvent
+void									serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets);
+
 
 #endif
