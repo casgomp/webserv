@@ -1,35 +1,27 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ConfigParserTests.hpp                              :+:      :+:    :+:   */
+/*   ServerInitTests.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:28:56 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/05 18:26:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/05 18:26:54 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef CONFIG_PARSER_TESTS_HPP
-# define CONFIG_PARSER_TESTS_HPP
+#ifndef SERVER_INIT_TESTS_HPP
+# define SERVER_INIT_TESTS_HPP
 
 #include "../TestSuite.hpp"
 
-class ConfigParserTests : public TestSuite {
+class ServerInitTests : public TestSuite {
 	public:
-		ConfigParserTests();
+		ServerInitTests();
 
 		//add test methods here
-
-		void	test_split_chunk();
-		void	test_read_valid_file_correctly();
-		void	test_strToNum();
-		void	test_checkAutoindex();
-		void	test_addServerNames();
-		void	test_addListenAddressPort();
-		void	test_addErrorPages();
-		void	test_addAllowedMethods();
-		void	test_addRedirection();
+		void	test_getListenServers();
+		void	test_serverInit();
 
 		void	run_all();
 };

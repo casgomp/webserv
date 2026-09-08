@@ -1,17 +1,13 @@
 CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
-NAME = run_parsing_tests
+NAME = run_server_tests
 
 OBJ_DIR = objs
 
-SRCS = main_parsing_tests.cpp \
+SRCS = main_server_tests.cpp \
 		../TestSuite.cpp \
-		ConfigParserTests.cpp \
-		HttpRequestParserTests.cpp \
-		../../src/configParse.cpp \
-		../../src/configInterface.cpp \
-		../../src/configInterfaceUtils.cpp \
-		../../src/httpRequestParser.cpp
+		ServerInitTests.cpp \
+		../../src/serverInit.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 

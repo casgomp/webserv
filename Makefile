@@ -7,8 +7,12 @@ SRC_DIR = src
 OBJ_DIR	= objs
 
 SRCS = main.cpp \
-		server.cpp \
-		configParser.cpp \
+		configParse.cpp \
+		configInterface.cpp \
+		configInterfaceUtils.cpp \
+		serverInit.cpp \
+		serverEvent.cpp \
+		serverUtils.cpp \
 		httpRequestParser.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
