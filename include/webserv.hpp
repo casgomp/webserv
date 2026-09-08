@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/07 13:52:14 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/08 17:17:28 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ typedef struct	s_locationConf {
 	size_t								clientMaxBodySize; //inherit
 	bool								autoindex; //inherit
 	std::string							path;
-	std::vector<std::string>			allowedMethods;
+	std::vector<std::string>			allowedMethods;//nicer would be a map<std::string, bool>
 	std::pair<int, std::string>			redirection;
 	s_locationConf() : clientMaxBodySize(0), autoindex(false)
 	{

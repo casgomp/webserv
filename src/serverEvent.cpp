@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/07 13:51:33 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/08 17:18:29 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,7 +119,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				{
 					/********CLIENT: RECEIVE**********/
 					// std::cout << "Server ready to receive" << std::endl;
-					byte_count = recv(fd, buf, sizeof(buf), 0);
+					byte_count = recv(fd, buf, sizeof(buf), 1000);
 					if (byte_count == 0)
 					{
 						closeClientConnection(fd, clients, EPOLLIN);
@@ -132,8 +132,11 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					clients[fd].request.append(buf, byte_count);
 					memset(buf, 0, BUFFER_SIZE);
+					//parse_request(clients[fd].request);
 					int request_complete = 1;//should be a function call
-					//parse request to check for r/n/r/n/
+					//Bad Request
+					//Incomplete Request
+					//Complete Request
 					if (request_complete)
 					{
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
