@@ -13,7 +13,10 @@ SRCS = main.cpp \
 		serverInit.cpp \
 		serverEvent.cpp \
 		serverUtils.cpp \
-		httpRequestParser.cpp
+		httpRequestParser.cpp \
+		httpRequestLine.cpp \
+		httpRequestHeaders.cpp \
+		httpRequestBody.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
