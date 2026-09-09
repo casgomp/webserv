@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/08 17:18:29 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/09 15:21:20 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			throw std::runtime_error(strerror(errno));
 		}
 	}
-
 	while (1)
 	{
 		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);
@@ -65,7 +64,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		{
 			fd = evs[i].data.fd;
 
-			
 			if (listeningSockets.find(fd) != listeningSockets.end())
 			{
 				/***********************************SERVER: ACCEPT A CONNECTING CLIENT**************************************/
@@ -96,7 +94,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				// clients[fdClient].response.clear();
 			}
 
-
 			else
 			{
 				/******************************CLIENT: HANDLING REQUEST/SENDING RESPONSE******************************/
@@ -112,8 +109,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					closeClientConnection(fd, clients, EPOLLHUP);
 					continue ;
 				}
-
-
 
 				else if (evs[i].events & EPOLLIN)
 				{
@@ -132,17 +127,9 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					clients[fd].request.append(buf, byte_count);
 					memset(buf, 0, BUFFER_SIZE);
-					//parse_request(clients[fd].request);
-					int request_complete = 1;//should be a function call
-					//Bad Request
-					//Incomplete Request
-					//Complete Request
-					if (request_complete)
-					{
-						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
-						//here starts the parsing of the http request
-						//make a mockup struct for the request....contains:
+					
+					/*#############***SETUP REQUEST ROUTING***##############*/
 						//protocol version = HTTP 1.1
 						//path = /
 						//method = GET,POST,DELETE
@@ -153,6 +140,38 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//content-type = ?
 						//content lentght = ?
 						//body?
+					HttpRequest httpRequest;
+					int status_request = parseRequest(clients[fd].request, httpRequest);//should be httpRequest = parseRequest(clients[fd].request);
+					//Bad Request
+					//Incomplete Request
+					//Complete Request
+					if (status_request == 0)//status should be inside httpRequest
+					{
+						std::pair<std::string, std::string> requestPair = listeningSockets[fd];
+						std::vector<t_serverConf *> confServers = listenServers[requestPair];
+						std::vector<t_serverConf *> requestPairServers;
+						for (i = 0; i < confServers.size(); i ++)
+						{
+							std::vector<std::pair<std::string, std::string> > serverPairs = (*confServers[i]).listen;
+							if (std::find(serverPairs.begin(), serverPairs.end(), requestPair) != serverPairs.end())
+							{
+								requestPairServers.push_back(confServers[i]);
+							}
+						}
+						clients[fd].serverConf = requestPairServers[0];
+						if (requestPairServers.size() > 1)
+						{
+							for (i = 0; i < requestPairServers.size(); i ++)
+							{
+								std::vector<std::string> serverNames = (*requestPairServers[i]).serverNames;
+								if (std::find(serverNames.begin(), serverNames.end(), httpRequest.headers["host"]) != serverNames.end())
+								{
+									clients[fd].serverConf = requestPairServers[i];
+									break ;
+								}
+							}
+						}
+						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
 						ev.events = EPOLLOUT;
 						ev.data.fd = fd;
@@ -162,11 +181,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 							continue ;
 						}
 					}
+					//else return error message?, i.e. for bad or incomplete request.
 				}
-
-
-
-
 
 				else if (evs[i].events & EPOLLOUT)
 				{

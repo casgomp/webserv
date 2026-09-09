@@ -6,13 +6,14 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/08 17:17:28 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/09 12:40:51 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
+# include <algorithm>
 # include <cctype>
 # include <cstring>
 # include <dirent.h>
@@ -31,6 +32,8 @@
 # include <sys/socket.h>
 # include <unistd.h>
 # include <vector>
+
+# include "httpRequestParser.hpp"
 
 //config macros
 # define FALLBACK_ROOT "content/"
@@ -98,6 +101,7 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 typedef struct	s_client {
 	// int									fd;//not needed?
 	std::pair<std::string, std::string>	pairAddressPort;
+	t_serverConf						*serverConf;
 	std::string							request;
 	std::string							response;
 	size_t								bytes_sent;
