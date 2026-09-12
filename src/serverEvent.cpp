@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/09 15:21:20 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/12 18:51:59 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					clients[fd].request.append(buf, byte_count);
 					memset(buf, 0, BUFFER_SIZE);
-
 					
 					/*#############***SETUP REQUEST ROUTING***##############*/
 						//protocol version = HTTP 1.1
@@ -141,11 +140,12 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//content lentght = ?
 						//body?
 					HttpRequest httpRequest;
-					int status_request = parseRequest(clients[fd].request, httpRequest);//should be httpRequest = parseRequest(clients[fd].request);
-					//Bad Request
-					//Incomplete Request
-					//Complete Request
-					if (status_request == 0)//status should be inside httpRequest
+					int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					if (requestStatus == PARSE_BAD_REQUEST)
+					{
+						//prepare response struct with error info.
+					}
+					if (requestStatus == PARSE_COMPLETE)
 					{
 						std::pair<std::string, std::string> requestPair = listeningSockets[fd];
 						std::vector<t_serverConf *> confServers = listenServers[requestPair];
@@ -171,6 +171,32 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 								}
 							}
 						}
+						//VALIDATE (in the following order):
+						//1. route-path matching for /fruits, at parsing, even if url contains fruitsaaaa, it's correct. So has
+						//to be something like fruitsa, so not matching the full word.
+							//404 (Not found)
+						//2. allowed methods 
+							//400 (Bad request): parsing finds invalid char such as lowercase
+							//405 (Method not allowed): no invalid chars, but method does not exist (can also be handled in parsing)
+							//403 (Forbidden): when no parsing errors and methods exits, but is not allowed.
+						//3. return(redirection) status is specified in the return directive:
+							//306 (Temporary Redirect)
+							//307 (Permanent Redirect)
+						//4. check if path has no trailing '/'
+							//if contains try_files then is accepted and goes into possible paths or errors in try_files arguments
+							//301 (Moved permanently).
+						//5. POST - There's no standard Nginx behavior so we'll implement ours in the following order:
+							//413 (Content too large) i.e. compare body size against client_max_body_size
+							//415 (Unsuported media type) i.e. compare file.type in request path, against types in our container with
+							//supported mime types. Don't compare against content-type in the request header.
+							//Check if upload (or whatever name) has permissions and create a file inside and copy body contents:
+							//201 (Created)
+						//6. DELETE
+							//204 (No content) 
+
+						//EXTRAS
+							//429 Too many requests.
+
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
 						ev.events = EPOLLOUT;
@@ -181,7 +207,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 							continue ;
 						}
 					}
-					//else return error message?, i.e. for bad or incomplete request.
+					//else if PARSE_INCOMPLETE, don't do anything.
 				}
 
 				else if (evs[i].events & EPOLLOUT)
