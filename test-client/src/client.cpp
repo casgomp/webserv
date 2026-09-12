@@ -55,7 +55,7 @@ int	client()
 	// 									"Host: localhost\r\n"
 	// 									"Connection: close\r\n"
 	// 									"\r\n";
-std::string					request = "GET /vegetables HTTP/1.1\r\n"
+std::string					request = "GET /vegetables/ HTTP/1.1\r\n"
 								"Host: localhost:8080\r\n";
 								// "Connection: keep-alive\r\n"
 								// "\r\n";
@@ -69,9 +69,18 @@ std::string					request2 = "Connection: keep-alive\r\n";
 								// "Host: localhost:8080\r\n"
 								// "Connection: close\r\n"
 								// "\r\n";
-std::string					request3 = "GET / HTTP/1.1\r\n"
-								"Host: localhost:5173\r\n"
+								
+std::string					request3 = "GET /vegetables HTTP/1.1\r\n"
+								"Host: localhost:8080\r\n"
 								"Connection: keep-alive\r\n"
+								"\r\n"
+								"POST /upload/ HTTP/1.1\r\n"
+								"Host: localhost:8080\r\n"
+								"Content-Type: text/plain\r\n"
+								"Content-Length: 11\r\n"
+								"Connection: close\r\n"
+								"\r\n"
+								"hello world"
 								"\r\n"
 								"GET /fruits/ HTTP/1.1\r\n"
 								"Host: localhost:8080\r\n"
