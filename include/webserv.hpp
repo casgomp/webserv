@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/09 12:40:51 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/13 17:49:05 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,11 +58,13 @@ typedef struct	s_locationConf {
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
 	bool								autoindex; //inherit
+	std::vector<std::string>			index; //inherit
 	std::string							path;
 	std::vector<std::string>			allowedMethods;//nicer would be a map<std::string, bool>
 	std::pair<int, std::string>			redirection;
 	s_locationConf() : clientMaxBodySize(0), autoindex(false)
 	{
+		index.push_back("index.html");
 		allowedMethods.push_back("GET");
 		allowedMethods.push_back("POST");
 		allowedMethods.push_back("DELETE");
@@ -73,11 +75,15 @@ typedef struct	s_serverConf {
 	std::string											root; //inherit
 	size_t												clientMaxBodySize; //inherit
 	bool												autoindex; //inherit
+	std::vector<std::string>							index; //inherit
 	std::vector<std::string>							serverNames;
 	std::vector<std::pair<std::string, std::string> >	listen;
 	std::map<int, std::string>							errorPages;
 	std::vector<t_locationConf>							locations;
-	s_serverConf() : clientMaxBodySize(0), autoindex(false) {}
+	s_serverConf() : clientMaxBodySize(0), autoindex(false)
+	{
+		index.push_back("index.html");
+	}
 } t_serverConf;
 
 typedef struct	s_httpConf {
@@ -89,8 +95,12 @@ typedef struct	s_httpConf {
 	// Please be aware that browsers cannot correctly display this error. 
 	// Setting size to 0 disables checking of client request body size. 
 	bool								autoindex; //inherit
+	std::vector<std::string>			index;
 	std::vector<t_serverConf>			servers;
-	s_httpConf() : clientMaxBodySize(0), autoindex(false) {}
+	s_httpConf() : clientMaxBodySize(0), autoindex(false)
+	{
+		index.push_back("index.html");
+	}
 } t_httpConf;
 
 //server init
@@ -128,6 +138,7 @@ t_locationConf							getLocationConfig(const t_block &locationTreeConf, const t_
 void									checkIfValidDir(const std::string &path);
 int										strToNum(const std::string &str);
 int										checkAutoindex(const std::string &autoindex);
+std::vector<std::string>				checkIndexFiles(const std::string &input);
 void									addServerNames(t_serverConf &serverConf, const std::string &input);
 void									addListenAddressPort(t_serverConf &serverConf, const std::string &input);
 void									addErrorPages(t_serverConf &serverConf, const std::string &input);

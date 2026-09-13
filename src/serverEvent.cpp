@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/12 18:51:59 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/13 17:48:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -150,7 +150,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						std::pair<std::string, std::string> requestPair = listeningSockets[fd];
 						std::vector<t_serverConf *> confServers = listenServers[requestPair];
 						std::vector<t_serverConf *> requestPairServers;
-						for (i = 0; i < confServers.size(); i ++)
+						for (size_t i = 0; i < confServers.size(); i ++)
 						{
 							std::vector<std::pair<std::string, std::string> > serverPairs = (*confServers[i]).listen;
 							if (std::find(serverPairs.begin(), serverPairs.end(), requestPair) != serverPairs.end())
@@ -161,7 +161,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						clients[fd].serverConf = requestPairServers[0];
 						if (requestPairServers.size() > 1)
 						{
-							for (i = 0; i < requestPairServers.size(); i ++)
+							for (size_t i = 0; i < requestPairServers.size(); i ++)
 							{
 								std::vector<std::string> serverNames = (*requestPairServers[i]).serverNames;
 								if (std::find(serverNames.begin(), serverNames.end(), httpRequest.headers["host"]) != serverNames.end())
@@ -173,8 +173,9 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						}
 						//VALIDATE (in the following order):
 						//1. route-path matching for /fruits, at parsing, even if url contains fruitsaaaa, it's correct. So has
-						//to be something like fruitsa, so not matching the full word.
+						//to be something like fruitas, so not matching the full word.
 							//404 (Not found)
+							//check file permissions as well?
 						//2. allowed methods 
 							//400 (Bad request): parsing finds invalid char such as lowercase
 							//405 (Method not allowed): no invalid chars, but method does not exist (can also be handled in parsing)
@@ -183,15 +184,19 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 							//306 (Temporary Redirect)
 							//307 (Permanent Redirect)
 						//4. check if path has no trailing '/'
-							//if contains try_files then is accepted and goes into possible paths or errors in try_files arguments
-							//301 (Moved permanently).
-						//5. POST - There's no standard Nginx behavior so we'll implement ours in the following order:
+							//301 (Moved permanently)...must send the full path with / at end, where the resource is.
+						//5. What happens if path contains only directory, so no specific file:
+							//default is index.html (i.e. that's the default index even before http level which location will inherit if it isn't overriden first)
+							//index...can specify index.html, or something else like fruits.html or any file type. if none of the files in index is found, then:
+							//autoindex ...if autoindex is on, then send a little html display with menu at current locatin (i.e. what bash ls does), else:
+							//403 (Forbidden)....404 would seem more natural, but it's a matter of security not revealing what exists on that dir (the dir is already correct).
+						//6. POST - There's no standard Nginx behavior so we'll implement ours in the following order:
 							//413 (Content too large) i.e. compare body size against client_max_body_size
 							//415 (Unsuported media type) i.e. compare file.type in request path, against types in our container with
 							//supported mime types. Don't compare against content-type in the request header.
 							//Check if upload (or whatever name) has permissions and create a file inside and copy body contents:
 							//201 (Created)
-						//6. DELETE
+						//7. DELETE
 							//204 (No content) 
 
 						//EXTRAS

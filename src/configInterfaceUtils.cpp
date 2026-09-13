@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/06 14:13:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/13 17:13:20 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,20 @@ void	addServerNames(t_serverConf &serverConf, const std::string &input)
 	std::string	name;
 	while (ss >> name)
 		serverConf.serverNames.push_back(name);
+}
+
+std::vector<std::string>	checkIndexFiles(const std::string &input)
+{
+	if (input.empty())
+		throw std::runtime_error("empty string (index)");
+	
+	std::istringstream						ss(input);
+	std::string								str;
+	std::vector<std::string>				vec;
+
+	while (ss >> str)
+		vec.push_back(str);
+	return (vec);
 }
 
 int	checkAutoindex(const std::string &autoindex)
