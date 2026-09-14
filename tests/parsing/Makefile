@@ -11,7 +11,10 @@ SRCS = main_parsing_tests.cpp \
 		../../src/configParse.cpp \
 		../../src/configInterface.cpp \
 		../../src/configInterfaceUtils.cpp \
-		../../src/httpRequestParser.cpp
+		../../src/httpRequestParser.cpp \
+		../../src/httpRequestLine.cpp \
+		../../src/httpRequestHeaders.cpp \
+		../../src/httpRequestBody.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 
