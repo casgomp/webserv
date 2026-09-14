@@ -6,19 +6,19 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 14:19:46 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 17:12:44 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/14 15:49:51 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ServerInitTests.hpp"
+#include "ServerTests.hpp"
 
 int	main()
 {
-	ServerInitTests sit;
+	ServerTests st;
 
-	sit.run_all();
+	st.run_all();
 
-	if (sit.getFailed() + sit.getFailed() == 0)
+	if (st.getFailed() + st.getFailed() == 0)
 		return (0);
 	return(1);
 }

@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:48:55 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/14 18:19:18 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			cleanupServ(listeningSockets, epfd, clients);
 			throw std::runtime_error(strerror(errno));
 		}
+		std::cout << "listening sockets = " << it->second.first << ":" << it->second.second << std::endl;
 	}
 	while (1)
 	{
@@ -109,11 +110,10 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					closeClientConnection(fd, clients, EPOLLHUP);
 					continue ;
 				}
-
 				else if (evs[i].events & EPOLLIN)
 				{
 					/********CLIENT: RECEIVE**********/
-					// std::cout << "Server ready to receive" << std::endl;
+					 std::cout << "Server ready to receive" << std::endl;
 					byte_count = recv(fd, buf, sizeof(buf), 1000);
 					if (byte_count == 0)
 					{
@@ -140,67 +140,17 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//content lentght = ?
 						//body?
 					HttpRequest httpRequest;
-					int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					//int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					int requestStatus = PARSE_COMPLETE;///////
 					if (requestStatus == PARSE_BAD_REQUEST)
 					{
 						//prepare response struct with error info.
 					}
 					if (requestStatus == PARSE_COMPLETE)
 					{
-						std::pair<std::string, std::string> requestPair = listeningSockets[fd];
-						std::vector<t_serverConf *> confServers = listenServers[requestPair];
-						std::vector<t_serverConf *> requestPairServers;
-						for (size_t i = 0; i < confServers.size(); i ++)
-						{
-							std::vector<std::pair<std::string, std::string> > serverPairs = (*confServers[i]).listen;
-							if (std::find(serverPairs.begin(), serverPairs.end(), requestPair) != serverPairs.end())
-							{
-								requestPairServers.push_back(confServers[i]);
-							}
-						}
-						clients[fd].serverConf = requestPairServers[0];
-						if (requestPairServers.size() > 1)
-						{
-							for (size_t i = 0; i < requestPairServers.size(); i ++)
-							{
-								std::vector<std::string> serverNames = (*requestPairServers[i]).serverNames;
-								if (std::find(serverNames.begin(), serverNames.end(), httpRequest.headers["host"]) != serverNames.end())
-								{
-									clients[fd].serverConf = requestPairServers[i];
-									break ;
-								}
-							}
-						}
-						//VALIDATE (in the following order):
-						//1. route-path matching for /fruits, at parsing, even if url contains fruitsaaaa, it's correct. So has
-						//to be something like fruitas, so not matching the full word.
-							//404 (Not found)
-							//check file permissions as well?
-						//2. allowed methods 
-							//400 (Bad request): parsing finds invalid char such as lowercase
-							//405 (Method not allowed): no invalid chars, but method does not exist (can also be handled in parsing)
-							//403 (Forbidden): when no parsing errors and methods exits, but is not allowed.
-						//3. return(redirection) status is specified in the return directive:
-							//306 (Temporary Redirect)
-							//307 (Permanent Redirect)
-						//4. check if path has no trailing '/'
-							//301 (Moved permanently)...must send the full path with / at end, where the resource is.
-						//5. What happens if path contains only directory, so no specific file:
-							//default is index.html (i.e. that's the default index even before http level which location will inherit if it isn't overriden first)
-							//index...can specify index.html, or something else like fruits.html or any file type. if none of the files in index is found, then:
-							//autoindex ...if autoindex is on, then send a little html display with menu at current locatin (i.e. what bash ls does), else:
-							//403 (Forbidden)....404 would seem more natural, but it's a matter of security not revealing what exists on that dir (the dir is already correct).
-						//6. POST - There's no standard Nginx behavior so we'll implement ours in the following order:
-							//413 (Content too large) i.e. compare body size against client_max_body_size
-							//415 (Unsuported media type) i.e. compare file.type in request path, against types in our container with
-							//supported mime types. Don't compare against content-type in the request header.
-							//Check if upload (or whatever name) has permissions and create a file inside and copy body contents:
-							//201 (Created)
-						//7. DELETE
-							//204 (No content) 
+						requestRouting(fd, clients, listenServers, httpRequest);
 
-						//EXTRAS
-							//429 Too many requests.
+						//t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
 
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
@@ -227,7 +177,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					clients[fd].response.append(buf2, strlen(buf2));
 					std::cout << "read happened... " << std::endl;
 					//////////////////////////////////////////////////////////
-
 
 					byte_count = 0;
 					response = clients[fd].response;

@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:49:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/14 17:43:15 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,11 +89,11 @@ typedef struct	s_serverConf {
 typedef struct	s_httpConf {
 	std::string							root; //inherit
 	size_t								clientMaxBodySize; //inherit
-	// Sets the maximum allowed size of the client request body. 
-	// If the size in a request exceeds the configured value, the 413 
-	// (Request Entity Too Large) error is returned to the client. 
-	// Please be aware that browsers cannot correctly display this error. 
-	// Setting size to 0 disables checking of client request body size. 
+	// Sets the maximum allowed size of the client request body.
+	// If the size in a request exceeds the configured value, the 413.
+	// (Request Entity Too Large) error is returned to the client.
+	// Please be aware that browsers cannot correctly display this error.
+	// Setting size to 0 disables checking of client request body size.
 	bool								autoindex; //inherit
 	std::vector<std::string>			index;
 	std::vector<t_serverConf>			servers;
@@ -108,8 +108,11 @@ typedef std::map<std::pair<std::string, std::string>, std::vector<t_serverConf *
 typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSockets;
 
 //server events
+typedef struct	s_responseInstructions {
+	;
+} t_responseInstructions;
+
 typedef struct	s_client {
-	// int									fd;//not needed?
 	std::pair<std::string, std::string>	pairAddressPort;
 	t_serverConf						*serverConf;
 	std::string							request;
@@ -149,6 +152,10 @@ t_listenServers							getListenServers(t_httpConf &httpConf);
 t_listeningSockets						serverInit(t_listenServers &listenServers);
 //serverEvent
 void									serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets);
-
+//requestRouting
+void									requestRouting(int fd, std::map<int, t_client> &clients, 
+											t_listenServers &listenServers, const HttpRequest &httpRequest);
+//requestValidation
+t_responseInstructions					requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
 
 #endif

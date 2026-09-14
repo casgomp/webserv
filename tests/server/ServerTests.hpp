@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerInitTests.hpp                                :+:      :+:    :+:   */
+/*   ServerTests.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,19 +10,19 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_INIT_TESTS_HPP
-# define SERVER_INIT_TESTS_HPP
+#ifndef SERVER_TESTS_HPP
+# define SERVER_TESTS_HPP
 
 #include "../TestSuite.hpp"
 
-class ServerInitTests : public TestSuite {
+class ServerTests : public TestSuite {
 	public:
-		ServerInitTests();
+		ServerTests();
 
 		//add test methods here
 		void	test_getListenServers();
 		void	test_serverInit();
-
+		void	test_requestParsing();
 		void	run_all();
 };
 
