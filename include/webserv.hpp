@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 15:35:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 17:18:23 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,6 @@
 // #define PORT "3490" //not needed anymore
 #define MAX_EVENTS 64
 #define BUFFER_SIZE 1024
-
-//error message macros? like the ones in closeConnection()?
 
 //directive blocks (parsing)
 typedef struct	s_block {
@@ -112,11 +110,11 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 typedef struct	s_responseInstructions {
 	int			statusCode;
 	std::string	reasonPhrase;
-	std::string	contentType;
-	//autoindex??
-	std::string	bodyFilePath;
 	bool		isRedirect;
 	std::string	redirectLocation;
+	std::string	contentType;
+	std::string	resolvedPath;
+	bool		isAutoindex;
 	bool		closeConnection;
 } t_responseInstructions;
 
@@ -125,7 +123,8 @@ typedef struct	s_client {
 	t_serverConf						*serverConf;
 	std::string							request;
 	std::string							response;
-	size_t								bytes_sent;
+	size_t								bytesSent;
+	bool								keepAlive;
 } t_client;
 
 //main

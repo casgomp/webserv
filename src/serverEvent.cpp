@@ -6,11 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-<<<<<<< Updated upstream
-/*   Updated: 2026/09/15 15:57:23 by pecastro         ###   ########.fr       */
-=======
-/*   Updated: 2026/09/15 15:48:35 by pecastro         ###   ########.fr       */
->>>>>>> Stashed changes
+/*   Updated: 2026/09/15 17:48:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +27,11 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	t_client 				new_client;
 	std::map<int, t_client>	clients;
 	//recv(),send()
-	int						byte_count;
+	int						byteCount;
 	char					buf[BUFFER_SIZE];
 	// int						bytes_read;
 	std::string 			response = "hello from server!";
-	int						bytes_sent;
+	int						bytesSent;
 
 	(void)listenServers;
 
@@ -94,7 +90,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					continue ;
 				}
 				clients[fdClient].pairAddressPort = listeningSockets[fd];
-				clients[fdClient].bytes_sent = 0;
+				clients[fdClient].bytesSent = 0;
 				// clients[fdClient].request.clear();//are these necessary? this is always a new client and therefore a new buffer isn't it?
 				// clients[fdClient].response.clear();
 			}
@@ -118,18 +114,18 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				{
 					/********CLIENT: RECEIVE**********/
 					 std::cout << "Server ready to receive" << std::endl;
-					byte_count = recv(fd, buf, sizeof(buf), 1000);
-					if (byte_count == 0)
+					byteCount = recv(fd, buf, sizeof(buf), 1000);
+					if (byteCount == 0)
 					{
 						closeClientConnection(fd, clients, EPOLLIN);
 						continue ;
 					}
-					if (byte_count < 0)
+					if (byteCount < 0)
 					{
 						closeClientConnection(fd, clients, errno);
 						continue ;
 					}
-					clients[fd].request.append(buf, byte_count);
+					clients[fd].request.append(buf, byteCount);
 					memset(buf, 0, BUFFER_SIZE);
 
 					/*#############***SETUP REQUEST ROUTING***##############*/
@@ -152,7 +148,17 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					if (requestStatus == COMPLETE)
 					{
-						requestRouting(fd, clients, listenServers, httpRequest);
+						try 
+						{
+							requestRouting(fd, clients, listenServers, httpRequest);
+						}
+						catch (const std::exception e)
+						{
+							std::cerr << e.what() << std::endl;
+							//clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
+							clients[fd].bytesSent = 0;
+							clients[fd].keepAlive = false;
+						}
 
 						//t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
 
@@ -185,24 +191,23 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					std::cout << "read happened... " << std::endl;
 					//////////////////////////////////////////////////////////
 
-					byte_count = 0;
+					byteCount = 0;
 					response = clients[fd].response;
-					bytes_sent = clients[fd].bytes_sent;
+					bytesSent = clients[fd].bytesSent;
 					std::cout << "Server ready to send" << std::endl;
-					byte_count = send(fd, response.c_str() + bytes_sent, response.size() - bytes_sent, 0);
-					std::cout << "send happend, byte count: " << byte_count << std::endl;
-					if (byte_count < 0)
+					byteCount = send(fd, response.c_str() + bytesSent, response.size() - bytesSent, 0);
+					std::cout << "send happend, byte count: " << byteCount << std::endl;
+					if (byteCount < 0)
 					{
 						std::cout << "byte count < 0 " << std::endl;
 						closeClientConnection(fd, clients, errno);
 						continue ;
 					}
-
-					clients[fd].bytes_sent += byte_count;
-					if (clients[fd].bytes_sent == response.size())
+					clients[fd].bytesSent += byteCount;
+					if (clients[fd].bytesSent == response.size())
 					{
 						std::cout << "response completed..." << std::endl;
-						clients[fd].bytes_sent = 0;
+						clients[fd].bytesSent = 0;
 						ev.events = EPOLLIN;
 						ev.data.fd = fd;
 						if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)

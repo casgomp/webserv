@@ -6,30 +6,36 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 15:48:13 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 17:08:08 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
+int	matchPath(t_responseInstructions &responseInstructions)
+{
+
+	
+}
+
 t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf)
 {
-	
+	t_responseInstructions	responseInstructions;
+
 	//0. check for status errors...e.g. such as 500 from requestRouting so already send error message.
+
 	
+	matchPath(responseInstructions);
 	;
 }
 
-//use responseInstructions struct to create the actual response string for clients[fd].response.
-
 //VALIDATE (in the following order):
-//0. check for status errors...e.g. such as 500 from requestRouting so already send error message.
 //1. route-path matching for /fruits, at parsing, even if url contains fruitsaaaa, it's correct. So has
 //to be something like fruitas, so not matching the full word.
 	//404 (Not found)
 	//check file permissions as well?
 //2. allowed methods 
-	//400 (Bad request): parsing finds invalid char such as lowercase
+	//400 (Bad request): parsing finds invalid char such as lowercase//Erjon parser
 	//405 (Method not allowed): no invalid chars, but method does not exist (can also be handled in parsing)
 	//403 (Forbidden): when no parsing errors and methods exits, but is not allowed.
 //3. return(redirection) status is specified in the return directive:
