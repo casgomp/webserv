@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/14 18:19:18 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 11:22:25 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					clients[fd].request.append(buf, byte_count);
 					memset(buf, 0, BUFFER_SIZE);
-					
+
 					/*#############***SETUP REQUEST ROUTING***##############*/
 						//protocol version = HTTP 1.1
 						//path = /
@@ -141,12 +141,12 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//body?
 					HttpRequest httpRequest;
 					//int requestStatus = parseRequest(clients[fd].request, httpRequest);
-					int requestStatus = PARSE_COMPLETE;///////
-					if (requestStatus == PARSE_BAD_REQUEST)
+					int requestStatus = COMPLETE;///////
+					if (requestStatus == ERROR)
 					{
 						//prepare response struct with error info.
 					}
-					if (requestStatus == PARSE_COMPLETE)
+					if (requestStatus == COMPLETE)
 					{
 						requestRouting(fd, clients, listenServers, httpRequest);
 
@@ -168,7 +168,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				else if (evs[i].events & EPOLLOUT)
 				{
 					/********CLIENT: RESPOND**********/
-					
+
 					//////////////////////////////////////////////////////////test
 					char buf2[1024];
 					memset(buf2, 0, sizeof(buf2));

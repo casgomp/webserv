@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:47:22 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/09 12:33:51 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/14 22:47:26 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,45 @@ static bool isValidContentLength(const std::string &value)
     return true;
 }
 
+static bool parseHeaderLine(const std::string &line, std::string &key, std::string &value)
+{
+	size_t colon = line.find(':');
+	if (colon == std::string::npos)
+		return false;
+	key = line.substr(0, colon);
+	value = line.substr(colon + 1);
+	if (!isValidToken(key))
+		return false;
+	toLowercase(key);
+	trimValue(value);
+	if (!isValidValue(value))
+		return false;
+	return true;
+}
+
+static bool handleDuplicateHeader(HttpRequest &request, const std::string &key, const std::string &value)
+{
+	std::map<std::string, std::string>::iterator it;
+	it = request.headers.find(key);
+	if (it == request.headers.end())
+	{
+		request.headers[key] = value;
+		return true;
+	}
+	if (key == "host")
+		return false;
+	if (key == "transfer-encoding")
+		return false;
+	if (key == "content-length")
+	{
+		if (it->second != value)
+			return false;
+		return true;
+	}
+	it->second += ", " + value;
+	return true;
+}
+
 bool parseHeaders(const std::string &buffer, HttpRequest &request)
 {
     size_t start = buffer.find("\r\n");
@@ -86,36 +125,18 @@ bool parseHeaders(const std::string &buffer, HttpRequest &request)
                 lineEnd - pos);
             pos = lineEnd + 2;
         }
-        size_t colon = line.find(':');
-        if (colon == std::string::npos)
-            return false;
-        std::string key =
-            line.substr(0, colon);
-        std::string value =
-            line.substr(colon + 1);
-        if (!isValidToken(key))
-            return false;
-        toLowercase(key);
-		if (key != "content-length" && request.headers.find(key) != request.headers.end())
+		std::string	key;
+		std::string	value;
+        if (!parseHeaderLine(line, key, value))
 			return false;
-        trimValue(value);
-        if (!isValidValue(value))
+        if ((key == "content-length" && !isValidContentLength(value)))
             return false;
-        if ((key == "content-length"
-            && !isValidContentLength(value)))
-            return false;
-		std::map<std::string, std::string>::iterator it;
-		it = request.headers.find(key);
-		if (it != request.headers.end())
-		{
-			if (it->second != value)
-				return false;
-		}
 		if (key == "content-length" && request.headers.find("transfer-encoding") != request.headers.end())
 			return false;
 		if (key == "transfer-encoding" && request.headers.find("content-length") != request.headers.end())
 			return false;
-        request.headers[key] = value;
+		if (!handleDuplicateHeader(request, key, value))
+			return false;
     }
     return true;
 }
