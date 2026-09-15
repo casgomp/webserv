@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:28:56 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/05 18:26:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/13 17:19:03 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ class ConfigParserTests : public TestSuite {
 		void	test_read_valid_file_correctly();
 		void	test_strToNum();
 		void	test_checkAutoindex();
+		void	test_checkIndexFiles();
 		void	test_addServerNames();
 		void	test_addListenAddressPort();
 		void	test_addErrorPages();

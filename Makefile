@@ -14,6 +14,7 @@ SRCS = main.cpp \
 		serverEvent.cpp \
 		serverUtils.cpp \
 		httpRequestParser.cpp \
+		requestRouting.cpp \
 		httpRequestLine.cpp \
 		httpRequestHeaders.cpp \
 		httpRequestBody.cpp

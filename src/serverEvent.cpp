@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/07 13:51:33 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 11:22:25 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			cleanupServ(listeningSockets, epfd, clients);
 			throw std::runtime_error(strerror(errno));
 		}
+		std::cout << "listening sockets = " << it->second.first << ":" << it->second.second << std::endl;
 	}
-
 	while (1)
 	{
 		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);
@@ -65,7 +65,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		{
 			fd = evs[i].data.fd;
 
-			
 			if (listeningSockets.find(fd) != listeningSockets.end())
 			{
 				/***********************************SERVER: ACCEPT A CONNECTING CLIENT**************************************/
@@ -96,7 +95,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				// clients[fdClient].response.clear();
 			}
 
-
 			else
 			{
 				/******************************CLIENT: HANDLING REQUEST/SENDING RESPONSE******************************/
@@ -112,14 +110,11 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					closeClientConnection(fd, clients, EPOLLHUP);
 					continue ;
 				}
-
-
-
 				else if (evs[i].events & EPOLLIN)
 				{
 					/********CLIENT: RECEIVE**********/
-					// std::cout << "Server ready to receive" << std::endl;
-					byte_count = recv(fd, buf, sizeof(buf), 0);
+					 std::cout << "Server ready to receive" << std::endl;
+					byte_count = recv(fd, buf, sizeof(buf), 1000);
 					if (byte_count == 0)
 					{
 						closeClientConnection(fd, clients, EPOLLIN);
@@ -132,14 +127,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					clients[fd].request.append(buf, byte_count);
 					memset(buf, 0, BUFFER_SIZE);
-					int request_complete = 1;//should be a function call
-					//parse request to check for r/n/r/n/
-					if (request_complete)
-					{
-						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
-						//here starts the parsing of the http request
-						//make a mockup struct for the request....contains:
+					/*#############***SETUP REQUEST ROUTING***##############*/
 						//protocol version = HTTP 1.1
 						//path = /
 						//method = GET,POST,DELETE
@@ -150,6 +139,20 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//content-type = ?
 						//content lentght = ?
 						//body?
+					HttpRequest httpRequest;
+					//int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					int requestStatus = COMPLETE;///////
+					if (requestStatus == ERROR)
+					{
+						//prepare response struct with error info.
+					}
+					if (requestStatus == COMPLETE)
+					{
+						requestRouting(fd, clients, listenServers, httpRequest);
+
+						//t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
+
+						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
 						ev.events = EPOLLOUT;
 						ev.data.fd = fd;
@@ -159,16 +162,13 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 							continue ;
 						}
 					}
+					//else if PARSE_INCOMPLETE, don't do anything.
 				}
-
-
-
-
 
 				else if (evs[i].events & EPOLLOUT)
 				{
 					/********CLIENT: RESPOND**********/
-					
+
 					//////////////////////////////////////////////////////////test
 					char buf2[1024];
 					memset(buf2, 0, sizeof(buf2));
@@ -177,7 +177,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					clients[fd].response.append(buf2, strlen(buf2));
 					std::cout << "read happened... " << std::endl;
 					//////////////////////////////////////////////////////////
-
 
 					byte_count = 0;
 					response = clients[fd].response;
