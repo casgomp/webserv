@@ -6,30 +6,29 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/09 12:41:07 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/15 07:13:43 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "httpRequestParserInternal.hpp"
 #include <cctype>
 
-static int countSpaces(const std::string &str)
-{
-    int count = 0;
-
-    for (std::string::const_iterator it = str.begin(); it != str.end(); ++it)
-    {
-        if (*it == '\t')
-            return 0;
-        if (*it == ' ')
-            count++;
-    }
-    return count;
-}
+static const size_t MAX_REQUEST_LINE = 8000;
 
 static bool isValidStartLineFormat(const std::string &line)
 {
-    return countSpaces(line) == 2;
+    int count = 0;
+
+    for (std::string::const_iterator it = line.begin(); it != line.end(); ++it)
+    {
+        if (*it == '\t')
+            return false;
+        if (*it == ' ')
+            count++;
+    }
+    if (count != 2)
+		return false;
+	return true;
 }
 
 bool isValidToken(const std::string &token)
@@ -131,22 +130,56 @@ static bool isValidOriginForm(const std::string &target)
 	return true;
 }
 
-static bool isValidParsedStartLineValues(const StartLine &line)
+static bool isValidHttpVersion(const std::string &version)
+{
+	if (version.length() != 8)
+		return false;
+	if (version.substr(0, 5) != "HTTP/")
+		return false;
+	char check = version[5];
+	if (check < '0'  || check > '9' )
+		return false;
+	check = version[6];
+	if (check != '.')
+		return false;
+	check = version[7];
+	if (check < '0'  || check > '9' )
+		return false;
+	return true;
+}
+
+static bool isValidParsedStartLineValues(int &statusCode, const StartLine &line)
 {
     if (line.method.empty() || line.target.empty() || line.version.empty())
 	{
+		statusCode = 400;
         return false;
 	}
 	if (!isValidToken(line.method))
-		return false;
+	{
+		statusCode = 400;
+        return false;
+	}
     if (line.method != "GET" && line.method != "POST" && line.method != "DELETE")
 	{
+		statusCode = 501;
         return false;
 	}
 	if (!isValidOriginForm(line.target))
+	{
+		statusCode = 400;
 		return false;
+	}
+	if (!isValidHttpVersion(line.version))
+	{
+		statusCode = 400;
+		return false;
+	}
     if (line.version != "HTTP/1.1")
+	{
+		statusCode = 505;
 		return false;
+	}
     return true;
 }
 
@@ -154,19 +187,41 @@ bool parseStartLine(const std::string &buffer, HttpRequest &request)
 {
     size_t end = buffer.find("\r\n");
     if (end == std::string::npos)
-        return false;
-    std::string line = buffer.substr(0, end);
-	if (line.size() > 8000 || line.empty())
+	{
+		if (buffer.find('\n') != std::string::npos)
+		{
+			request.statusCode = 400;
+			return false;
+		}
+		if (buffer.size() > MAX_REQUEST_LINE)
+			request.statusCode = 414;
+		else
+			request.statusCode = 0;
 		return false;
+	}
+    std::string line = buffer.substr(0, end);
+	if (line.empty())
+	{
+		request.statusCode = 400;
+		return false;
+	}
+	if (line.size() > MAX_REQUEST_LINE)
+	{
+		request.statusCode = 414;
+		return false;
+	}
     if (!isValidStartLineFormat(line))
+	{
+		request.statusCode = 400;
         return false;
+	}
     size_t firstSpace = line.find(' ');
     size_t secondSpace = line.find(' ', firstSpace + 1);
-    if (firstSpace == std::string::npos || secondSpace == std::string::npos)
-        return false;
     request.requestLine.method = line.substr(0, firstSpace);
     request.requestLine.target =
 					line.substr(firstSpace + 1, secondSpace - firstSpace - 1);
     request.requestLine.version = line.substr(secondSpace + 1);
-    return isValidParsedStartLineValues(request.requestLine);
+	if (!isValidParsedStartLineValues(request.statusCode, request.requestLine))
+        return false;
+	return true;
 }

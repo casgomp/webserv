@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/09 11:38:16 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/14 13:10:03 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,25 +19,26 @@
 
 struct StartLine
 {
-    std::string method;
-    std::string target;
-    std::string version;
+    std::string	method;
+    std::string	target;
+    std::string	version;
 };
 
 struct HttpRequest
 {
-    StartLine requestLine;
-    std::map<std::string, std::string> headers;
-    std::string body;
-    size_t expectedBodyLength;
-    size_t consumedBytes;
+    StartLine							requestLine;
+    std::map<std::string, std::string>	headers;
+    std::string							body;
+    size_t								expectedBodyLength;
+    size_t								consumedBytes;
+	int									statusCode;
 };
 
 enum ParseResult
 {
-    PARSE_COMPLETE,
-    PARSE_INCOMPLETE,
-    PARSE_BAD_REQUEST
+    COMPLETE,
+    INCOMPLETE,
+    ERROR
 };
 
 ParseResult parseRequest(

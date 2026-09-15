@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:58 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/02 10:45:55 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/15 10:44:55 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,16 +20,28 @@ class HttpRequestParserTests : public TestSuite {
 	public:
 		HttpRequestParserTests();
 
-		//add test methods here
-
-		void testValidGet(); 
+		// General
+		void testValidRequest();
 		void testIncompleteRequest();
+
+		// Request Line
 		void testMalformedMethod();
-		void testPutMethod();
+		void testUnsupportedMethod();
 		void testOriginFormTarget();
-		void testVersionRequestLine();
+		void testHttpVersion();
+		void testRequestLineLength();
+
+		// Headers and framing
 		void testHostHeader();
 		void testContentLength();
+		void testTransferEncoding();
+
+		// Body
+		void testChunkedBody();
+
+		// Request consumption / pipelining
+		void testConsumedBytes();
+
 		void run_all();
 };
 
