@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/14 17:43:15 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 15:35:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@
 //config macros
 # define FALLBACK_ROOT "content/"
 # define FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
+# define FALLBACK_INDEX "index.html"
 # define FALLBACK_AUTOINDEX false
 
 //server macros
@@ -78,7 +79,7 @@ typedef struct	s_serverConf {
 	std::vector<std::string>							index; //inherit
 	std::vector<std::string>							serverNames;
 	std::vector<std::pair<std::string, std::string> >	listen;
-	std::map<int, std::string>							errorPages;
+	std::map<int, std::string>							errorPages;//not necessary here.
 	std::vector<t_locationConf>							locations;
 	s_serverConf() : clientMaxBodySize(0), autoindex(false)
 	{
@@ -109,7 +110,14 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 
 //server events
 typedef struct	s_responseInstructions {
-	;
+	int			statusCode;
+	std::string	reasonPhrase;
+	std::string	contentType;
+	//autoindex??
+	std::string	bodyFilePath;
+	bool		isRedirect;
+	std::string	redirectLocation;
+	bool		closeConnection;
 } t_responseInstructions;
 
 typedef struct	s_client {

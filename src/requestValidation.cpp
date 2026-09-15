@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/14 18:19:14 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 15:48:13 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,9 @@
 
 t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf)
 {
+	
+	//0. check for status errors...e.g. such as 500 from requestRouting so already send error message.
+	
 	;
 }
 
@@ -49,8 +52,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	//204 (No content)
 //8. path security and permissions:
 	//allows ../ but only until reaching root
-	//check permissins with opendir and access or status
+	//check permissions with opendir and access or status
 
 
 //EXTRAS
-	//429 Too many requests.
+	//429 Too many requests
+	//idle client timeout.

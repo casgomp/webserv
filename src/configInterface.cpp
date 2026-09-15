@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:49:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 11:06:42 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,6 +104,7 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 	std::pair<std::pair<std::string, std::string>, t_block>					httpTree;
 	bool																	hasRoot = false;
 	bool																	hasClientMaxBodySize = false;
+	bool																	hasIndex = false;
 	bool																	hasAutoindex = false;
 	std::vector<std::pair<std::pair<std::string, std::string>, t_block> >	serverTree;
 	t_serverConf															serverConf;
@@ -127,18 +128,23 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 			httpConf.clientMaxBodySize = strToNum(httpTree.second.directives.at(i).second);
 			hasClientMaxBodySize = true;
 		}
+		if (httpTree.second.directives.at(i).first == "index")
+		{
+			httpConf.index = checkIndexFiles(httpTree.second.directives.at(i).second);
+			hasIndex = true;
+		}
 		if (httpTree.second.directives.at(i).first == "autoindex")
 		{
 			httpConf.autoindex = checkAutoindex(httpTree.second.directives.at(i).second);
 			hasAutoindex = true;
 		}
-		if (httpTree.second.directives.at(i).first == "index")
-			httpConf.index = checkIndexFiles(httpTree.second.directives.at(i).second);
 	}
 	if (!hasRoot)
 		httpConf.root = FALLBACK_ROOT;
 	if (!hasClientMaxBodySize)
 		httpConf.clientMaxBodySize = FALLBACK_CLIENT_MAX_BODY_SIZE;
+	if (!hasIndex)
+		httpConf.index.push_back(FALLBACK_INDEX);
 	if (!hasAutoindex)
 		httpConf.autoindex = FALLBACK_AUTOINDEX;
 	serverTree = httpTree.second.children;

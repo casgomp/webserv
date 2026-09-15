@@ -3,10 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 11:22:25 by erjonbara        ###   ########.fr       */
+<<<<<<< Updated upstream
+/*   Updated: 2026/09/15 15:57:23 by pecastro         ###   ########.fr       */
+=======
+/*   Updated: 2026/09/15 15:48:35 by pecastro         ###   ########.fr       */
+>>>>>>> Stashed changes
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,17 +156,20 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 						//t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
 
+						//create reponse for client[fd].response = responseCreate(responseInstructions);
+
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
-						ev.events = EPOLLOUT;
-						ev.data.fd = fd;
-						if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)
-						{
-							closeClientConnection(fd, clients, errno);
-							continue ;
-						}
+						
 					}
 					//else if PARSE_INCOMPLETE, don't do anything.
+					ev.events = EPOLLOUT;
+					ev.data.fd = fd;
+					if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)
+					{
+						closeClientConnection(fd, clients, errno);
+						continue ;
+					}
 				}
 
 				else if (evs[i].events & EPOLLOUT)
@@ -190,6 +197,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						closeClientConnection(fd, clients, errno);
 						continue ;
 					}
+
 					clients[fd].bytes_sent += byte_count;
 					if (clients[fd].bytes_sent == response.size())
 					{
@@ -208,6 +216,10 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				//when deciding whether to terminate a connection, check also:
 				//timeout?
 				//http request header connection: keep-alive or close?
+				// if (httpRequest.header["connection"] == "close")
+				// {
+				// 	// close connection
+				// }
 			}
 		}
 	}
