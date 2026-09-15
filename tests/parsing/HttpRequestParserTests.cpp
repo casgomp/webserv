@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequestParserTests.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:47 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/08 11:37:02 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/13 17:42:22 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ HttpRequestParserTests::HttpRequestParserTests() : TestSuite("HttpRequestParserT
 
 void HttpRequestParserTests::run_all()
 {
-	std::cout << "Running HttpRequestParserTests..." << std::endl;
+	std::cout << "\n\033[30;105mRunning HttpRequestParserTests...\033[0m\n" << std::endl;
 
 	//call each method here
 

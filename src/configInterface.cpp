@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/06 14:13:12 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/13 17:49:05 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ t_locationConf	getLocationConfig(const t_block &locationTreeConf, const t_server
 	locationConf.root = serverConf.root;
 	locationConf.clientMaxBodySize = serverConf.clientMaxBodySize;
 	locationConf.autoindex = serverConf.autoindex;
-
+	locationConf.index = serverConf.index;
 	for (size_t i = 0; i < locationTreeConf.directives.size(); i ++)
 	{
 		std::cout << "locationTreeConf for loop************directive = " << locationTreeConf.directives[i].first << std::endl;
@@ -35,6 +35,8 @@ t_locationConf	getLocationConfig(const t_block &locationTreeConf, const t_server
 			locationConf.clientMaxBodySize = strToNum(locationTreeConf.directives.at(i).second);
 		if (locationTreeConf.directives.at(i).first == "autoindex")
 			locationConf.autoindex = checkAutoindex(locationTreeConf.directives.at(i).second);
+		if (locationTreeConf.directives.at(i).first == "index")
+			locationConf.index = checkIndexFiles(locationTreeConf.directives.at(i).second);
 		if (locationTreeConf.directives.at(i).first == "allowed_methods")
 			addAllowedMethods(locationConf, locationTreeConf.directives.at(i).second);
 		if (locationTreeConf.directives.at(i).first == "return")
@@ -53,6 +55,7 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 	serverConf.root = httpConf.root;
 	serverConf.clientMaxBodySize = httpConf.clientMaxBodySize;
 	serverConf.autoindex = httpConf.autoindex;
+	serverConf.index = httpConf.index;
 	for (size_t i = 0; i < serverTreeConf.directives.size(); i ++)
 	{
 		std::cout << "serverTreeConf for loop************directive = " << serverTreeConf.directives[i].first << std::endl;
@@ -65,6 +68,8 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			serverConf.clientMaxBodySize = strToNum(serverTreeConf.directives.at(i).second);
 		if (serverTreeConf.directives.at(i).first == "autoindex")
 			serverConf.autoindex = checkAutoindex(serverTreeConf.directives.at(i).second);
+		if (serverTreeConf.directives.at(i).first == "index")
+			serverConf.index = checkIndexFiles(serverTreeConf.directives.at(i).second);
 		if (serverTreeConf.directives.at(i).first == "server_name")
 			addServerNames(serverConf, serverTreeConf.directives.at(i).second);
 		if (serverTreeConf.directives.at(i).first == "listen")
@@ -127,6 +132,8 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 			httpConf.autoindex = checkAutoindex(httpTree.second.directives.at(i).second);
 			hasAutoindex = true;
 		}
+		if (httpTree.second.directives.at(i).first == "index")
+			httpConf.index = checkIndexFiles(httpTree.second.directives.at(i).second);
 	}
 	if (!hasRoot)
 		httpConf.root = FALLBACK_ROOT;

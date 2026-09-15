@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ServerInitTests.cpp                                :+:      :+:    :+:   */
+/*   ServerTests.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,12 +10,41 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ServerInitTests.hpp"
+#include "ServerTests.hpp"
 #include "../../include/webserv.hpp"
 
-ServerInitTests::ServerInitTests() : TestSuite("ServerInitTests") {}
+ServerTests::ServerTests() : TestSuite("ServerTests") {}
 
-void	ServerInitTests::test_serverInit()
+void	ServerTests::test_requestParsing()
+{
+	t_serverConf	server0;
+	t_serverConf	server1;
+	server0.serverNames.push_back("mysite.com");
+	server0.root = "root0";
+	server1.serverNames.push_back("mayonesa.com");
+	server1.root = "root1";
+
+	t_listenServers listenServers;
+	std::pair<std::string, std::string> pair = std::make_pair("localhost", "8080");
+	listenServers[pair].push_back(&server0);
+	listenServers[pair].push_back(&server1);
+
+	std::map<int, t_client> clients;
+	int fd = 5;
+	clients[fd].pairAddressPort = pair;
+
+	HttpRequest httpRequest1;
+	httpRequest1.headers["host"] = "mayonesa.com";
+	requestRouting(fd, clients, listenServers, httpRequest1);
+	check(clients[fd].serverConf == &server1, "request routing: routes to server1 when Host matches server1's name");
+
+	HttpRequest httpRequest2;
+	httpRequest1.headers["host"] = "nonexistent.com";
+	requestRouting(fd, clients, listenServers, httpRequest2);
+	check(clients[fd].serverConf == &server0, "request routing: falls back to first-listed server when Host matches nothing");
+}
+
+void	ServerTests::test_serverInit()
 {
 	t_httpConf					httpConf1;
 	t_httpConf					httpConf2;
@@ -80,7 +109,7 @@ void	ServerInitTests::test_serverInit()
 	check(fail, "listening sockets fail due to non-unique pair (same address but different naming, same port)");
 }
 
-void	ServerInitTests::test_getListenServers()
+void	ServerTests::test_getListenServers()
 {
 	t_httpConf					httpConf;
 	std::vector<t_serverConf>	vecServerConf;
@@ -129,12 +158,13 @@ void	ServerInitTests::test_getListenServers()
 	check(listServ[keyLoopback].at(1)->serverNames.at(0) == "something.com", "127.0.0.1:80 second entry is correct server");
 }
 
-void	ServerInitTests::run_all()
+void	ServerTests::run_all()
 {
-	std::cout << "\n\033[30;105mRunning ServerInitTests...\033[0m\n" << std::endl;
+	std::cout << "\n\033[30;105mRunning ServerTests...\033[0m\n" << std::endl;
 
 	test_getListenServers();
 	test_serverInit();
+	test_requestParsing();
 
 	printSummary();
 }

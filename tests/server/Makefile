@@ -6,8 +6,9 @@ OBJ_DIR = objs
 
 SRCS = main_server_tests.cpp \
 		../TestSuite.cpp \
-		ServerInitTests.cpp \
-		../../src/serverInit.cpp
+		ServerTests.cpp \
+		../../src/serverInit.cpp \
+		../../src/requestRouting.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 

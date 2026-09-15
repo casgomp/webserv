@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/06 14:13:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/13 17:38:52 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,28 @@ void	ConfigParserTests::test_addServerNames()
 	check(serverConf.serverNames.at(1) == "www.mysite.com", "addServerNames stores second name correctly");
 }
 
+void	ConfigParserTests::test_checkIndexFiles()
+{
+	std::vector<std::string>	vec1;
+	bool						success = true;
+	std::vector<std::string>	vec2;
+	bool						fail = false;
+
+	try {
+		vec1 = checkIndexFiles("index index.html index.txt fruits.html");
+	} catch (const std::exception &e) {
+		success = false;
+	}
+	try {
+		vec2 = checkIndexFiles("");
+	} catch (const std::exception &e) {
+		fail = true;
+	}
+	check(success && vec1.size() == 4, "checkIndexFiles returns a vector with one member string per separated-by-whitespace argument");
+	check(vec1.at(0) == "index" && vec1.at(1) == "index.html" && vec1.at(2) == "index.txt" && vec1.at(3) == "fruits.html", "checkIndexFiles returns correct strings in vector");
+	check(fail == true, "checkIndexFiles throws error when input string is empty");
+}
+
 void	ConfigParserTests::test_checkAutoindex()
 {
 	bool	success = true;
@@ -319,6 +341,7 @@ void	ConfigParserTests::run_all()
 	test_split_chunk();
 	test_strToNum();
 	test_checkAutoindex();
+	test_checkIndexFiles();
 	test_addServerNames();
 	test_addListenAddressPort();
 	test_addErrorPages();
