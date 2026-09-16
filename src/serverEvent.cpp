@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 17:48:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/16 17:58:05 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				{
 					/********CLIENT: RECEIVE**********/
 					 std::cout << "Server ready to receive" << std::endl;
-					byteCount = recv(fd, buf, sizeof(buf), 1000);
+					byteCount = recv(fd, buf, sizeof(buf), 0);
 					if (byteCount == 0)
 					{
 						closeClientConnection(fd, clients, EPOLLIN);
@@ -140,8 +140,10 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//content lentght = ?
 						//body?
 					HttpRequest httpRequest;
-					//int requestStatus = parseRequest(clients[fd].request, httpRequest);
-					int requestStatus = COMPLETE;///////
+					// std::cout << "!!!!!!!!!!!!!!!!!!clients[fd].request: " << clients[fd].request << std::endl;
+					int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					//int requestStatus = COMPLETE;///////
+					std::cout << "*********requestStatus: " << requestStatus << std::endl;
 					if (requestStatus == ERROR)
 					{
 						//prepare response struct with error info.
@@ -160,7 +162,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 							clients[fd].keepAlive = false;
 						}
 
-						//t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
+						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
 
 						//create reponse for client[fd].response = responseCreate(responseInstructions);
 

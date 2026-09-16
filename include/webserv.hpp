@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 17:18:23 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/16 17:58:07 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,13 +109,13 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 //server events
 typedef struct	s_responseInstructions {
 	int			statusCode;
-	std::string	reasonPhrase;
+	//std::string	reasonPhrase;
 	bool		isRedirect;
 	std::string	redirectLocation;
 	std::string	contentType;
 	std::string	resolvedPath;
 	bool		isAutoindex;
-	bool		closeConnection;
+	bool		closeConnection;//only in client?
 } t_responseInstructions;
 
 typedef struct	s_client {
@@ -164,5 +164,7 @@ void									requestRouting(int fd, std::map<int, t_client> &clients,
 											t_listenServers &listenServers, const HttpRequest &httpRequest);
 //requestValidation
 t_responseInstructions					requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
+t_locationConf*							matchLocation(std::vector<t_locationConf> &locations, const std::string &target);
+int										validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod);
 
 #endif

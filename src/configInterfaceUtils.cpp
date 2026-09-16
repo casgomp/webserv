@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:13:20 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/16 17:54:50 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,6 @@ void	addRedirection(t_locationConf &locationConf, const std::string &input)
 		vec.push_back(str);
 	if (vec.size() < 2)
 		throw std::runtime_error("arguments < 2 (redirection)");
-	if (vec.back().at(0) != '/')
-		throw std::runtime_error("invalid uri (redirection)");
 	num = strToNum(vec.at(0));
 	if (!(num >= 300 && num < 400))
 			throw std::runtime_error("invalid code (redirection)");
