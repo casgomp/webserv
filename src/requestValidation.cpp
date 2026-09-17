@@ -6,17 +6,72 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/16 17:57:59 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/17 17:49:02 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
 
+bool	targetIsFile(std::string &resolvedPath)
+{
+	std::string	strpath = resolvedPath;
+	const char	*path = strpath.c_str();
+	struct stat statbuf;
+	bool 		isfile = 0;
+
+	if (stat(path, &statbuf) == 0)
+		isfile = S_ISREG(statbuf.st_mode);
+	return (!isfile);
+}
+
+std::string	joinedPath(std::string root, std::string normalizedTarget)
+{
+	std::string nRoot = root;
+	std::string	nTarget = normalizedTarget;
+
+	if (!root.empty() && root.at(root.size() - 1) == '/')
+		nRoot = root.substr(0, root.size() - 1);
+	if (!normalizedTarget.empty() && normalizedTarget.at(0) == '/')
+		nTarget = normalizedTarget.substr(1);
+	return (nRoot + "/" + nTarget);
+}
+
+void	normalizePath(const std::string &target, std::string &normalizedTarget)
+{
+	std::stringstream			ss(target);
+	std::vector<std::string>	vec;
+	std::string					segment;
+
+	// std::cout << "target is = " << target << std::endl;
+	while (getline(ss, segment,'/'))
+	{
+		if (segment.empty() || segment == ".")
+			continue ;
+		else if (segment == "..")
+		{
+			if (vec.empty())
+			{
+				normalizedTarget = "";
+				return ;
+			}
+			vec.pop_back();
+		}
+		else
+			vec.push_back(segment);
+	}
+	normalizedTarget = "/";
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		normalizedTarget += vec[i];
+		if (i + 1 < vec.size())
+			normalizedTarget += "/";
+	}
+}
+
 std::string createRedirectPath(t_locationConf *location)
 {
 	std::string	path;
-	//if redirect path hs no / at start
-		//then just return path, otherwise append root path.
+	//if redirect path hs no / at start return path, otherwise append root path.
 	if (location->redirection.second.find('/') == std::string::npos)
 		path = location->redirection.second;
 	else
@@ -68,6 +123,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	t_responseInstructions	responseInstructions;
 	t_locationConf 			*location;
 	int						status;
+	std::string				normalizedTarget;
+	std::string				resolvedPath;
+	bool					isFile = 0;
 
 	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
 	if (location == NULL)
@@ -81,17 +139,43 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		responseInstructions.statusCode = status;
 		return (responseInstructions);
 	}
-	std::cout << "GARBANZO"  << std::endl;
 	if (location->redirection.first != 0)
 	{
-		std::cout << "VUALA "  << std::endl;
 		responseInstructions.statusCode = location->redirection.first;
 		responseInstructions.isRedirect = true;
 		responseInstructions.redirectLocation = createRedirectPath(location);
 		return (responseInstructions);
 	}
-	// if ()
-	
+	normalizePath(httpRequest.requestLine.target, normalizedTarget);
+	// std::cout << "normalizedTarget = " << normalizedTarget << std::endl;
+	resolvedPath = joinedPath(location->root, normalizedTarget);
+	isFile = (targetIsFile(resolvedPath) == 0);
+	if (isFile)
+		responseInstructions.resolvedPath = resolvedPath;
+	else if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
+	{
+		responseInstructions.statusCode = 301;
+		responseInstructions.isRedirect = true;
+		responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
+		return (responseInstructions);
+	}
+	if (httpRequest.requestLine.method == "GET")
+	{
+		//if isFile == 0
+			//if there's a index.html file
+			//if index
+			//else if autoindex
+			//
+		//
+	}
+	else if (httpRequest.requestLine.method == "POST")
+	{
+		
+	}
+	else if (httpRequest.requestLine.method == "DELETE")
+	{
+		
+	}
 	return (responseInstructions);
 }
 
@@ -128,7 +212,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 //9. path security and permissions:
 	//allows ../ but only until reaching root
 	//check permissions with opendir and access or status
-
 
 //EXTRAS
 	//429 Too many requests

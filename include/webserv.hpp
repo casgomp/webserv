@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/16 17:58:07 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/17 17:40:19 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,14 @@
 # include <iostream>
 # include <map>
 # include <netdb.h>
+# include <queue>
 # include <stdlib.h>
 # include <string>
 # include <string.h>
 # include <sstream>
 # include <sys/epoll.h>
 # include <sys/types.h>
+# include <sys/stat.h>
 # include <sys/socket.h>
 # include <unistd.h>
 # include <vector>
@@ -111,10 +113,10 @@ typedef struct	s_responseInstructions {
 	int			statusCode;
 	//std::string	reasonPhrase;
 	bool		isRedirect;
-	std::string	redirectLocation;
-	std::string	contentType;
+	std::string	redirectLocation;//for 301 as well
+	bool		isAutoindex;//needs a path relative to which create the index?
 	std::string	resolvedPath;
-	bool		isAutoindex;
+	std::string	contentType;//decide who does this part (at validation or at response forming)
 	bool		closeConnection;//only in client?
 } t_responseInstructions;
 
@@ -166,5 +168,9 @@ void									requestRouting(int fd, std::map<int, t_client> &clients,
 t_responseInstructions					requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
 t_locationConf*							matchLocation(std::vector<t_locationConf> &locations, const std::string &target);
 int										validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod);
+std::string								createRedirectPath(t_locationConf *location);
+void									normalizePath(const std::string &target, std::string &normalizedTarget);
+std::string								joinedPath(std::string root, std::string normalizedTarget);
+bool									targetIsFile(std::string &resolvedPath);
 
 #endif
