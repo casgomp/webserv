@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/16 17:58:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/18 14:11:45 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			throw std::runtime_error("invalid block directive argument (location)");
 		locationConf = getLocationConfig(locationTree.at(i).second, serverConf);
 		locationConf.path = locationTree.at(i).first.second;
+		locationConf.isCgi = locationConf.path.find("/cgi-bin") == 0;
 		std::cout << "*******************locationConf.path = " << locationConf.path << std::endl;
 		serverConf.locations.push_back(locationConf);
 	}

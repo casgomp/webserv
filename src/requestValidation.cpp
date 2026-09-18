@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/17 17:49:02 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/18 15:26:20 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,8 +71,8 @@ void	normalizePath(const std::string &target, std::string &normalizedTarget)
 std::string createRedirectPath(t_locationConf *location)
 {
 	std::string	path;
-	//if redirect path hs no / at start return path, otherwise append root path.
-	if (location->redirection.second.find('/') == std::string::npos)
+	//if redirect path has no / at start return path, otherwise append root path.
+	if (location->redirection.second[0] != '/')
 		path = location->redirection.second;
 	else
 		path = location->root + location->redirection.second;
@@ -159,22 +159,43 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
 		return (responseInstructions);
 	}
+	if (location->isCgi)
+	{
+		if (!isFile)
+		{
+			responseInstructions.statusCode = 404;
+			return (responseInstructions);
+		}
+		if (access(resolvedPath.c_str(), X_OK) != 0)
+		{
+			responseInstructions.statusCode = 403;
+			return (responseInstructions);
+		}
+		responseInstructions.isCgi = true;
+		return(responseInstructions);
+	}
+	//change to switch case?
 	if (httpRequest.requestLine.method == "GET")
 	{
-		//if isFile == 0
+		if (!isFile)
+		{
 			//if there's a index.html file
-			//if index
+			//if targetIsFile(resolvePath + "/index.html") ...and rename function to isFile
+
+			//else if index
+
 			//else if autoindex
-			//
-		//
+
+		}
+		//functionvalidate file read permissions
 	}
 	else if (httpRequest.requestLine.method == "POST")
 	{
-		
+		//functionvalidate file permissions
 	}
 	else if (httpRequest.requestLine.method == "DELETE")
 	{
-		
+		//functionvalidate ? file permissions
 	}
 	return (responseInstructions);
 }

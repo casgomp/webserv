@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/17 17:40:19 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/18 14:25:00 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,8 @@ typedef struct	s_locationConf {
 	std::string							path;
 	std::vector<std::string>			allowedMethods;//nicer would be a map<std::string, bool>
 	std::pair<int, std::string>			redirection;
-	s_locationConf() : clientMaxBodySize(0), autoindex(false)
+	bool								isCgi;
+	s_locationConf() : clientMaxBodySize(0), autoindex(false), isCgi(false)
 	{
 		index.push_back("index.html");
 		allowedMethods.push_back("GET");
@@ -111,9 +112,9 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 //server events
 typedef struct	s_responseInstructions {
 	int			statusCode;
-	//std::string	reasonPhrase;
 	bool		isRedirect;
 	std::string	redirectLocation;//for 301 as well
+	bool		isCgi;
 	bool		isAutoindex;//needs a path relative to which create the index?
 	std::string	resolvedPath;
 	std::string	contentType;//decide who does this part (at validation or at response forming)
