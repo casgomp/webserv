@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/18 14:25:00 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/19 16:10:44 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,12 +61,11 @@ typedef struct	s_locationConf {
 	bool								autoindex; //inherit
 	std::vector<std::string>			index; //inherit
 	std::string							path;
-	std::vector<std::string>			allowedMethods;//nicer would be a map<std::string, bool>
+	std::vector<std::string>			allowedMethods;
 	std::pair<int, std::string>			redirection;
 	bool								isCgi;
 	s_locationConf() : clientMaxBodySize(0), autoindex(false), isCgi(false)
 	{
-		index.push_back("index.html");
 		allowedMethods.push_back("GET");
 		allowedMethods.push_back("POST");
 		allowedMethods.push_back("DELETE");
@@ -80,12 +79,8 @@ typedef struct	s_serverConf {
 	std::vector<std::string>							index; //inherit
 	std::vector<std::string>							serverNames;
 	std::vector<std::pair<std::string, std::string> >	listen;
-	std::map<int, std::string>							errorPages;//not necessary here.
 	std::vector<t_locationConf>							locations;
-	s_serverConf() : clientMaxBodySize(0), autoindex(false)
-	{
-		index.push_back("index.html");
-	}
+	s_serverConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_serverConf;
 
 typedef struct	s_httpConf {
@@ -99,10 +94,7 @@ typedef struct	s_httpConf {
 	bool								autoindex; //inherit
 	std::vector<std::string>			index;
 	std::vector<t_serverConf>			servers;
-	s_httpConf() : clientMaxBodySize(0), autoindex(false)
-	{
-		index.push_back("index.html");
-	}
+	s_httpConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_httpConf;
 
 //server init
@@ -113,9 +105,9 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 typedef struct	s_responseInstructions {
 	int			statusCode;
 	bool		isRedirect;
-	std::string	redirectLocation;//for 301 as well
+	std::string	redirectLocation;
 	bool		isCgi;
-	bool		isAutoindex;//needs a path relative to which create the index?
+	bool		isAutoIndex;
 	std::string	resolvedPath;
 	std::string	contentType;//decide who does this part (at validation or at response forming)
 	bool		closeConnection;//only in client?
@@ -167,11 +159,12 @@ void									requestRouting(int fd, std::map<int, t_client> &clients,
 											t_listenServers &listenServers, const HttpRequest &httpRequest);
 //requestValidation
 t_responseInstructions					requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
+//requestValidationUtils
 t_locationConf*							matchLocation(std::vector<t_locationConf> &locations, const std::string &target);
 int										validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod);
 std::string								createRedirectPath(t_locationConf *location);
 void									normalizePath(const std::string &target, std::string &normalizedTarget);
 std::string								joinedPath(std::string root, std::string normalizedTarget);
-bool									targetIsFile(std::string &resolvedPath);
+bool									pathIsFile(const std::string &resolvedPath);
 
 #endif

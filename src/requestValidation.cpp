@@ -6,117 +6,11 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/18 15:26:20 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/19 16:00:01 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
-
-bool	targetIsFile(std::string &resolvedPath)
-{
-	std::string	strpath = resolvedPath;
-	const char	*path = strpath.c_str();
-	struct stat statbuf;
-	bool 		isfile = 0;
-
-	if (stat(path, &statbuf) == 0)
-		isfile = S_ISREG(statbuf.st_mode);
-	return (!isfile);
-}
-
-std::string	joinedPath(std::string root, std::string normalizedTarget)
-{
-	std::string nRoot = root;
-	std::string	nTarget = normalizedTarget;
-
-	if (!root.empty() && root.at(root.size() - 1) == '/')
-		nRoot = root.substr(0, root.size() - 1);
-	if (!normalizedTarget.empty() && normalizedTarget.at(0) == '/')
-		nTarget = normalizedTarget.substr(1);
-	return (nRoot + "/" + nTarget);
-}
-
-void	normalizePath(const std::string &target, std::string &normalizedTarget)
-{
-	std::stringstream			ss(target);
-	std::vector<std::string>	vec;
-	std::string					segment;
-
-	// std::cout << "target is = " << target << std::endl;
-	while (getline(ss, segment,'/'))
-	{
-		if (segment.empty() || segment == ".")
-			continue ;
-		else if (segment == "..")
-		{
-			if (vec.empty())
-			{
-				normalizedTarget = "";
-				return ;
-			}
-			vec.pop_back();
-		}
-		else
-			vec.push_back(segment);
-	}
-	normalizedTarget = "/";
-	for (size_t i = 0; i < vec.size(); i++)
-	{
-		normalizedTarget += vec[i];
-		if (i + 1 < vec.size())
-			normalizedTarget += "/";
-	}
-}
-
-std::string createRedirectPath(t_locationConf *location)
-{
-	std::string	path;
-	//if redirect path has no / at start return path, otherwise append root path.
-	if (location->redirection.second[0] != '/')
-		path = location->redirection.second;
-	else
-		path = location->root + location->redirection.second;
-	// std::cout << "path**************" << path << std::endl;
-	return (path);
-}
-
-int	validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod)
-{
-	int	status = 0;
-
-	if (!(requestMethod == "GET" || requestMethod == "POST" || requestMethod == "DELETE"))
-		return (405);
-	else if (std::find(allowedMethods.begin(), allowedMethods.end(), requestMethod) == allowedMethods.end())
-		return (403);
-	return(status);
-}
-
-t_locationConf*	matchLocation(std::vector<t_locationConf> &locations, const std::string &target)
-{
-	t_locationConf	*location = NULL;
-	size_t			start;
-	size_t			lenCurr;
-	size_t			len;
-
-	len = 0;
-	for (size_t i = 0; i < locations.size(); i ++)
-	{
-		std::cout << "****target = " << target << " ; location[i].path = " << locations[i].path << std::endl;
-		start = target.find(locations[i].path);
-		if (start == 0)
-		{
-			lenCurr = locations[i].path.size();
-			if (lenCurr > len)
-			{
-				std::cout << "**candidate location[i]path = " << locations[i].path << std::endl;
-				len = lenCurr;
-				location = &locations[i];
-			}
-		}
-	}
-	std::cout << "**location = " << location->path << std::endl;
-	return (location);
-}
 
 t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf)
 {
@@ -147,17 +41,19 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		return (responseInstructions);
 	}
 	normalizePath(httpRequest.requestLine.target, normalizedTarget);
-	// std::cout << "normalizedTarget = " << normalizedTarget << std::endl;
+	std::cout << "normalizedTarget = " << normalizedTarget << std::endl;
 	resolvedPath = joinedPath(location->root, normalizedTarget);
-	isFile = (targetIsFile(resolvedPath) == 0);
-	if (isFile)
-		responseInstructions.resolvedPath = resolvedPath;
-	else if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
+	isFile = (pathIsFile(resolvedPath));
+	std::cout << "isFile = " << isFile << std::endl;
+	if (!isFile)
 	{
-		responseInstructions.statusCode = 301;
-		responseInstructions.isRedirect = true;
-		responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
-		return (responseInstructions);
+		if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
+		{
+			responseInstructions.statusCode = 301;
+			responseInstructions.isRedirect = true;
+			responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
+			return (responseInstructions);
+		}
 	}
 	if (location->isCgi)
 	{
@@ -174,20 +70,37 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		responseInstructions.isCgi = true;
 		return(responseInstructions);
 	}
-	//change to switch case?
 	if (httpRequest.requestLine.method == "GET")
 	{
-		if (!isFile)
+		if (isFile)
+			responseInstructions.resolvedPath = resolvedPath;
+		else
 		{
-			//if there's a index.html file
-			//if targetIsFile(resolvePath + "/index.html") ...and rename function to isFile
-
-			//else if index
-
-			//else if autoindex
-
+			if (!location->index.empty())
+			{
+				resolvedPath = joinedPath(resolvedPath, location->index.at(0));
+				std::cout << "location->index.at(0) = " << location->index.at(0) << std::endl;
+				responseInstructions.resolvedPath = resolvedPath;
+			}
+			else if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
+			{
+				responseInstructions.resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
+				std::cout << "pathIsFile" << std::endl;
+			}
+			else if (location->autoindex)
+			{
+				std::cout << "autoindex" << std::endl;
+				responseInstructions.resolvedPath = resolvedPath;
+				responseInstructions.isAutoIndex = true;
+			}
 		}
-		//functionvalidate file read permissions
+		std::cout << "resolvedPathIndexFile = " << responseInstructions.resolvedPath << std::endl;
+		if (access(responseInstructions.resolvedPath.c_str(), R_OK) != 0)
+		{
+			responseInstructions.statusCode = 403;
+			return (responseInstructions);
+		}
+		responseInstructions.statusCode = 200;
 	}
 	else if (httpRequest.requestLine.method == "POST")
 	{

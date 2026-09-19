@@ -13,9 +13,68 @@
 #include "ServerTests.hpp"
 #include "../../include/webserv.hpp"
 
+//request validation all util functions and request validation itself
+
 ServerTests::ServerTests() : TestSuite("ServerTests") {}
 
-void	ServerTests::test_requestParsing()
+void	ServerTests::test_pathIsFile()
+{
+	;
+}
+
+void	ServerTests::test_joinedPath()
+{
+	;
+}
+
+void	ServerTests::test_normalizePath()
+{
+	;
+}
+
+void	ServerTests::test_createRedirectPath()
+{
+	;
+}
+
+void	ServerTests::test_validateMethod()
+{
+	;
+}
+
+void	ServerTests::test_matchLocation()
+{
+	std::string target = "/docs/private/file.txt";
+	std::vector<t_locationConf> locations;
+
+	t_locationConf root;
+	root.path = "/";
+	locations.push_back(root);
+
+	t_locationConf docs;
+	docs.path = "/docs";
+	locations.push_back(docs);
+
+	t_locationConf docsPrivate;
+	docsPrivate.path = "/docs/private";
+	locations.push_back(docsPrivate);
+
+	t_locationConf fruits;
+	fruits.path = "/fruits";
+	locations.push_back(fruits);
+
+	t_locationConf *result = matchLocation(locations, target);
+	// expected: result == "/docs/private" i.e. has the longest matching prefix
+
+
+}
+
+void	ServerTests::test_requestValidation()
+{
+	;
+}
+
+void	ServerTests::test_requestRouting()
 {
 	t_serverConf	server0;
 	t_serverConf	server1;
@@ -164,7 +223,14 @@ void	ServerTests::run_all()
 
 	test_getListenServers();
 	test_serverInit();
-	test_requestParsing();
+	test_requestRouting();
+	test_requestValidation();
+	test_matchLocation();
+	test_validateMethod();
+	test_createRedirectPath();
+	test_normalizePath();
+	test_joinedPath();
+	test_pathIsFile();
 
 	printSummary();
 }

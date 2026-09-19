@@ -18,11 +18,18 @@
 class ServerTests : public TestSuite {
 	public:
 		ServerTests();
-
 		//add test methods here
 		void	test_getListenServers();
 		void	test_serverInit();
-		void	test_requestParsing();
+		void	test_requestRouting();
+		void	test_requestValidation();
+		void	test_matchLocation();
+		void	test_validateMethod();
+		void	test_createRedirectPath();
+		void	test_normalizePath();
+		void	test_joinedPath();
+		void	test_pathIsFile();
+
 		void	run_all();
 };
 

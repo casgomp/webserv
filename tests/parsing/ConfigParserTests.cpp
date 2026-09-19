@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:38:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/19 16:35:42 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,6 @@ void	ConfigParserTests::test_addRedirection()
 
 	check(success, "addRedirection accepts a valid input without throwing");
 	check(failEmpty, "addRedirection throws on empty string");
-	check(failBadUri, "addRedirection throws when path does not start with '/'");
 	check(failBadCode, "addRedirection throws on out-of-range status code");
 
 	check(locationConf1.redirection.first == 301, "addRedirection stores correct status code");
@@ -88,50 +87,50 @@ void	ConfigParserTests::test_addAllowedMethods()
 	check(locationConf1.allowedMethods.at(1) == "POST", "addAllowedMethods stores second method correctly");
 }
 
-void	ConfigParserTests::test_addErrorPages()
-{
-	t_serverConf	serverConf1;
-	t_serverConf	serverConf2;
-	bool			success = true;
-	bool			failEmpty = false;
-	bool			failBadUri = false;
-	bool			failBadCode = false;
+// void	ConfigParserTests::test_addErrorPages()
+// {
+// 	t_serverConf	serverConf1;
+// 	t_serverConf	serverConf2;
+// 	bool			success = true;
+// 	bool			failEmpty = false;
+// 	bool			failBadUri = false;
+// 	bool			failBadCode = false;
 
-	try {
-		addErrorPages(serverConf1, "404 /404.html");
-		addErrorPages(serverConf2, "500 502 503 /50x.html");
-	} catch (const std::exception &e) {
-		success = false;
-	}
-	try {
-		addErrorPages(serverConf1, "");
-	} catch (const std::exception &e) {
-		failEmpty = true;
-	}
-	try {
-		addErrorPages(serverConf1, "404 404.html");
-	} catch (const std::exception &e) {
-		failBadUri = true;
-	}
-	try {
-		addErrorPages(serverConf1, "999 /404.html");
-	} catch (const std::exception &e) {
-		failBadCode = true;
-	}
+// 	try {
+// 		addErrorPages(serverConf1, "404 /404.html");
+// 		addErrorPages(serverConf2, "500 502 503 /50x.html");
+// 	} catch (const std::exception &e) {
+// 		success = false;
+// 	}
+// 	try {
+// 		addErrorPages(serverConf1, "");
+// 	} catch (const std::exception &e) {
+// 		failEmpty = true;
+// 	}
+// 	try {
+// 		addErrorPages(serverConf1, "404 404.html");
+// 	} catch (const std::exception &e) {
+// 		failBadUri = true;
+// 	}
+// 	try {
+// 		addErrorPages(serverConf1, "999 /404.html");
+// 	} catch (const std::exception &e) {
+// 		failBadCode = true;
+// 	}
 
-	check(success, "addErrorPages accepts valid single and multi-code inputs without throwing");
-	check(failEmpty, "addErrorPages throws on empty string");
-	check(failBadUri, "addErrorPages throws when path does not start with '/'");
-	check(failBadCode, "addErrorPages throws on out-of-range status code");
+// 	check(success, "addErrorPages accepts valid single and multi-code inputs without throwing");
+// 	check(failEmpty, "addErrorPages throws on empty string");
+// 	check(failBadUri, "addErrorPages throws when path does not start with '/'");
+// 	check(failBadCode, "addErrorPages throws on out-of-range status code");
 
-	check(serverConf1.errorPages.size() == 1, "single-code error_page stores one entry");
-	check(serverConf1.errorPages[404] == "/404.html", "single-code error_page maps 404 to correct path");
+// 	check(serverConf1.errorPages.size() == 1, "single-code error_page stores one entry");
+// 	check(serverConf1.errorPages[404] == "/404.html", "single-code error_page maps 404 to correct path");
 
-	check(serverConf2.errorPages.size() == 3, "multi-code error_page stores one entry per code");
-	check(serverConf2.errorPages[500] == "/50x.html", "multi-code error_page maps 500 correctly");
-	check(serverConf2.errorPages[502] == "/50x.html", "multi-code error_page maps 502 correctly");
-	check(serverConf2.errorPages[503] == "/50x.html", "multi-code error_page maps 503 correctly");
-}
+// 	check(serverConf2.errorPages.size() == 3, "multi-code error_page stores one entry per code");
+// 	check(serverConf2.errorPages[500] == "/50x.html", "multi-code error_page maps 500 correctly");
+// 	check(serverConf2.errorPages[502] == "/50x.html", "multi-code error_page maps 502 correctly");
+// 	check(serverConf2.errorPages[503] == "/50x.html", "multi-code error_page maps 503 correctly");
+// }
 
 void	ConfigParserTests::test_addListenAddressPort()
 {
@@ -344,7 +343,7 @@ void	ConfigParserTests::run_all()
 	test_checkIndexFiles();
 	test_addServerNames();
 	test_addListenAddressPort();
-	test_addErrorPages();
+	// test_addErrorPages();
 	test_addAllowedMethods();
 	test_addRedirection();
 

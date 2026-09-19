@@ -18,7 +18,8 @@ SRCS = main.cpp \
 		httpRequestHeaders.cpp \
 		httpRequestBody.cpp \
 		requestRouting.cpp \
-		requestValidation.cpp
+		requestValidation.cpp \
+		requestValidationUtils.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 

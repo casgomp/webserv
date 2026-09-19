@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/18 14:11:45 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/19 16:29:13 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,8 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			addListenAddressPort(serverConf, serverTreeConf.directives.at(i).second);
 			hasListen = true;
 		}
-		if (serverTreeConf.directives.at(i).first == "error_page")
-			addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
+		// if (serverTreeConf.directives.at(i).first == "error_page")
+		// 	addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
 	}
 	if (hasListen == false)
 		throw std::runtime_error("config file does not contain listen directive");
@@ -106,7 +106,6 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 	std::pair<std::pair<std::string, std::string>, t_block>					httpTree;
 	bool																	hasRoot = false;
 	bool																	hasClientMaxBodySize = false;
-	bool																	hasIndex = false;
 	bool																	hasAutoindex = false;
 	std::vector<std::pair<std::pair<std::string, std::string>, t_block> >	serverTree;
 	t_serverConf															serverConf;
@@ -131,10 +130,7 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 			hasClientMaxBodySize = true;
 		}
 		if (httpTree.second.directives.at(i).first == "index")
-		{
 			httpConf.index = checkIndexFiles(httpTree.second.directives.at(i).second);
-			hasIndex = true;
-		}
 		if (httpTree.second.directives.at(i).first == "autoindex")
 		{
 			httpConf.autoindex = checkAutoindex(httpTree.second.directives.at(i).second);
@@ -145,8 +141,6 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 		httpConf.root = FALLBACK_ROOT;
 	if (!hasClientMaxBodySize)
 		httpConf.clientMaxBodySize = FALLBACK_CLIENT_MAX_BODY_SIZE;
-	if (!hasIndex)
-		httpConf.index.push_back(FALLBACK_INDEX);
 	if (!hasAutoindex)
 		httpConf.autoindex = FALLBACK_AUTOINDEX;
 	serverTree = httpTree.second.children;
