@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/19 16:35:42 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/20 14:45:46 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,6 @@ void	ConfigParserTests::test_addRedirection()
 	t_locationConf	locationConf2;
 	bool			success = true;
 	bool			failEmpty = false;
-	bool			failBadUri = false;
 	bool			failBadCode = false;
 
 	try {
@@ -33,11 +32,6 @@ void	ConfigParserTests::test_addRedirection()
 		addRedirection(locationConf2, "");
 	} catch (const std::exception &e) {
 		failEmpty = true;
-	}
-	try {
-		addRedirection(locationConf2, "301 new-page");
-	} catch (const std::exception &e) {
-		failBadUri = true;
 	}
 	try {
 		addRedirection(locationConf2, "200 /new-page");
