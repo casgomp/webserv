@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/17 17:49:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/20 14:42:21 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,7 +154,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						{
 							requestRouting(fd, clients, listenServers, httpRequest);
 						}
-						catch (const std::exception e)
+						catch (const std::exception &e)
 						{
 							std::cerr << e.what() << std::endl;
 							//clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
