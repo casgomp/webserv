@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/19 16:10:44 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/20 12:52:05 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,5 +166,6 @@ std::string								createRedirectPath(t_locationConf *location);
 void									normalizePath(const std::string &target, std::string &normalizedTarget);
 std::string								joinedPath(std::string root, std::string normalizedTarget);
 bool									pathIsFile(const std::string &resolvedPath);
+bool									pathIsDir(const std::string &resolvedPath);
 
 #endif

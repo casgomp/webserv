@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/19 16:00:01 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/20 13:22:18 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,11 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	std::cout << "isFile = " << isFile << std::endl;
 	if (!isFile)
 	{
+		if (!pathIsDir(resolvedPath))
+		{
+			responseInstructions.statusCode = 404;
+			return (responseInstructions);
+		}
 		if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
 		{
 			responseInstructions.statusCode = 301;

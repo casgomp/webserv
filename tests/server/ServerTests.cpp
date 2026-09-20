@@ -17,29 +17,104 @@
 
 ServerTests::ServerTests() : TestSuite("ServerTests") {}
 
-void	ServerTests::test_pathIsFile()
+void    ServerTests::test_pathIsDir()
 {
-	;
+	std::ofstream tmpFile("test_pathIsDir.tmp");
+	tmpFile << "test content";
+	tmpFile.close();
+
+	check(pathIsDir(".") == true,
+		"pathIsDir returns true for an existing directory");
+
+	check(pathIsDir("test_pathIsDir.tmp") == false,
+		"pathIsDir returns false for a regular file");
+
+	check(pathIsDir("no_such_dir_xyz") == false,
+		"pathIsDir returns false for a nonexistent path");
+
+	std::remove("test_pathIsDir.tmp");
 }
 
-void	ServerTests::test_joinedPath()
+void    ServerTests::test_pathIsFile()
 {
-	;
+	std::ofstream tmpFile("test_pathIsFile.tmp");
+	tmpFile << "test content";
+	tmpFile.close();
+
+	check(pathIsFile("test_pathIsFile.tmp") == true,
+		"pathIsFile returns true for an existing regular file");
+
+	check(pathIsFile(".") == false,
+		"pathIsFile returns false for a directory");
+
+	check(pathIsFile("no_such_file_xyz.tmp") == false,
+		"pathIsFile returns false for a nonexistent path");
+
+	std::remove("test_pathIsFile.tmp");
+}
+
+void    ServerTests::test_joinedPath()
+{
+	check(joinedPath("content/", "/docs/file.txt") == "content/docs/file.txt",
+		"joinedPath strips root's trailing slash and target's leading slash");
+
+	check(joinedPath("content", "docs/file.txt") == "content/docs/file.txt",
+		"joinedPath joins correctly when neither side has a boundary slash");
+
+	check(joinedPath("content/", "") == "content/",
+		"joinedPath handles an empty target, leaving just root + trailing slash");
+
+	check(joinedPath("content/", "/") == "content/",
+		"joinedPath handles a bare '/' target the same as an empty target");
 }
 
 void	ServerTests::test_normalizePath()
 {
-	;
+	std::string normalizedTarget;
+
+	normalizePath("/docs/../private/./file.txt", normalizedTarget);
+	check(normalizedTarget == "/private/file.txt",
+		"normalizePath resolves '..' and strips '.' segments");
+
+	normalizePath("/docs//private", normalizedTarget);
+	check(normalizedTarget == "/docs/private",
+		"normalizePath collapses double slashes");
+
+	normalizePath("/../../etc/passwd", normalizedTarget);
+	check(normalizedTarget == "",
+		"normalizePath returns empty string when traversal goes past root");
+
+	normalizePath("/", normalizedTarget);
+	check(normalizedTarget == "/",
+		"normalizePath handles root target");
 }
 
 void	ServerTests::test_createRedirectPath()
 {
-	;
+	t_locationConf	location;
+
+	location.root = "content/";
+
+	location.redirection.second = "/new-page";
+	check(createRedirectPath(&location) == "content/new-page",
+		"createRedirectPath prepends root when target starts with '/'");
+
+	location.redirection.second = "example";
+	check(createRedirectPath(&location) == "example",
+		"createRedirectPath uses target as-is when it doesn't start with '/'");
 }
 
 void	ServerTests::test_validateMethod()
 {
-	;
+	t_locationConf				location;
+	std::vector<std::string>	allowedMethods;
+
+	allowedMethods.push_back("GET");
+	allowedMethods.push_back("DELETE");
+	location.allowedMethods = allowedMethods;
+	check(validateMethod(location.allowedMethods, "GET") == 0, "validateMethod returns 0 if request method is allowed in location");
+	check(validateMethod(location.allowedMethods, "PIZZA") == 405, "validateMethod returns 405 if request method is invalid");
+	check(validateMethod(location.allowedMethods, "POST") == 403, "validateMethod returns 403 if request method is now allowed in location");
 }
 
 void	ServerTests::test_matchLocation()
@@ -64,14 +139,39 @@ void	ServerTests::test_matchLocation()
 	locations.push_back(fruits);
 
 	t_locationConf *result = matchLocation(locations, target);
-	// expected: result == "/docs/private" i.e. has the longest matching prefix
+	check (result != NULL && result->path == "/docs/private", "matchLocation chooses the longest matching prefix");
 
+	result = matchLocation(locations, "/docs/readme.md");
+	check(result != NULL && result->path == "/docs",
+		"matchLocation falls back to shorter prefix when longer one doesn't match");
 
-}
+	result = matchLocation(locations, "/");
+	check(result != NULL && result->path == "/",
+		"matchLocation matches root exactly");
 
-void	ServerTests::test_requestValidation()
-{
-	;
+	result = matchLocation(locations, "/nowhere");
+	check(result != NULL && result->path == "/",
+		"matchLocation falls back to root location when nothing more specific matches");
+
+	result = matchLocation(locations, "/fruitsaaaa");
+	check(result != NULL && result->path == "/",
+		"matchLocation does not let /fruitsaaaa falsely match /fruits, falls back to root");
+
+	result = matchLocation(locations, "/fruits");
+	check(result != NULL && result->path == "/fruits",
+		"matchLocation matches /fruits exactly");
+
+	result = matchLocation(locations, "/fruits/red");
+	check(result != NULL && result->path == "/fruits",
+		"matchLocation matches /fruits as prefix of a real sub-path");
+
+	std::vector<t_locationConf> noRootLocations;
+	noRootLocations.push_back(docs);
+	noRootLocations.push_back(fruits);
+
+	result = matchLocation(noRootLocations, "/nowhere");
+	check(result == NULL,
+		"matchLocation returns NULL when nothing matches and there is no root location");
 }
 
 void	ServerTests::test_requestRouting()
@@ -224,13 +324,13 @@ void	ServerTests::run_all()
 	test_getListenServers();
 	test_serverInit();
 	test_requestRouting();
-	test_requestValidation();
 	test_matchLocation();
 	test_validateMethod();
 	test_createRedirectPath();
 	test_normalizePath();
 	test_joinedPath();
 	test_pathIsFile();
+	test_pathIsDir();
 
 	printSummary();
 }
