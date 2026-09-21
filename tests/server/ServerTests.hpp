@@ -28,6 +28,8 @@ class ServerTests : public TestSuite {
 		void	test_joinedPath();
 		void	test_pathIsFile();
 		void	test_pathIsDir();
+		void	test_getContentType();
+		void	test_getValidMimeTypes();
 
 		void	run_all();
 };

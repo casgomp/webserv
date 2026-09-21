@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/20 14:42:21 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/21 18:43:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -164,6 +164,16 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
 
+						std::cout << "responseInstructions" << std::endl
+									<< "statusCode: " << responseInstructions.statusCode << std::endl
+									<< "isRedirect: " << responseInstructions.isRedirect << std::endl
+									<< "redirectLocation: " << responseInstructions.redirectLocation << std::endl
+									<< "isCgi: " << responseInstructions.isCgi << std::endl
+									<< "isAutoIndex: " << responseInstructions.isAutoIndex << std::endl
+									<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
+									<< "contentType: " << responseInstructions.contentType << std::endl;
+
+									
 						//create reponse for client[fd].response = responseCreate(responseInstructions);
 
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
