@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:13:20 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/19 16:29:23 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,6 @@ void	addRedirection(t_locationConf &locationConf, const std::string &input)
 		vec.push_back(str);
 	if (vec.size() < 2)
 		throw std::runtime_error("arguments < 2 (redirection)");
-	if (vec.back().at(0) != '/')
-		throw std::runtime_error("invalid uri (redirection)");
 	num = strToNum(vec.at(0));
 	if (!(num >= 300 && num < 400))
 			throw std::runtime_error("invalid code (redirection)");
@@ -62,32 +60,32 @@ void	addAllowedMethods(t_locationConf &locationConf, const std::string &input)
 	locationConf.allowedMethods = vec;
 }
 
-void	addErrorPages(t_serverConf &serverConf, const std::string &input)
-{
-	if (input.empty())
-		throw std::runtime_error("empty string (error_page)");
+// void	addErrorPages(t_serverConf &serverConf, const std::string &input)
+// {
+// 	if (input.empty())
+// 		throw std::runtime_error("empty string (error_page)");
 		
-	std::istringstream			ss(input);
-	std::string					str;
-	std::vector<std::string>	vec;
-	int							num;
-	std::map<int, std::string>	errorPageMap;
+// 	std::istringstream			ss(input);
+// 	std::string					str;
+// 	std::vector<std::string>	vec;
+// 	int							num;
+// 	std::map<int, std::string>	errorPageMap;
 	
-	while (ss >> str)
-		vec.push_back(str);
-	if (vec.size() < 2)
-		throw std::runtime_error("arguments < 2 (redirection)");
-	if (vec.back().at(0) != '/')
-		throw std::runtime_error("invalid uri (error_page)");
-	for (size_t i = 0; i < vec.size() - 1; i ++)
-	{
-		num = strToNum(vec.at(i));
-		if (!(num >= 400 && num < 600))
-			throw std::runtime_error("invalid code (error_page)");
-		errorPageMap[num] = vec.back();
-	}
-	serverConf.errorPages = errorPageMap;
-}
+// 	while (ss >> str)
+// 		vec.push_back(str);
+// 	if (vec.size() < 2)
+// 		throw std::runtime_error("arguments < 2 (redirection)");
+// 	if (vec.back().at(0) != '/')
+// 		throw std::runtime_error("invalid uri (error_page)");
+// 	for (size_t i = 0; i < vec.size() - 1; i ++)
+// 	{
+// 		num = strToNum(vec.at(i));
+// 		if (!(num >= 400 && num < 600))
+// 			throw std::runtime_error("invalid code (error_page)");
+// 		errorPageMap[num] = vec.back();
+// 	}
+// 	serverConf.errorPages = errorPageMap;
+// }
 
 void	addListenAddressPort(t_serverConf &serverConf, const std::string &input)
 {

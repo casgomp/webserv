@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 14:24:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/14 17:35:08 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 16:59:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,10 +19,7 @@ void	requestRouting(int fd, std::map<int, t_client> &clients,
 	t_serverConf						*selected;
 
 	if (confServers.empty())
-	{
-		;//set httpRequest to 500 (Internal Server Error)
-		return ;
-	}
+		throw std::runtime_error("internal error: no servers found for listening pair");
 	
 	selected = confServers[0];
 	if (confServers.size() > 1 && httpRequest.headers.count("host"))

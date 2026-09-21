@@ -8,7 +8,8 @@ SRCS = main_server_tests.cpp \
 		../TestSuite.cpp \
 		ServerTests.cpp \
 		../../src/serverInit.cpp \
-		../../src/requestRouting.cpp
+		../../src/requestRouting.cpp \
+		../../src/requestValidationUtils.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 

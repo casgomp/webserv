@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:49:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/19 16:29:13 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,8 +77,8 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			addListenAddressPort(serverConf, serverTreeConf.directives.at(i).second);
 			hasListen = true;
 		}
-		if (serverTreeConf.directives.at(i).first == "error_page")
-			addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
+		// if (serverTreeConf.directives.at(i).first == "error_page")
+		// 	addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
 	}
 	if (hasListen == false)
 		throw std::runtime_error("config file does not contain listen directive");
@@ -93,6 +93,8 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			throw std::runtime_error("invalid block directive argument (location)");
 		locationConf = getLocationConfig(locationTree.at(i).second, serverConf);
 		locationConf.path = locationTree.at(i).first.second;
+		locationConf.isCgi = locationConf.path.find("/cgi-bin") == 0;
+		std::cout << "*******************locationConf.path = " << locationConf.path << std::endl;
 		serverConf.locations.push_back(locationConf);
 	}
 	return (serverConf);
@@ -127,13 +129,13 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 			httpConf.clientMaxBodySize = strToNum(httpTree.second.directives.at(i).second);
 			hasClientMaxBodySize = true;
 		}
+		if (httpTree.second.directives.at(i).first == "index")
+			httpConf.index = checkIndexFiles(httpTree.second.directives.at(i).second);
 		if (httpTree.second.directives.at(i).first == "autoindex")
 		{
 			httpConf.autoindex = checkAutoindex(httpTree.second.directives.at(i).second);
 			hasAutoindex = true;
 		}
-		if (httpTree.second.directives.at(i).first == "index")
-			httpConf.index = checkIndexFiles(httpTree.second.directives.at(i).second);
 	}
 	if (!hasRoot)
 		httpConf.root = FALLBACK_ROOT;

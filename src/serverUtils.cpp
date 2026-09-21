@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/07 13:51:36 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/15 17:48:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	closeClientConnection(int fd, std::map<int, t_client> &clients, int err)
 	else if (err == EPOLLIN)
 		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
 	else
-		std::cerr << "Error: " << strerror(err) << std::endl; 
+		std::cerr << "Error: " << strerror(err) << std::endl;
 	//WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
 }
 

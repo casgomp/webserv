@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/14 17:43:15 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/21 10:59:30 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,12 +23,14 @@
 # include <iostream>
 # include <map>
 # include <netdb.h>
+# include <queue>
 # include <stdlib.h>
 # include <string>
 # include <string.h>
 # include <sstream>
 # include <sys/epoll.h>
 # include <sys/types.h>
+# include <sys/stat.h>
 # include <sys/socket.h>
 # include <unistd.h>
 # include <vector>
@@ -38,14 +40,13 @@
 //config macros
 # define FALLBACK_ROOT "content/"
 # define FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
+# define FALLBACK_INDEX "index.html"
 # define FALLBACK_AUTOINDEX false
 
 //server macros
 // #define PORT "3490" //not needed anymore
 #define MAX_EVENTS 64
 #define BUFFER_SIZE 1024
-
-//error message macros? like the ones in closeConnection()?
 
 //directive blocks (parsing)
 typedef struct	s_block {
@@ -60,11 +61,11 @@ typedef struct	s_locationConf {
 	bool								autoindex; //inherit
 	std::vector<std::string>			index; //inherit
 	std::string							path;
-	std::vector<std::string>			allowedMethods;//nicer would be a map<std::string, bool>
+	std::vector<std::string>			allowedMethods;
 	std::pair<int, std::string>			redirection;
-	s_locationConf() : clientMaxBodySize(0), autoindex(false)
+	bool								isCgi;
+	s_locationConf() : clientMaxBodySize(0), autoindex(false), isCgi(false)
 	{
-		index.push_back("index.html");
 		allowedMethods.push_back("GET");
 		allowedMethods.push_back("POST");
 		allowedMethods.push_back("DELETE");
@@ -78,12 +79,8 @@ typedef struct	s_serverConf {
 	std::vector<std::string>							index; //inherit
 	std::vector<std::string>							serverNames;
 	std::vector<std::pair<std::string, std::string> >	listen;
-	std::map<int, std::string>							errorPages;
 	std::vector<t_locationConf>							locations;
-	s_serverConf() : clientMaxBodySize(0), autoindex(false)
-	{
-		index.push_back("index.html");
-	}
+	s_serverConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_serverConf;
 
 typedef struct	s_httpConf {
@@ -97,10 +94,7 @@ typedef struct	s_httpConf {
 	bool								autoindex; //inherit
 	std::vector<std::string>			index;
 	std::vector<t_serverConf>			servers;
-	s_httpConf() : clientMaxBodySize(0), autoindex(false)
-	{
-		index.push_back("index.html");
-	}
+	s_httpConf() : clientMaxBodySize(0), autoindex(false) {}
 } t_httpConf;
 
 //server init
@@ -109,7 +103,16 @@ typedef std::map<int, std::pair<std::string, std::string> >							t_listeningSoc
 
 //server events
 typedef struct	s_responseInstructions {
-	;
+	int			statusCode;
+	bool		isRedirect;
+	std::string	redirectLocation;
+	bool		isCgi;
+	bool		isAutoIndex;
+	std::string	resolvedPath;
+	std::string	contentType;//decide who does this part (at validation or at response forming)
+	bool		closeConnection;//only in client?
+	s_responseInstructions() : statusCode(0), isRedirect(false), redirectLocation(""), isCgi(false),
+		isAutoIndex(false), resolvedPath(""), contentType(""), closeConnection(false) {}
 } t_responseInstructions;
 
 typedef struct	s_client {
@@ -117,7 +120,8 @@ typedef struct	s_client {
 	t_serverConf						*serverConf;
 	std::string							request;
 	std::string							response;
-	size_t								bytes_sent;
+	size_t								bytesSent;
+	bool								keepAlive;
 } t_client;
 
 //main
@@ -157,5 +161,13 @@ void									requestRouting(int fd, std::map<int, t_client> &clients,
 											t_listenServers &listenServers, const HttpRequest &httpRequest);
 //requestValidation
 t_responseInstructions					requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
+//requestValidationUtils
+t_locationConf*							matchLocation(std::vector<t_locationConf> &locations, const std::string &target);
+int										validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod);
+std::string								createRedirectPath(t_locationConf *location);
+void									normalizePath(const std::string &target, std::string &normalizedTarget);
+std::string								joinedPath(std::string root, std::string normalizedTarget);
+bool									pathIsFile(const std::string &resolvedPath);
+bool									pathIsDir(const std::string &resolvedPath);
 
 #endif
