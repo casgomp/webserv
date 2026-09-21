@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/15 06:33:49 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/21 22:39:22 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@ void	clearRequest(HttpRequest &request)
 {
 	request.requestLine.method.clear();
 	request.requestLine.target.clear();
+	request.requestLine.queryString.clear();
 	request.requestLine.version.clear();
     request.headers.clear();
     request.body.clear();

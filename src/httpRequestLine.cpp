@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/15 07:13:43 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/21 22:41:23 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -183,6 +183,16 @@ static bool isValidParsedStartLineValues(int &statusCode, const StartLine &line)
     return true;
 }
 
+static void splitQueryString(StartLine &line)
+{
+    size_t pos = line.target.find('?');
+
+    if (pos == std::string::npos)
+        return;
+    line.queryString = line.target.substr(pos + 1);
+    line.target = line.target.substr(0, pos);
+}
+
 bool parseStartLine(const std::string &buffer, HttpRequest &request)
 {
     size_t end = buffer.find("\r\n");
@@ -223,5 +233,6 @@ bool parseStartLine(const std::string &buffer, HttpRequest &request)
     request.requestLine.version = line.substr(secondSpace + 1);
 	if (!isValidParsedStartLineValues(request.statusCode, request.requestLine))
         return false;
+	splitQueryString(request.requestLine);
 	return true;
 }

@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:47 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 11:18:40 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/21 22:48:40 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ HttpRequestParserTests::HttpRequestParserTests() : TestSuite("HttpRequestParserT
 
 void HttpRequestParserTests::run_all()
 {
-	std::cout << "Running HttpRequestParserTests..." << std::endl;
+	std::cout << "\n\033[30;105mRunning HttpRequestParserTests...\033[0m\n" << std::endl;
 
 	//general
 	testValidRequest();
@@ -28,6 +28,7 @@ void HttpRequestParserTests::run_all()
 	testMalformedMethod();
 	testUnsupportedMethod();
 	testOriginFormTarget();
+	testQueryString();
 	testHttpVersion();
 	testRequestLineLength();
 	//Headers and framing
@@ -187,6 +188,21 @@ void	HttpRequestParserTests::testOriginFormTarget()
 	result = parseRequest(request, httpRequest);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"query with percent encoding returns COMPLETE with no error");
+}
+
+void	HttpRequestParserTests::testQueryString()
+{
+	std::string request = "GET /search?q=hello HTTP/1.1\r\n"
+						"Host: localhost\r\n"
+						"\r\n";
+	HttpRequest httpRequest;
+
+	ParseResult result = parseRequest(request, httpRequest);
+
+	check((result == COMPLETE) &&
+		(httpRequest.requestLine.target == "/search") &&
+		(httpRequest.requestLine.queryString == "q=hello"),
+		"query string is separated from request target");
 }
 
 void	HttpRequestParserTests::testHttpVersion()
