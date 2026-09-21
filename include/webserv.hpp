@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/20 12:52:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/21 10:59:30 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,8 @@ typedef struct	s_responseInstructions {
 	std::string	resolvedPath;
 	std::string	contentType;//decide who does this part (at validation or at response forming)
 	bool		closeConnection;//only in client?
+	s_responseInstructions() : statusCode(0), isRedirect(false), redirectLocation(""), isCgi(false),
+		isAutoIndex(false), resolvedPath(""), contentType(""), closeConnection(false) {}
 } t_responseInstructions;
 
 typedef struct	s_client {
