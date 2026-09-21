@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/21 10:59:30 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/21 18:43:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 # include <algorithm>
 # include <cctype>
+# include <cstdio>
 # include <cstring>
 # include <dirent.h>
 # include <errno.h>
@@ -44,7 +45,6 @@
 # define FALLBACK_AUTOINDEX false
 
 //server macros
-// #define PORT "3490" //not needed anymore
 #define MAX_EVENTS 64
 #define BUFFER_SIZE 1024
 
@@ -109,7 +109,7 @@ typedef struct	s_responseInstructions {
 	bool		isCgi;
 	bool		isAutoIndex;
 	std::string	resolvedPath;
-	std::string	contentType;//decide who does this part (at validation or at response forming)
+	std::string	contentType;
 	bool		closeConnection;//only in client?
 	s_responseInstructions() : statusCode(0), isRedirect(false), redirectLocation(""), isCgi(false),
 		isAutoIndex(false), resolvedPath(""), contentType(""), closeConnection(false) {}
@@ -148,7 +148,6 @@ int										checkAutoindex(const std::string &autoindex);
 std::vector<std::string>				checkIndexFiles(const std::string &input);
 void									addServerNames(t_serverConf &serverConf, const std::string &input);
 void									addListenAddressPort(t_serverConf &serverConf, const std::string &input);
-void									addErrorPages(t_serverConf &serverConf, const std::string &input);
 void									addAllowedMethods(t_locationConf &locationConf, const std::string &input);
 void									addRedirection(t_locationConf &locationConf, const std::string &input);
 //serverInit
@@ -169,5 +168,7 @@ void									normalizePath(const std::string &target, std::string &normalizedTar
 std::string								joinedPath(std::string root, std::string normalizedTarget);
 bool									pathIsFile(const std::string &resolvedPath);
 bool									pathIsDir(const std::string &resolvedPath);
+std::map<std::string, std::string>		getValidMimeTypes();
+std::string								getContentType(const std::string &path);
 
 #endif

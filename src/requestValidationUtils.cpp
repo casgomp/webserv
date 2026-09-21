@@ -6,11 +6,48 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/20 14:14:41 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/21 18:43:36 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/webserv.hpp"
+
+std::map<std::string, std::string>	getValidMimeTypes()
+{
+	std::map<std::string, std::string>	mime;
+
+	mime["html"] = "text/html";
+	mime["htm"]  = "text/html";
+	mime["css"]  = "text/css";
+	mime["js"]   = "application/javascript";
+	mime["json"] = "application/json";
+	mime["txt"]  = "text/plain";
+	mime["png"]  = "image/png";
+	mime["jpg"]  = "image/jpeg";
+	mime["jpeg"] = "image/jpeg";
+	mime["gif"]  = "image/gif";
+	mime["pdf"]  = "application/pdf";
+	mime["mp4"]  = "video/mp4";
+	return (mime);
+}
+
+std::string	getContentType(const std::string &path)
+{
+	std::map<std::string, std::string>				mime = getValidMimeTypes();
+	std::map<std::string, std::string>::iterator	it;
+	std::string										fallbackMime = "application/octet-stream";
+	size_t											dot;
+	std::string										ext;
+
+	dot = path.find_last_of('.');
+	if (dot == std::string::npos)
+		return (fallbackMime);
+	ext = path.substr(dot + 1);
+	it = mime.find(ext);
+	if (it != mime.end())
+		return (it->second);
+	return (fallbackMime);
+}
 
 bool	pathIsDir(const std::string &resolvedPath)
 {

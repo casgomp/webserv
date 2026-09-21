@@ -17,6 +17,27 @@
 
 ServerTests::ServerTests() : TestSuite("ServerTests") {}
 
+void	ServerTests::test_getValidMimeTypes()
+{
+	std::map<std::string, std::string>	mime = getValidMimeTypes();
+
+	check(!mime.empty(), "getValidMimeTypes returns a non-empty map");
+	check(mime["html"] == "text/html", "getValidMimeTypes mime.[html] = text/html");
+	check(mime["txt"] == "text/plain", "getValidMimeTypes mime.[txt] = text/plain");
+	check(mime["mp4"] == "video/mp4", "getValidMimeTypes mime.[mp4] = video/mp4");
+}
+
+void	ServerTests::test_getContentType()
+{
+	std::string	type1 = getContentType("file.html");
+	std::string	type2 = getContentType("content/file.txt");
+	std::string	type3 = getContentType("content.user/file.user.date.json");
+
+	check(type1 == "text/html", "getContentType returns correct content-type for file path");
+	check(type2 == "text/plain", "getContentType returns correct content-type for dir/file path");
+	check(type3 == "application/json", "getContentType returns correct content-type for path with multiple dots");
+}
+
 void    ServerTests::test_pathIsDir()
 {
 	std::ofstream tmpFile("test_pathIsDir.tmp");
@@ -331,6 +352,8 @@ void	ServerTests::run_all()
 	test_joinedPath();
 	test_pathIsFile();
 	test_pathIsDir();
+	test_getContentType();
+	test_getValidMimeTypes();
 
 	printSummary();
 }

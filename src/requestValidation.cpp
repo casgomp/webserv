@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/20 13:22:18 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/21 18:43:38 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,51 +77,92 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	}
 	if (httpRequest.requestLine.method == "GET")
 	{
-		if (isFile)
-			responseInstructions.resolvedPath = resolvedPath;
-		else
+		std::cout << "*****GET request validation******" << std::endl;
+		std::cout << "resolvedPath1: " << resolvedPath << std::endl;////////////////////////////////////////
+		if (!isFile)
 		{
 			if (!location->index.empty())
-			{
 				resolvedPath = joinedPath(resolvedPath, location->index.at(0));
-				std::cout << "location->index.at(0) = " << location->index.at(0) << std::endl;
-				responseInstructions.resolvedPath = resolvedPath;
-			}
 			else if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
-			{
-				responseInstructions.resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
-				std::cout << "pathIsFile" << std::endl;
-			}
+				resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
 			else if (location->autoindex)
-			{
-				std::cout << "autoindex" << std::endl;
-				responseInstructions.resolvedPath = resolvedPath;
 				responseInstructions.isAutoIndex = true;
+			else
+			{
+				responseInstructions.statusCode = 403;
+				return (responseInstructions);
 			}
 		}
-		std::cout << "resolvedPathIndexFile = " << responseInstructions.resolvedPath << std::endl;
-		if (access(responseInstructions.resolvedPath.c_str(), R_OK) != 0)
+		if (access(resolvedPath.c_str(), R_OK) != 0)
 		{
 			responseInstructions.statusCode = 403;
 			return (responseInstructions);
 		}
+		std::cout << "resolvedPath2: " << resolvedPath << std::endl;////////////////////////////////////////
+		responseInstructions.resolvedPath = resolvedPath;
+		responseInstructions.contentType = getContentType(resolvedPath);
 		responseInstructions.statusCode = 200;
+		return (responseInstructions);
 	}
 	else if (httpRequest.requestLine.method == "POST")
 	{
-		//functionvalidate file permissions
+		std::cout << "*****POST request validation******" << std::endl;
+		if (httpRequest.body.size() > location->clientMaxBodySize)
+		{
+			responseInstructions.statusCode = 413;
+			return (responseInstructions);
+		}
+		if (getContentType(resolvedPath) == "application/octet-stream")
+		{
+			responseInstructions.statusCode = 415;
+			return (responseInstructions);
+		}
+		if (isFile)
+		{
+			if (access(resolvedPath.c_str(), W_OK) != 0)
+			{
+				responseInstructions.statusCode = 403;
+				return (responseInstructions);
+			}
+		}
+		else
+		{
+			if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
+			{
+				responseInstructions.statusCode = 403;
+				return (responseInstructions);
+			}
+		}
+		responseInstructions.resolvedPath = resolvedPath;
+		responseInstructions.contentType = getContentType(resolvedPath);
+		responseInstructions.statusCode = 201;
+		return (responseInstructions);
 	}
 	else if (httpRequest.requestLine.method == "DELETE")
 	{
-		//functionvalidate ? file permissions
+		std::cout << "*****DELETE request validation******" << std::endl;
+		if (!isFile)
+		{
+			responseInstructions.statusCode = 403;
+			return (responseInstructions);
+		}
+		if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
+		{
+			responseInstructions.statusCode = 403;
+			return (responseInstructions);
+		}
+		//to be consistent with validation first, action and response building second,
+		//move actual deletion to the response building part.
+		//std::remove(resolvedPath.c_str());
+		responseInstructions.statusCode = 204;
+		return (responseInstructions);
 	}
 	return (responseInstructions);
 }
 
 
 //VALIDATE (in the following order):
-//1. route-path matching for /fruits, at parsing, even if url contains fruitsaaaa, it's correct. So has
-//to be something like fruitas, so not matching the full word. Example: target is /docs/docs and I have locations 
+//1. route-path matching Example: target is /docs/docs and I have locations 
 //docs and /docs/docs/ ....both match but docs/docs/ wins because it is longer. Find the location at beginning of the target.
 	//404 (Not found)
 //2. allowed methods 
