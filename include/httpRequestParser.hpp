@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/14 13:10:03 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/21 22:38:46 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ struct StartLine
 {
     std::string	method;
     std::string	target;
+	std::string	queryString;
     std::string	version;
 };
 

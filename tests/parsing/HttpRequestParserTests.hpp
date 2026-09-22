@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:58 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 10:44:55 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/21 22:43:46 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ class HttpRequestParserTests : public TestSuite {
 		void testMalformedMethod();
 		void testUnsupportedMethod();
 		void testOriginFormTarget();
+		void testQueryString();
 		void testHttpVersion();
 		void testRequestLineLength();
 
