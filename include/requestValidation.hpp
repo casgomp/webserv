@@ -1,26 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpRequestParser.hpp                              :+:      :+:    :+:   */
+/*   requestValidation.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:46:18 by pecastro         ###   ########.fr       */
+/*   Created: 2026/09/22 11:15:29 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/22 14:32:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_REQUEST_PARSER_HPP
-# define HTTP_REQUEST_PARSER_HPP
+#ifndef REQUEST_VALIDATION_HPP
+# define REQUEST_VALIDATION_HPP
 
-# include <string>
-# include <map>
+// # include "main.hpp"
+# include "httpRequestParser.hpp"
+# include "configConf.hpp"
+# include "requestValidationUtils.hpp"
 
-# include "httpRequestParserUtils.hpp"
-
-ParseResult parseRequest(
-    const std::string &buffer,
-    HttpRequest &request
-);
+t_responseInstructions	requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
 
 #endif

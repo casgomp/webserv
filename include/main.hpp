@@ -1,26 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpRequestParser.hpp                              :+:      :+:    :+:   */
+/*   main.hpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:46:18 by pecastro         ###   ########.fr       */
+/*   Created: 2026/09/03 18:26:55 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/22 14:39:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_REQUEST_PARSER_HPP
-# define HTTP_REQUEST_PARSER_HPP
+#ifndef WEBSERV_HPP
+# define WEBSERV_HPP
 
-# include <string>
-# include <map>
+# include "httpRequestParser.hpp"
 
-# include "httpRequestParserUtils.hpp"
-
-ParseResult parseRequest(
-    const std::string &buffer,
-    HttpRequest &request
-);
+int	main(int argc, char **argv);
 
 #endif

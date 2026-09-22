@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestLine.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/21 22:41:23 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/22 14:53:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "httpRequestParserInternal.hpp"
-#include <cctype>
+# include <cctype>
+# include <string>
+
+# include "httpRequestParserUtils.hpp"
 
 static const size_t MAX_REQUEST_LINE = 8000;
 

@@ -6,11 +6,19 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/21 18:43:38 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 14:31:56 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <iostream>
+# include <unistd.h>
+
+# include "requestValidation.hpp"
+# include "requestValidationUtils.hpp"
+# include "httpRequestParser.hpp"
+# include "configConf.hpp"
+
+# define FALLBACK_INDEX "index.html"
 
 t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf)
 {

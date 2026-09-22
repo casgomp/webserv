@@ -6,11 +6,19 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 17:50:30 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 14:55:10 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <iostream>
+
+# include "main.hpp"
+# include "configParse.hpp"
+# include "configConf.hpp"
+# include "configInterface.hpp"
+# include "serverInit.hpp"
+# include "serverEvent.hpp"
+
 
 int	main(int argc, char **argv)
 {

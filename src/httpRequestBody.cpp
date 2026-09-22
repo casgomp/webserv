@@ -3,15 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestBody.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 12:00:31 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/15 06:41:31 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/22 14:47:32 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "httpRequestParserInternal.hpp"
-#include <limits>
+# include <limits>
+# include <string>
+
+#include "httpRequestParserUtils.hpp"
 
 static int	hexDigitValue(char c)
 {

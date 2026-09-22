@@ -6,14 +6,20 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/19 16:29:13 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 14:31:13 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <iostream>
 
-//getMimeTypes() //to be called when doing response and mapping extension (e.g. html) to get mime type (e.g. text/html)
-//checking if *:port, to be done at server init.
+# include "configConf.hpp"
+# include "configParse.hpp"
+# include "configInterface.hpp"
+# include "configInterfaceUtils.hpp"
+
+# define FALLBACK_ROOT "content/"
+# define FALLBACK_CLIENT_MAX_BODY_SIZE 1048576
+# define FALLBACK_AUTOINDEX false
 
 t_locationConf	getLocationConfig(const t_block &locationTreeConf, const t_serverConf &serverConf)
 {
