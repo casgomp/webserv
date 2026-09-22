@@ -6,11 +6,20 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 14:24:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/15 16:59:41 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 14:09:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <algorithm>
+# include <map>
+# include <stdexcept>
+# include <string>
+# include <vector>
+
+# include "requestRouting.hpp"
+# include "httpRequestParser.hpp"
+# include "serverInit.hpp"
+# include "serverUtils.hpp"
 
 void	requestRouting(int fd, std::map<int, t_client> &clients, 
 			t_listenServers &listenServers, const HttpRequest &httpRequest)

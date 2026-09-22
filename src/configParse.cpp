@@ -6,11 +6,14 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/04 15:01:40 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 13:23:21 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <fstream>
+# include <iostream>
+
+# include "configParse.hpp"
 
 void	printConfig(t_block conf, int depth)
 {

@@ -6,11 +6,20 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/19 16:29:23 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 13:33:33 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <cerrno>
+# include <cstdlib>
+# include <cstring>
+# include <dirent.h>
+# include <string>
+# include <sys/types.h>
+# include <unistd.h>
+
+# include "configInterfaceUtils.hpp"
+# include "configConf.hpp"
 
 bool	isNumeric(const std::string &str)
 {

@@ -1,26 +1,26 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpRequestParser.hpp                              :+:      :+:    :+:   */
+/*   configInterface.hpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:46:18 by pecastro         ###   ########.fr       */
+/*   Created: 2026/09/22 11:13:40 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/22 14:31:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_REQUEST_PARSER_HPP
-# define HTTP_REQUEST_PARSER_HPP
+
+#ifndef _HPP
+# define _HPP
 
 # include <string>
-# include <map>
+# include <vector>
 
-# include "httpRequestParserUtils.hpp"
+# include "configConf.hpp"
 
-ParseResult parseRequest(
-    const std::string &buffer,
-    HttpRequest &request
-);
+t_httpConf		getConfigInterface(const t_block &ptreeConf);
+t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &httpConf);
+t_locationConf	getLocationConfig(const t_block &locationTreeConf, const t_serverConf &serverConf);
 
 #endif

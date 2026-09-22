@@ -6,11 +6,26 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/21 18:43:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 14:38:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <cerrno>
+# include <cstring>
+# include <fcntl.h>
+# include <iostream>
+# include <stdexcept>
+# include <sys/epoll.h>
+# include <sys/socket.h>
+# include <unistd.h>
+
+# include "httpRequestParser.hpp"
+# include "serverEvent.hpp"
+# include "serverInit.hpp"
+# include "serverUtils.hpp"
+# include "requestRouting.hpp"
+# include "requestValidation.hpp"
+# include "requestValidationUtils.hpp"
 
 void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets)
 {

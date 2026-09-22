@@ -1,26 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpRequestParser.hpp                              :+:      :+:    :+:   */
+/*   requestRouting.hpp                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:46:18 by pecastro         ###   ########.fr       */
+/*   Created: 2026/09/22 11:15:19 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/22 14:06:31 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_REQUEST_PARSER_HPP
-# define HTTP_REQUEST_PARSER_HPP
+#ifndef REQUEST_ROUTING_HPP
+# define REQUEST_ROUTING_HPP
 
-# include <string>
 # include <map>
 
-# include "httpRequestParserUtils.hpp"
+# include "httpRequestParser.hpp"
+# include "serverUtils.hpp"
 
-ParseResult parseRequest(
-    const std::string &buffer,
-    HttpRequest &request
-);
+void	requestRouting(int fd, std::map<int, t_client> &clients, 
+			t_listenServers &listenServers, const HttpRequest &httpRequest);
 
 #endif
