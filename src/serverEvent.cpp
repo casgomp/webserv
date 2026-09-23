@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:38:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/23 15:50:54 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,11 +188,17 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 									<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
 									<< "contentType: " << responseInstructions.contentType << std::endl;
 
-									
+						if (responseInstructions.isCgi)
+						{
+							//struct  CgiInfo = {pipe read fd for epoll, child pid?, }
+							//cgiInfo = cgiExecute(responseInstructions, httpRequest);
+						}
+
+						//what about keep-alive or close at this point?
+
 						//create reponse for client[fd].response = responseCreate(responseInstructions);
 
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
-
 						
 					}
 					//else if PARSE_INCOMPLETE, don't do anything.
