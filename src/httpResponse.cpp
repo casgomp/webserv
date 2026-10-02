@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/01 23:14:46 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/02 18:27:23 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,11 +64,11 @@ static std::string	encodeUrl(const std::string &text)
 	return result;
 }
 
-static void buildAutoIndexBody(std::string &body, const t_responseInstructions &instructions)
+static bool buildAutoIndexBody(std::string &body, const t_responseInstructions &instructions)
 {
 	DIR	*dir = opendir(instructions.resolvedPath.c_str());
 	if (!dir)
-		return;
+		return false;
 	struct dirent *entry;
 
 	body = "<html>\n"
@@ -88,23 +88,23 @@ static void buildAutoIndexBody(std::string &body, const t_responseInstructions &
         "</html>\n";
 
 	closedir(dir);
+	return true;
 }
 
-static void	buildBody(std::string &body,const t_responseInstructions &instructions)
+static bool	buildBody(std::string &body,const t_responseInstructions &instructions)
 {
 	if (instructions.isAutoIndex)
-	{
-		// Generate HTML directory listing
-		buildAutoIndexBody(body, instructions);
-		// Store the generated HTML in body
-		return;
-	}
-	std::ifstream	file(instructions.resolvedPath.c_str());
+		return buildAutoIndexBody(body, instructions);
+
+	std::ifstream	file(instructions.resolvedPath.c_str(), std::ios::binary);
 	if (!file.is_open())
-		return;
+		return false;
 	std::stringstream buffer;
 	buffer << file.rdbuf();
+	if (file.bad())
+        return false;
 	body = buffer.str();
+	return true;
 }
 
 static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
@@ -125,43 +125,66 @@ static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
 	reasonPhrase[500] = "Internal Server Error";
 }
 
+static std::string getReasonPhrase(int statusCode)
+{
+    if (!initialized)
+    {
+        initReasonPhrases(reasonPhrase);
+        initialized = true;
+    }
+
+    std::map<int, std::string>::const_iterator it;
+    it = reasonPhrase.find(statusCode);
+
+    if (it != reasonPhrase.end())
+        return it->second;
+
+    return "Unknown";
+}
+
+static std::string	buildErrorBody(int statusCode)
+{
+	std::ostringstream	body;
+	std::string			message;
+
+	message = getReasonPhrase(statusCode);
+	body << "<html>\n"
+		<< "<head><title>"  << statusCode << " " << message << "</title></head>\n"
+		<< "<body>\n"
+		<< "<center><h1>" << statusCode << " " << message << "</h1></center>\n"
+		<< "<hr><center>HTTP Amigos/1.0.0</center>\n"
+		<< "</body>\n"
+		<< "</html>\n";
+	return body.str();
+}
+
 static void	buildStatusLine(std::string &response, const t_responseInstructions &instructions)
 {
 	std::stringstream						ss;
-	std::map<int, std::string>::iterator	it;
-	std::string								code;
 
-	if (!initialized)
-	{
-		initReasonPhrases(reasonPhrase);
-		initialized = true;
-	}
 	ss << instructions.statusCode;
-	it = reasonPhrase.find(instructions.statusCode);
-	if (it != reasonPhrase.end())
-		code = it->second;
-	response =  "HTTP/1.1 " + ss.str() + " " + code + "\r\n";
+	response =  "HTTP/1.1 " + ss.str() + " " + getReasonPhrase(instructions.statusCode) + "\r\n";
 }
 
 static void	buildHeaders(std::string &response,
 	const t_responseInstructions &instructions, const std::string &body)
 {
-	if (instructions.isAutoIndex)
+	if ((instructions.statusCode >= 400 && instructions.statusCode <= 599) ||
+		instructions.isAutoIndex)
+	{
 		response += "Content-Type: text/html\r\n";
+	}
 	else
 		response += "Content-Type: " + instructions.contentType + "\r\n";
 	std::stringstream len;
 	len << body.size();
 	response += "Content-Length: " + len.str() + "\r\n";
-	if (instructions.isRedirect == true)
+	if (instructions.statusCode >= 300 && instructions.statusCode < 400 && instructions.isRedirect)
 		response += "Location: " + instructions.redirectLocation + "\r\n";
 	if (!instructions.closeConnection)
 		response += "Connection: keep-alive\r\n";
 	else
 		response += "Connection: close\r\n";
-
-
-
 }
 
 static bool deleteFile(const std::string &path)
@@ -203,7 +226,12 @@ std::string	buildHttpResponse(const t_responseInstructions &instructions,
 			result.statusCode = 500;
 	}
 	if (method == "GET" && result.statusCode == 200)
-		buildBody(body, result);
+	{
+		if (!buildBody(body, result))
+			result.statusCode = 500;
+	}
+	if (result.statusCode >= 400 && result.statusCode <= 599)
+		body = buildErrorBody(result.statusCode);
 	buildStatusLine(response, result);
 
 	buildHeaders(response, result, body);
