@@ -1,4 +1,4 @@
-TESTERS = parsing server
+TESTERS = parsing server response
 
 all: $(TESTERS)
 
@@ -10,6 +10,10 @@ server:
 	$(MAKE) -C server
 	./server/run_server_tests
 
+response:
+	$(MAKE) -C response
+	./response/run_response_tests
+
 clean:
 	@for dir in $(TESTERS); do $(MAKE) -C $$dir clean; done
 
@@ -18,4 +22,4 @@ fclean:
 
 re: fclean all
 
-.PHONY: all parsing server clean fclean re
+.PHONY: all response parsing server clean fclean re
