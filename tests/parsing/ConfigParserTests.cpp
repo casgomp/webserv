@@ -6,12 +6,15 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/20 14:45:46 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 15:23:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "ConfigParserTests.hpp"
-#include "../../include/webserv.hpp"
+# include "ConfigParserTests.hpp"
+
+# include "configConf.hpp"
+# include "configInterfaceUtils.hpp"
+# include "configParse.hpp"
 
 ConfigParserTests::ConfigParserTests() : TestSuite("ConfigParserTests") {}
 

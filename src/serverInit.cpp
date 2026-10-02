@@ -6,11 +6,20 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/09 10:38:09 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 13:44:42 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <cerrno>
+# include <cstring>
+# include <iostream>
+# include <netdb.h>
+# include <stdexcept>
+# include <sys/socket.h>
+# include <sys/types.h>
+# include <unistd.h>
+
+# include "serverInit.hpp"
 
 t_listeningSockets	serverInit(t_listenServers &listenServers)
 {

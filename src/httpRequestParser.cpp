@@ -3,19 +3,21 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestParser.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/15 06:33:49 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/22 14:42:49 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "httpRequestParserInternal.hpp"
+#include "httpRequestParser.hpp"
+#include "httpRequestParserUtils.hpp"
 
 void	clearRequest(HttpRequest &request)
 {
 	request.requestLine.method.clear();
 	request.requestLine.target.clear();
+	request.requestLine.queryString.clear();
 	request.requestLine.version.clear();
     request.headers.clear();
     request.body.clear();

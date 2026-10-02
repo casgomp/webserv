@@ -6,11 +6,22 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/21 18:43:36 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/09/22 14:19:52 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../include/webserv.hpp"
+# include <algorithm>
+# include <cstdio>
+# include <map>
+# include <sstream>
+# include <string>
+# include <sys/types.h>
+# include <sys/stat.h>
+# include <vector>
+# include <unistd.h>
+
+# include "requestValidationUtils.hpp"
+# include "configConf.hpp"
 
 std::map<std::string, std::string>	getValidMimeTypes()
 {

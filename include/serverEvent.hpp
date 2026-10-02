@@ -1,26 +1,24 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   httpRequestParser.hpp                              :+:      :+:    :+:   */
+/*   serverEvent.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:46:18 by pecastro         ###   ########.fr       */
+/*   Created: 2026/09/22 11:14:42 by pecastro          #+#    #+#             */
+/*   Updated: 2026/09/22 13:58:34 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_REQUEST_PARSER_HPP
-# define HTTP_REQUEST_PARSER_HPP
+#ifndef SERVER_EVENT_HPP
+# define SERVER_EVENT_HPP
 
-# include <string>
-# include <map>
+// # include "main.hpp"
+# include "serverInit.hpp"
 
-# include "httpRequestParserUtils.hpp"
+#define MAX_EVENTS 64
+#define BUFFER_SIZE 1024
 
-ParseResult parseRequest(
-    const std::string &buffer,
-    HttpRequest &request
-);
+void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets);
 
 #endif

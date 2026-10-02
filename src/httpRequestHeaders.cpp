@@ -3,16 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestHeaders.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:47:22 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/14 22:47:26 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/09/22 14:50:10 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "httpRequestParserInternal.hpp"
-#include <limits>
-#include <cctype>
+# include <cctype>
+# include <limits>
+# include <map>
+# include <string>
+
+#include "httpRequestParserUtils.hpp"
 
 static void toLowercase(std::string &str)
 {
