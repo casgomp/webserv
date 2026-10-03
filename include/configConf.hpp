@@ -6,13 +6,14 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 13:29:25 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:57:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/03 15:06:23 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef CONFIG_CONF_HPP
 # define CONFIG_CONF_HPP
 
+# include <map>
 # include <string>
 # include <vector>
 
@@ -24,8 +25,8 @@ typedef struct	s_locationConf {
 	std::string							path;
 	std::vector<std::string>			allowedMethods;
 	std::pair<int, std::string>			redirection;
-	bool								isCgi;
-	s_locationConf() : clientMaxBodySize(0), autoindex(false), isCgi(false)
+	std::map<std::string, std::string>	cgiExtension;
+	s_locationConf() : clientMaxBodySize(0), autoindex(false)
 	{
 		allowedMethods.push_back("GET");
 		allowedMethods.push_back("POST");

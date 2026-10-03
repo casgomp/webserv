@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/23 15:13:58 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/03 15:24:07 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,8 @@ t_locationConf	getLocationConfig(const t_block &locationTreeConf, const t_server
 			addAllowedMethods(locationConf, locationTreeConf.directives.at(i).second);
 		if (locationTreeConf.directives.at(i).first == "return")
 			addRedirection(locationConf, locationTreeConf.directives.at(i).second);
+		if (locationTreeConf.directives.at(i).first == "cgi_extension")
+			addCgiExtension(locationConf, locationTreeConf.directives.at(i).second);
 	}
 	return (locationConf);
 }
@@ -99,8 +101,6 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			throw std::runtime_error("invalid block directive argument (location)");
 		locationConf = getLocationConfig(locationTree.at(i).second, serverConf);
 		locationConf.path = locationTree.at(i).first.second;
-		locationConf.isCgi = locationConf.path.find("/cgi-bin") == 0;
-		std::cout << "*******************locationConf.isCgi = " << locationConf.isCgi << std::endl;
 		std::cout << "*******************locationConf.path = " << locationConf.path << std::endl;
 		serverConf.locations.push_back(locationConf);
 	}

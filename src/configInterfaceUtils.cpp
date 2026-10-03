@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 13:33:33 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/03 15:15:22 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <string>
 # include <sys/types.h>
 # include <unistd.h>
+# include <iostream>//
 
 # include "configInterfaceUtils.hpp"
 # include "configConf.hpp"
@@ -29,6 +30,27 @@ bool	isNumeric(const std::string &str)
 			return(false);
 	}
 	return (true);
+}
+
+void	addCgiExtension(t_locationConf &locationConf, const std::string &input)
+{
+	if (input.empty())
+		throw std::runtime_error("empty string (cgi extension/interpreter)");
+	
+	std::istringstream			ss(input);
+	std::string					str;
+	std::vector<std::string>	vec;
+	std::string					ext;
+
+	while (ss >> str)
+		vec.push_back(str);
+	if (vec.size() != 2)
+		throw std::runtime_error("arguments != 2 (cgi extension/interpreter)");
+	ext = vec.at(0);
+	if (ext.empty() || ext.at(0) != '.')
+		throw std::runtime_error("extension must start with '.' (cgi extension/interpreter)");
+	locationConf.cgiExtension[ext.substr(1)] = vec.at(1);
+	// std::cout << "*******************locationConf.cgiExtension[" << ext.substr(1) << "] = " << locationConf.cgiExtension[ext.substr(1)] << std::endl;
 }
 
 void	addRedirection(t_locationConf &locationConf, const std::string &input)
