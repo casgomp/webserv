@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/03 15:24:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/04 14:52:32 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,7 +78,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		size_t	dot = resolvedPath.find_last_of('.');
 		if (dot == std::string::npos)
 		{
-			responseInstructions.statusCode = 500;
+			responseInstructions.statusCode = 403;
 			return (responseInstructions);
 		}
 		std::string ext = resolvedPath.substr(dot + 1);

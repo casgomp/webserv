@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/23 15:50:54 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/04 15:46:01 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 # include "requestRouting.hpp"
 # include "requestValidation.hpp"
 # include "requestValidationUtils.hpp"
+# include "cgiExecute.hpp"
 
 void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets)
 {
@@ -190,6 +191,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 						if (responseInstructions.isCgi)
 						{
+							//call executeCgi function
+							//create envp based on whether it's GET or POST.
 							//struct  CgiInfo = {pipe read fd for epoll, child pid?, }
 							//cgiInfo = cgiExecute(responseInstructions, httpRequest);
 						}
