@@ -83,7 +83,7 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 		if (p == NULL)
 			throw std::runtime_error(strerror(errno));
 		listeningSockets[fdServer] = std::make_pair(it->first.first, it->first.second);
-		std::cout << "listening on " << it->first.first << ":" << it->first.second << std::endl;
+		std::cout << "listening on " << it->first.first << ":" << it->first.second << std::endl;//DEBUGGING*********
 	}
 	return (listeningSockets);
 }

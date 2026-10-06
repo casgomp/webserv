@@ -15,11 +15,30 @@
 # include <cstring>
 # include <iostream>
 # include <map>
+# include <signal.h>
 # include <sys/epoll.h>
+# include <sys/wait.h>
 # include <unistd.h>
 
 # include "serverUtils.hpp"
 # include "serverInit.hpp"
+# include "cgiExecute.hpp"
+
+void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
+{
+	if (cgiProcess.pid > 0)
+	{
+		kill(cgiProcess.pid, SIGKILL);
+		waitpid(cgiProcess.pid, NULL, 0);
+	}
+	if (cgiProcess.stdinFd >= 0)
+		close(cgiProcess.stdinFd);
+	if (cgiProcess.stdoutFd >= 0)
+		close(cgiProcess.stdoutFd);
+	fdPipeToClient.erase(cgiProcess.stdinFd);
+	fdPipeToClient.erase(cgiProcess.stdoutFd);
+	cgiProcess = t_cgiProcess();
+}
 
 void	closeClientConnection(int fd, std::map<int, t_client> &clients, int err)
 {

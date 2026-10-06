@@ -27,6 +27,7 @@ typedef struct	s_client {
 void	closeClientConnection(int fd, std::map<int, t_client> &clients, int flag_err);
 void	cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients);
 void	closeListeningSockets(t_listeningSockets &listeningSockets);
+void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient);
 
 #endif
 

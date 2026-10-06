@@ -48,6 +48,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	// int						bytes_read;
 	std::string 			response = "hello from server!";
 	int						bytesSent;
+	//cgi
+	std::map<int, int>		fdPipeToClient;
 
 	(void)listenServers;
 
@@ -191,10 +193,46 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 						if (responseInstructions.isCgi)
 						{
-							//call executeCgi function
-							//create envp based on whether it's GET or POST.
-							//struct  CgiInfo = {pipe read fd for epoll, child pid?, }
-							//cgiInfo = cgiExecute(responseInstructions, httpRequest);
+							t_cgiProcess	cgiProcess;
+							if (executeCgi(httpRequest, responseInstructions, cgiProcess) != 0)
+								;//return error;
+							if (fcntl(cgiProcess.stdoutFd, F_SETFL, O_NONBLOCK) < 0)
+							{
+								int err = errno;
+								cleanupCgi(cgiProcess, fdPipeToClient);
+								closeClientConnection(fd, clients, err);
+								continue ;
+							}
+							fdPipeToClient[cgiProcess.stdoutFd] = fd;
+							ev.events = EPOLLIN;
+							ev.data.fd = cgiProcess.stdoutFd;
+							if (epoll_ctl(epfd, EPOLL_CTL_ADD, cgiProcess.stdoutFd, &ev) < 0)
+							{
+								int err = errno;
+								cleanupCgi(cgiProcess, fdPipeToClient);
+								closeClientConnection(fd, clients, err);
+								continue ;
+							}
+							if (cgiProcess.stdinFd != -1)
+							{
+								if (fcntl(cgiProcess.stdinFd, F_SETFL, O_NONBLOCK) < 0)
+								{
+									int err = errno;
+									cleanupCgi(cgiProcess, fdPipeToClient);
+									closeClientConnection(fd, clients, err);
+									continue ;
+								}
+								fdPipeToClient[cgiProcess.stdinFd] = fd;
+								ev.events = EPOLLOUT;
+								ev.data.fd = cgiProcess.stdinFd;
+								if (epoll_ctl(epfd, EPOLL_CTL_ADD, cgiProcess.stdinFd, &ev) < 0)
+								{
+									int err = errno;
+									cleanupCgi(cgiProcess, fdPipeToClient);
+									closeClientConnection(fd, clients, err);
+									continue ;
+								}
+							}				
 						}
 
 						//what about keep-alive or close at this point?
@@ -205,6 +243,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						
 					}
 					//else if PARSE_INCOMPLETE, don't do anything.
+						//continue;????
 					ev.events = EPOLLOUT;
 					ev.data.fd = fd;
 					if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)

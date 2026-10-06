@@ -25,7 +25,7 @@ typedef struct s_cgiProcess {
 	s_cgiProcess() : pid(-1), stdinFd(-1), stdoutFd(-1) {}
 } t_cgiProcess;
 
-t_cgiProcess				executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &responseInstructions);
+int							executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &responseInstructions, t_cgiProcess &cgiProcess);
 std::vector<std::string>	buildCgiEnvp(HttpRequest &httpRequest);
 
 #endif

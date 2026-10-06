@@ -48,11 +48,10 @@ static std::vector<char *>	toCharPtrs(const std::vector<std::string> &strs)
 	return (ptrs);
 }
 
-t_cgiProcess	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &responseInstructions)
+int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &responseInstructions, t_cgiProcess &proc)
 {
 	int				pipeR[2] = {-1, -1};
 	int				pipeW[2] = {-1, -1};
-	t_cgiProcess	proc;
 
 	if (pipe(pipeR) == -1)
 		;//return error?
@@ -81,11 +80,16 @@ t_cgiProcess	executeCgi(const HttpRequest &httpRequest, const t_responseInstruct
 		std::vector<char *>	envp = toCharPtrs(env);
 
 		execve(responseInstructions.cgiInterpreter.c_str(), &argv[0], &envp[0]);
-		exit (1);//exit means execve didn't work
+		_exit (127);//exit means execve didn't work
 	}
 	close(pipeR[0]);
 	close(pipeW[1]);
+	if (httpRequest.requestLine.method == "GET")
+	{
+		close (pipeR[1]);
+		pipeR[1] = -1;
+	}
 	proc.stdinFd = pipeR[1];
 	proc.stdoutFd = pipeW[0];
-	return (proc);
+	return (0);
 }
