@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:38:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 00:36:27 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -156,7 +156,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 						//body?
 					HttpRequest httpRequest;
 					// std::cout << "!!!!!!!!!!!!!!!!!!clients[fd].request: " << clients[fd].request << std::endl;
-					int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					int requestStatus = parseRequest(clients[fd].request, httpRequest, 10000); // TODO: use effective client_max_body_size
 					//int requestStatus = COMPLETE;///////
 					std::cout << "*********requestStatus: " << requestStatus << std::endl;
 					if (requestStatus == ERROR)
@@ -165,7 +165,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					if (requestStatus == COMPLETE)
 					{
-						try 
+						try
 						{
 							requestRouting(fd, clients, listenServers, httpRequest);
 						}
@@ -188,12 +188,12 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 									<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
 									<< "contentType: " << responseInstructions.contentType << std::endl;
 
-									
+
 						//create reponse for client[fd].response = responseCreate(responseInstructions);
 
 						// std::cout << "we received from client: " << clients[fd].request << std::endl;
 
-						
+
 					}
 					//else if PARSE_INCOMPLETE, don't do anything.
 					ev.events = EPOLLOUT;
