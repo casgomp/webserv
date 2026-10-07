@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/04 15:46:01 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 11:54:01 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,6 +116,11 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			{
 				;//deal with cgi
 				//againcheck if epoller, epollhup, epollin, epollout?
+
+				if (fd == clients[fd].cgiProcess.stdOut)
+				{
+					
+				}
 			}
 			else
 			{
@@ -176,14 +181,14 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
 
-						std::cout << "responseInstructions" << std::endl
-									<< "statusCode: " << responseInstructions.statusCode << std::endl
-									<< "isRedirect: " << responseInstructions.isRedirect << std::endl
-									<< "redirectLocation: " << responseInstructions.redirectLocation << std::endl
-									<< "isCgi: " << responseInstructions.isCgi << std::endl
-									<< "isAutoIndex: " << responseInstructions.isAutoIndex << std::endl
-									<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
-									<< "contentType: " << responseInstructions.contentType << std::endl;
+						// std::cout << "responseInstructions" << std::endl
+						// 			<< "statusCode: " << responseInstructions.statusCode << std::endl
+						// 			<< "isRedirect: " << responseInstructions.isRedirect << std::endl
+						// 			<< "redirectLocation: " << responseInstructions.redirectLocation << std::endl
+						// 			<< "isCgi: " << responseInstructions.isCgi << std::endl
+						// 			<< "isAutoIndex: " << responseInstructions.isAutoIndex << std::endl
+						// 			<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
+						// 			<< "contentType: " << responseInstructions.contentType << std::endl;
 
 						if (responseInstructions.isCgi)
 						{
@@ -226,7 +231,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 									closeClientConnection(fd, clients, err);
 									continue ;
 								}
-							}				
+							}
+							clients[fd].cgiProcess = cgiProcess;
 						}
 
 						//what about keep-alive or close at this point?

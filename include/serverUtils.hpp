@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 13:50:14 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 11:39:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 typedef struct	s_client {
 	std::pair<std::string, std::string>	pairAddressPort;
 	t_serverConf						*serverConf;
+	t_cgiProcess						cgiProcess;
 	std::string							request;
 	std::string							response;
 	size_t								bytesSent;

@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/04 15:55:00 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 12:59:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,8 @@ std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest)
 	else if (method == "POST")
 	{
 		cgiEnvp.push_back("CONTENT_LENGTH=" + oss.str());
-		//cgiEnvp.push_back("CONTENT_TYPE=" + httpRequest.requestLine.contentType);//contentType is missing from httpRequest headers in cgi POST request.
+		//if httpRequest.headers.find("content-type") == httpRequest.headers.end()
+		//cgiEnvp.push_back("CONTENT_TYPE=" + httpRequest.headers[contentType]);//contentType is missing from httpRequest headers in cgi POST request.
 	}
 	return (cgiEnvp);
 }
@@ -62,7 +63,6 @@ int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &res
 		;//return error?
 	if (proc.pid == 0)
 	{
-		//redirections in child, stdin and stdout
 		if (pipeR[1] != -1)
 			close(pipeR[1]);
 		if (pipeW[0] != -1)
@@ -71,16 +71,14 @@ int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &res
 		close(pipeR[0]);
 		dup2(pipeW[1], STDOUT_FILENO);
 		close(pipeW[1]);
-		//execve
 		std::vector<std::string>	args;
 		args.push_back(responseInstructions.cgiInterpreter);
 		args.push_back(responseInstructions.resolvedPath);
 		std::vector<char *>	argv = toCharPtrs(args);
 		std::vector<std::string>	env = buildCgiEnvp(httpRequest);
 		std::vector<char *>	envp = toCharPtrs(env);
-
 		execve(responseInstructions.cgiInterpreter.c_str(), &argv[0], &envp[0]);
-		_exit (127);//exit means execve didn't work
+		_exit (127);
 	}
 	close(pipeR[0]);
 	close(pipeW[1]);
