@@ -112,7 +112,11 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				// clients[fdClient].request.clear();//are these necessary? this is always a new client and therefore a new buffer isn't it?
 				// clients[fdClient].response.clear();
 			}
-
+			else if (fdPipeToClient.find(fd) != fdPipeToClient.end()) //fd is a pipefd for cgi
+			{
+				;//deal with cgi
+				//againcheck if epoller, epollhup, epollin, epollout?
+			}
 			else
 			{
 				/******************************CLIENT: HANDLING REQUEST/SENDING RESPONSE******************************/
@@ -146,17 +150,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					clients[fd].request.append(buf, byteCount);
 					memset(buf, 0, BUFFER_SIZE);
 
-					/*#############***SETUP REQUEST ROUTING***##############*/
-						//protocol version = HTTP 1.1
-						//path = /
-						//method = GET,POST,DELETE
-						//host = www.mywebsite.com
-						//user-agent = ? curl?
-						//accept = ?
-						//connection = keep-alive
-						//content-type = ?
-						//content lentght = ?
-						//body?
+					/*#############***PARSE AND ROUTING***##############*/
 					HttpRequest httpRequest;
 					// std::cout << "!!!!!!!!!!!!!!!!!!clients[fd].request: " << clients[fd].request << std::endl;
 					int requestStatus = parseRequest(clients[fd].request, httpRequest);
