@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 11:54:01 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 18:09:10 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	//recv(),send()
 	int						byteCount;
 	char					buf[BUFFER_SIZE];
+	size_t					ceilingClientMaxBodySize = 0;
 	// int						bytes_read;
 	std::string 			response = "hello from server!";
 	int						bytesSent;
@@ -70,6 +71,14 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			throw std::runtime_error(strerror(errno));
 		}
 		std::cout << "listening sockets = " << it->second.first << ":" << it->second.second << std::endl;
+	}
+	for(t_listenServers::iterator it = listenServers.begin(); it != listenServers.end(); it ++)//make helper function
+	{
+		for (size_t i = 0; i < it->second.size(); i ++)
+		{
+			if (it->second[i]->ceilingClientMaxBodySize > ceilingClientMaxBodySize)
+				ceilingClientMaxBodySize = it->second[i]->ceilingClientMaxBodySize;
+		}
 	}
 	while (1)
 	{
@@ -109,6 +118,9 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				}
 				clients[fdClient].pairAddressPort = listeningSockets[fd];
 				clients[fdClient].bytesSent = 0;
+
+				//helper function for maxceiling and store in client
+
 				// clients[fdClient].request.clear();//are these necessary? this is always a new client and therefore a new buffer isn't it?
 				// clients[fdClient].response.clear();
 			}
@@ -117,9 +129,9 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				;//deal with cgi
 				//againcheck if epoller, epollhup, epollin, epollout?
 
-				if (fd == clients[fd].cgiProcess.stdOut)
+				if (fd == clients[fd].cgiProcess.stdoutFd)//stdout or stdin?
 				{
-					
+					;
 				}
 			}
 			else
@@ -158,7 +170,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					/*#############***PARSE AND ROUTING***##############*/
 					HttpRequest httpRequest;
 					// std::cout << "!!!!!!!!!!!!!!!!!!clients[fd].request: " << clients[fd].request << std::endl;
-					int requestStatus = parseRequest(clients[fd].request, httpRequest);
+					int requestStatus = parseRequest(clients[fd].request, httpRequest, ceilingClientMaxBodySize);
 					//int requestStatus = COMPLETE;///////
 					std::cout << "*********requestStatus: " << requestStatus << std::endl;
 					if (requestStatus == ERROR)
@@ -167,7 +179,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					if (requestStatus == COMPLETE)
 					{
-						try 
+						try
 						{
 							requestRouting(fd, clients, listenServers, httpRequest);
 						}
@@ -244,6 +256,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					//else if PARSE_INCOMPLETE, don't do anything.
 						//continue;????
+					
 					ev.events = EPOLLOUT;
 					ev.data.fd = fd;
 					if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)

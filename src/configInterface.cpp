@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/03 15:24:07 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 18:08:42 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			hasListen = true;
 		}
 		// if (serverTreeConf.directives.at(i).first == "error_page")
-		// 	addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
+		// addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
 	}
 	if (hasListen == false)
 		throw std::runtime_error("config file does not contain listen directive");
@@ -103,6 +103,8 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 		locationConf.path = locationTree.at(i).first.second;
 		std::cout << "*******************locationConf.path = " << locationConf.path << std::endl;
 		serverConf.locations.push_back(locationConf);
+		if (locationConf.clientMaxBodySize > serverConf.ceilingClientMaxBodySize)
+			serverConf.ceilingClientMaxBodySize = locationConf.clientMaxBodySize;
 	}
 	return (serverConf);
 }

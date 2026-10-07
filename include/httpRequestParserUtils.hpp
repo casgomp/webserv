@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:36:52 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:56:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 13:11:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,12 +43,13 @@ enum ParseResult
 
 bool isValidToken(const std::string &token);
 bool parseStartLine(const std::string &buffer, HttpRequest &request);
+bool parseHeaderLine(const std::string &line, std::string &key, std::string &value);
 bool parseHeaders(const std::string &buffer, HttpRequest &request);
 bool checkRequiredHeaders(const HttpRequest &request);
 bool hasTransferEncoding(const HttpRequest &request);
 bool isChunkedTransferEncoding(const HttpRequest &request);
 bool determineBodyLength(HttpRequest &request);
-ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request);
+ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize);
 ParseResult parseBody(const std::string &buffer, HttpRequest &request);
 
 #endif

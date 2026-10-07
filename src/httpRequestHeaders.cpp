@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestHeaders.cpp                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:47:22 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:50:10 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/06 23:14:29 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ static bool isValidContentLength(const std::string &value)
     return true;
 }
 
-static bool parseHeaderLine(const std::string &line, std::string &key, std::string &value)
+bool parseHeaderLine(const std::string &line, std::string &key, std::string &value)
 {
 	size_t colon = line.find(':');
 	if (colon == std::string::npos)

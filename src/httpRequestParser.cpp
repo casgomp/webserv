@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestParser.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:42:49 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 00:10:57 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ void	clearRequest(HttpRequest &request)
 	request.statusCode = 0;
 }
 
-ParseResult parseRequest(const std::string &buffer, HttpRequest &request)
+ParseResult parseRequest(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize)
 {
 	clearRequest(request);
 	if (!parseStartLine(buffer, request))
@@ -57,11 +57,16 @@ ParseResult parseRequest(const std::string &buffer, HttpRequest &request)
 			request.statusCode = 501;
 			return ERROR;
 		}
-		return parseChunkedBody(buffer, request);
+		return parseChunkedBody(buffer, request, clientMaxBodySize);
 	}
     if (!determineBodyLength(request))
 	{
 		request.statusCode = 400;
+        return ERROR;
+	}
+	if (request.expectedBodyLength > clientMaxBodySize)
+	{
+		request.statusCode = 413;
         return ERROR;
 	}
     return parseBody(buffer, request);

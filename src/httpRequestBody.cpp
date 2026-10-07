@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestBody.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 12:00:31 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:47:32 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/07 00:09:12 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,22 +46,34 @@ static bool hexStringToSizeT(const std::string &str, size_t &out)
 
 static ParseResult parseFinalChunk(const std::string &buffer, size_t chunkSizeEnd, HttpRequest &request)
 {
-	size_t finalStart = chunkSizeEnd + 2;
-	if (buffer.size() - finalStart < 2)
+	size_t pos = chunkSizeEnd + 2;
+
+	while (true)
 	{
-		request.statusCode = 0;
-		return INCOMPLETE;
+		size_t lineEnd = buffer.find("\r\n", pos);
+		if (lineEnd == std::string::npos)
+		{
+			request.statusCode = 0;
+			return INCOMPLETE;
+		}
+		if (lineEnd == pos)
+		{
+			request.consumedBytes = lineEnd + 2;
+			return COMPLETE;
+		}
+		std::string line = buffer.substr(pos, lineEnd - pos);
+		std::string key;
+		std::string value;
+		if (!parseHeaderLine(line, key, value))
+		{
+			request.statusCode = 400;
+			return ERROR;
+		}
+		pos = lineEnd + 2;
 	}
-	if (buffer[finalStart] != '\r' || buffer[finalStart + 1] != '\n')
-	{
-		request.statusCode = 400;
-		return ERROR;
-	}
-	request.consumedBytes = finalStart + 2;
-	return COMPLETE;
 }
 
-ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request)
+ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize)
 {
 	size_t bodyStart = buffer.find("\r\n\r\n");
     if (bodyStart == std::string::npos)
@@ -81,6 +93,9 @@ ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request)
 			return INCOMPLETE;
 		}
         std::string chunkSize = buffer.substr(pos, chunkSizeEnd - pos);
+		size_t semicolon = chunkSize.find(';');
+		if (semicolon != std::string::npos)
+			chunkSize = chunkSize.substr(0, semicolon);
         size_t chunkLength;
         if (!hexStringToSizeT(chunkSize, chunkLength))
 		{
@@ -104,6 +119,11 @@ ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request)
         if (buffer[chunkDataEnd] != '\r' || buffer[chunkDataEnd + 1] != '\n')
         {
 			request.statusCode = 400;
+			return ERROR;
+		}
+		if (chunkLength > clientMaxBodySize - request.body.size())
+		{
+			request.statusCode = 413;
 			return ERROR;
 		}
         request.body.append(buffer, chunkDataStart, chunkLength);
