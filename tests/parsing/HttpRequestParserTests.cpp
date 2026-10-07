@@ -6,12 +6,13 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:47 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/21 22:48:40 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/07 00:27:58 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequestParserTests.hpp"
 
+static const size_t TEST_MAX_BODY_SIZE = 1048576;
 
 HttpRequestParserTests::HttpRequestParserTests() : TestSuite("HttpRequestParserTests") {}
 
@@ -48,7 +49,7 @@ void	HttpRequestParserTests::testValidRequest()
 							"Host: localhost\r\n\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"valid request returns COMPLETE with no error");
 }
@@ -59,12 +60,12 @@ void	HttpRequestParserTests::testIncompleteRequest()
 							"Host: localhost\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
 		"incomplete request returns INCOMPLETE with no error");
 
 	request = "GET / HTTP/1.1";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
 		"incomplete request line returns INCOMPLETE with no error");
 }
@@ -76,21 +77,21 @@ void	HttpRequestParserTests::testMalformedMethod()
 							"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"malformed method returns ERROR with 400");
 
 	request = "GET  / HTTP/1.1\r\n"
 			"Host: localhost\r\n"
 			"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"malformed request line spacing returns ERROR with 400");
 
 	request = "GET / HTTP/1.1\n"
 		"Host: localhost\r\n"
 		"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"request line with bare LF returns ERROR with 400");
 }
@@ -102,7 +103,7 @@ void	HttpRequestParserTests::testUnsupportedMethod()
 							"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 501),
 		"unsupported PUT returns ERROR with 501");
 }
@@ -114,42 +115,42 @@ void	HttpRequestParserTests::testOriginFormTarget()
 							"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"valid origin-form target returns COMPLETE with no error");
 
 	request = "GET /hello%20world HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"valid percent-encoded target returns COMPLETE with no error");
 
 	request = "GET /hello%GGworld HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"invalid percent-encoded target returns ERROR with 400");
 
 	request = "GET /hello% HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"incomplete percent encoding returns ERROR with 400");
 
 	request = "GET /hello world HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"target with space returns ERROR with 400");
 
 	request = "GET /hello\tworld HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"target with tab returns ERROR with 400");
 
@@ -157,35 +158,35 @@ void	HttpRequestParserTests::testOriginFormTarget()
 	request = "GET /search?q=hello HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"valid query target returns COMPLETE with no error");
 
 	request = "GET /search?a=1?b=2 HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"query with additional '?' returns COMPLETE with no error");
 
 	request = "GET /search?q={bad} HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"query with invalid characters returns ERROR with 400");
 
 	request = "GET /hello#frag HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"target with fragment returns ERROR with 400");
 
 	request = "GET /search?q=hello%20world HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"query with percent encoding returns COMPLETE with no error");
 }
@@ -197,7 +198,7 @@ void	HttpRequestParserTests::testQueryString()
 						"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 
 	check((result == COMPLETE) &&
 		(httpRequest.requestLine.target == "/search") &&
@@ -212,27 +213,27 @@ void	HttpRequestParserTests::testHttpVersion()
 							"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"HTTP/1.1 returns COMPLETE with no error");
 
 	request = "GET /index.html HTTP/1.0\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 505),
 		"HTTP/1.0 returns ERROR with 505");
 	request = "GET /index.html http/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"malformed HTTP version returns ERROR with 400");
 
 	request = "GET / HTTP/2.0\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 505),
 		"HTTP/2.0 returns ERROR with 505");
 }
@@ -245,7 +246,7 @@ void	HttpRequestParserTests::testRequestLineLength()
 	std::string request = "GET /" + line + " HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 414),
 		"request line over 8000 bytes returns ERROR with 414");
 
@@ -254,7 +255,7 @@ void	HttpRequestParserTests::testRequestLineLength()
 	request = "GET /" + line2 + " HTTP/1.1\r\n"
 							"Host: localhost\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"request line exactly 8000 bytes returns COMPLETE with no error");
 
@@ -262,7 +263,7 @@ void	HttpRequestParserTests::testRequestLineLength()
 
 	request = "GET /" + line3 + " HTTP/1.1";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 414),
 		"overlong incomplete request line returns ERROR with 414");
 }
@@ -274,20 +275,20 @@ void	HttpRequestParserTests::testHostHeader()
 							"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"single valid Host header returns COMPLETE with no error");
 
 	request = "GET /index.html HTTP/1.1\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"missing Host header returns ERROR with 400");
 
 	request = "GET /index.html HTTP/1.1\r\n"
 							"Host: \r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"empty Host header returns ERROR with 400");
 
@@ -295,14 +296,14 @@ void	HttpRequestParserTests::testHostHeader()
 							"Host: localhost\r\n"
 							"Host: example.com\r\n"
 							"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"duplicate Host header returns ERROR with 400");
 
 	request = "GET /index.html HTTP/1.1\r\n"
 			"HOST: localhost\r\n"
 			"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"case-insensitive Host header returns COMPLETE with no error");
 
@@ -310,7 +311,7 @@ void	HttpRequestParserTests::testHostHeader()
 		"Host: localhost\r\n"
 		"InvalidHeader\r\n"
 		"\r\n";
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"header without colon returns ERROR with 400");
 }
@@ -324,7 +325,7 @@ void	HttpRequestParserTests::testContentLength()
 						"hello";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) &&
 		(httpRequest.statusCode == 0) &&
 		(httpRequest.body == "hello"),
@@ -336,7 +337,7 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hel";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
 		"incomplete Content-Length body returns INCOMPLETE with no error");
 
@@ -346,7 +347,7 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"invalid Content-Length returns ERROR with 400");
 
@@ -356,7 +357,7 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"empty Content-Length returns ERROR with 400");
 
@@ -367,7 +368,7 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0),
 		"duplicate identical Content-Length returns COMPLETE with no error");
 
@@ -378,7 +379,7 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"conflicting Content-Length returns ERROR with 400");
 
@@ -388,7 +389,7 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"overflowing Content-Length returns ERROR with 400");
 
@@ -398,10 +399,73 @@ void	HttpRequestParserTests::testContentLength()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.body.empty()),
 		"zero Content-Length returns COMPLETE with empty body");
+
+
+	request =
+		"POST /upload HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Length: 6\r\n"
+		"\r\n"
+		"abcdef";
+
+	result = parseRequest(request, httpRequest, 5);
+	check(result == ERROR
+		&& httpRequest.statusCode == 413,
+		"Content-Length exceeding client max body size returns ERROR with 413");
+
+
+	request =
+		"POST /upload HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"3\r\n"
+		"abc\r\n"
+		"3\r\n"
+		"def\r\n"
+		"0\r\n"
+		"\r\n";
+
+	result = parseRequest(request, httpRequest, 5);
+	check(result == ERROR
+		&& httpRequest.statusCode == 413,
+		"chunked body exceeding client max body size returns ERROR with 413");
+
+	request =
+		"POST /upload HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Content-Length: 5\r\n"
+		"\r\n"
+		"abcde";
+
+	result = parseRequest(request, httpRequest, 5);
+	check(result == COMPLETE
+		&& httpRequest.statusCode == 0
+		&& httpRequest.body == "abcde",
+		"Content-Length exactly at client max body size is allowed");
+
+
+	request =
+		"POST /upload HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"2\r\n"
+		"ab\r\n"
+		"3\r\n"
+		"cde\r\n"
+		"0\r\n"
+		"\r\n";
+
+	result = parseRequest(request, httpRequest, 5);
+	check(result == COMPLETE
+		&& httpRequest.statusCode == 0
+		&& httpRequest.body == "abcde",
+		"chunked body exactly at client max body size is allowed");
 }
 
 void	HttpRequestParserTests::testTransferEncoding()
@@ -416,7 +480,7 @@ void	HttpRequestParserTests::testTransferEncoding()
 				"\r\n";
 	HttpRequest httpRequest;
 
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.body == "hello world"),
 		"chunked request returns COMPLETE with correct body");
@@ -428,7 +492,7 @@ void	HttpRequestParserTests::testTransferEncoding()
 						"\r\n"
 						"hello\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"Content-Length with Transfer-Encoding returns ERROR with 400");
 
@@ -438,7 +502,7 @@ void	HttpRequestParserTests::testTransferEncoding()
 		"Transfer-Encoding: gzip\r\n"
 		"\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 501),
 		"unsupported Transfer-Encoding returns ERROR with 501");
 
@@ -450,7 +514,7 @@ void	HttpRequestParserTests::testTransferEncoding()
 			"0\r\n"
 			"\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"duplicate Transfer-Encoding returns ERROR with 400");
 }
@@ -469,7 +533,7 @@ void HttpRequestParserTests::testChunkedBody()
 						"\r\n";
 
 	HttpRequest httpRequest;
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.body == "hello world"),
 		"chunked request with two chunks returns COMPLETE with correct body");
@@ -483,7 +547,7 @@ void HttpRequestParserTests::testChunkedBody()
           "6\r\n"
           " wor";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
 		"incomplete chunked body returns INCOMPLETE with no error");
 
@@ -496,7 +560,7 @@ void HttpRequestParserTests::testChunkedBody()
           "0\r\n"
           "\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"malformed chunk terminator returns ERROR with 400");
 
@@ -509,7 +573,7 @@ void HttpRequestParserTests::testChunkedBody()
 		"0\r\n"
 		"\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"invalid chunk size returns ERROR with 400");
 
@@ -519,7 +583,7 @@ void HttpRequestParserTests::testChunkedBody()
 		"\r\n"
 		"5";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
 		"incomplete chunk size line returns INCOMPLETE with no error");
 
@@ -531,7 +595,7 @@ void HttpRequestParserTests::testChunkedBody()
 		"hello\r\n"
 		"0\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
 		"incomplete final chunk returns INCOMPLETE with no error");
 
@@ -544,7 +608,7 @@ void HttpRequestParserTests::testChunkedBody()
 		"0\r\n"
 		"\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.body == "0123456789"),
 		"uppercase hex chunk size returns COMPLETE with correct body");
@@ -555,9 +619,105 @@ void HttpRequestParserTests::testChunkedBody()
 		"\r\n"
 		"FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF\r\n";
 
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 400),
 		"overflowing chunk size returns ERROR with 400");
+
+
+	request = "GET /index.html HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "\r\n"
+        "5;foo=bar\r\n"
+        "hello\r\n"
+        "0\r\n"
+        "\r\n";
+
+    result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+    check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
+        (httpRequest.body == "hello"),
+        "chunk extension returns COMPLETE with correct body");
+
+	request = "GET /index.html HTTP/1.1\r\n"
+        "Host: localhost\r\n"
+        "Transfer-Encoding: chunked\r\n"
+        "\r\n"
+        "ZZ;foo=bar\r\n"
+        "hello\r\n"
+        "0\r\n"
+        "\r\n";
+
+    result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+    check((result == ERROR) && (httpRequest.statusCode == 400),
+        "chunk extension returns ERROR with incorrect size");
+
+	request = "GET /index.html HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"5\r\n"
+		"hello\r\n"
+		"0\r\n"
+		"X-Test: value\r\n"
+		"\r\n";
+
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
+		(httpRequest.body == "hello") &&
+		(httpRequest.consumedBytes == request.size()),
+		"chunked request with trailer returns COMPLETE with correct body");
+
+
+
+	request = "GET /index.html HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"5\r\n"
+		"hello\r\n"
+		"0\r\n"
+		"X-One: value\r\n"
+		"X-Two: another\r\n"
+		"\r\n";
+
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+
+	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
+		(httpRequest.body == "hello") &&
+		(httpRequest.consumedBytes == request.size()),
+		"chunked request with multiple trailers returns COMPLETE");
+
+
+	request = "GET /index.html HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"5\r\n"
+		"hello\r\n"
+		"0\r\n"
+		"InvalidTrailer\r\n"
+		"\r\n";
+
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+
+	check((result == ERROR) && (httpRequest.statusCode == 400),
+		"invalid trailer returns ERROR with 400");
+
+
+
+	request = "GET /index.html HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"5\r\n"
+		"hello\r\n"
+		"0\r\n"
+		"X-Test: val";
+
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+
+	check((result == INCOMPLETE) && (httpRequest.statusCode == 0),
+		"incomplete trailer returns INCOMPLETE with no error");
 }
 
 void	HttpRequestParserTests::testConsumedBytes()
@@ -567,7 +727,7 @@ void	HttpRequestParserTests::testConsumedBytes()
 						"\r\n";
 
 	HttpRequest httpRequest;
-	ParseResult result = parseRequest(request, httpRequest);
+	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.consumedBytes == request.size()),
@@ -580,7 +740,7 @@ void	HttpRequestParserTests::testConsumedBytes()
 							"Host: localhost\r\n"
 							"\r\n";
 	request = firstRequest + secondRequest;
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.consumedBytes == firstRequest.size()),
 		"pipelined request consumes only the first request");
@@ -594,7 +754,7 @@ void	HttpRequestParserTests::testConsumedBytes()
 				"Host: localhost\r\n"
 				"\r\n";
 	request = firstRequest + secondRequest;
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.body == "hello") && (httpRequest.consumedBytes == firstRequest.size()),
 		"Content-Length request consumes body but not pipelined request");
@@ -611,15 +771,40 @@ void	HttpRequestParserTests::testConsumedBytes()
 			"Host: localhost\r\n"
 			"\r\n";
 	request = firstRequest + secondRequest;
-	result = parseRequest(request, httpRequest);
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) &&
 		(httpRequest.statusCode == 0) && (httpRequest.body == "hello") &&
 		(httpRequest.consumedBytes == firstRequest.size()),
 		"chunked request consumes body but not pipelined request");
 
 	std::string remaining = request.substr(httpRequest.consumedBytes);
-	result = parseRequest(remaining, httpRequest);
+	result = parseRequest(remaining, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == COMPLETE) && (httpRequest.statusCode == 0) &&
 		(httpRequest.requestLine.target == "/second"),
 		"second pipelined request parses from remaining bytes");
+
+
+
+	firstRequest = "POST /first HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"Transfer-Encoding: chunked\r\n"
+		"\r\n"
+		"5\r\n"
+		"hello\r\n"
+		"0\r\n"
+		"X-Test: value\r\n"
+		"\r\n";
+
+	secondRequest = "GET /second HTTP/1.1\r\n"
+		"Host: localhost\r\n"
+		"\r\n";
+
+	request = firstRequest + secondRequest;
+	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+
+	check((result == COMPLETE) &&
+		(httpRequest.statusCode == 0) &&
+		(httpRequest.body == "hello") &&
+		(httpRequest.consumedBytes == firstRequest.size()),
+		"chunked request with trailer consumes only the first request");
 }
