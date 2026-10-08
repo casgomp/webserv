@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:47:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 13:10:51 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/08 17:45:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,9 +19,12 @@
 # include "httpRequestParserUtils.hpp"
 
 typedef struct s_cgiProcess {
-	pid_t	pid;
-	int		stdinFd;
-	int		stdoutFd;
+	pid_t		pid;
+	int			stdinFd;
+	int			stdoutFd;
+	std::string	body;
+	std::string	output;
+	int			bytesSent;
 	s_cgiProcess() : pid(-1), stdinFd(-1), stdoutFd(-1) {}
 } t_cgiProcess;
 

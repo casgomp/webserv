@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 13:12:46 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/08 13:56:17 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,12 +24,13 @@
 # include "serverInit.hpp"
 # include "cgiExecute.hpp"
 
-void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
+void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient, bool killChild, int *wstatus)
 {
 	if (cgiProcess.pid > 0)
 	{
-		kill(cgiProcess.pid, SIGKILL);
-		waitpid(cgiProcess.pid, NULL, 0);
+		if (killChild)
+			kill(cgiProcess.pid, SIGKILL);
+		waitpid(cgiProcess.pid, wstatus, 0);
 	}
 	if (cgiProcess.stdinFd >= 0)
 		close(cgiProcess.stdinFd);

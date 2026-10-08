@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 14:49:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/08 09:51:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,9 +173,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			responseInstructions.statusCode = 403;
 			return (responseInstructions);
 		}
-		//to be consistent with validation first, action and response building second,
-		//move actual deletion to the response building part.
-		//std::remove(resolvedPath.c_str());
 		responseInstructions.statusCode = 204;
 		return (responseInstructions);
 	}
