@@ -6,14 +6,19 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/08 17:49:28 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/09 15:37:26 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_UTILS_HPP
 # define SERVER_UTILS_HPP
 
-# include "serverInit.hpp"
+# include <utility>
+# include <string>
+
+# include "configConf.hpp"
+# include "configConf.hpp"
+# include "cgiExecute.hpp"
 
 typedef struct	s_client {
 	std::pair<std::string, std::string>	pairAddressPort;
@@ -25,15 +30,10 @@ typedef struct	s_client {
 	bool								keepAlive;
 } t_client;
 
-typedef struct	s_cgiOutput {
-	bool		success;
-	std::string	buffer;
-	s_cgiOutput() : success (false) {}
-} t_cgiOutput;
-
-void	closeClientConnection(int fd, std::map<int, t_client> &clients, int flag_err);
-void	cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients);
-void	closeListeningSockets(t_listeningSockets &listeningSockets);
-void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient, bool killChild, int *wstatus);
+int		epollSet(int epfd, int operation, int fd, int events);
+void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient);
+size_t	computeCeilingBody(const t_listenServers &listenServers);
+void	finishCgiRequest(int epfd, int clientFd, std::map<int, t_client> &clients, t_cgiOutput &cgiOutput);
+int		registerCgiPipes(int epfd, t_cgiProcess &cgiProcess, int clientFd, std::map<int, int> &fdPipeToClient);
 
 #endif

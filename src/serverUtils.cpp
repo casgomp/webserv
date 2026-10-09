@@ -6,74 +6,71 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/08 13:56:17 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/09 15:37:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include "serverUtils.hpp"
-
-# include <cstring>
-# include <iostream>
-# include <map>
-# include <signal.h>
 # include <sys/epoll.h>
-# include <sys/wait.h>
 # include <unistd.h>
+# include <errno.h>
+# include <fcntl.h>
 
 # include "serverUtils.hpp"
-# include "serverInit.hpp"
 # include "cgiExecute.hpp"
+# include "serverInit.hpp"
+# include "serverClean.hpp"
 
-void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient, bool killChild, int *wstatus)
+int	epollSet(int epfd, int operation, int fd, int events)
 {
-	if (cgiProcess.pid > 0)
-	{
-		if (killChild)
-			kill(cgiProcess.pid, SIGKILL);
-		waitpid(cgiProcess.pid, wstatus, 0);
-	}
-	if (cgiProcess.stdinFd >= 0)
-		close(cgiProcess.stdinFd);
-	if (cgiProcess.stdoutFd >= 0)
-		close(cgiProcess.stdoutFd);
+	struct epoll_event	ev;
+
+	ev.events = events;
+	ev.data.fd = fd;
+	return (epoll_ctl(epfd, operation, fd, &ev));
+}
+
+void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
+{
+	close (cgiProcess.stdinFd);
 	fdPipeToClient.erase(cgiProcess.stdinFd);
-	fdPipeToClient.erase(cgiProcess.stdoutFd);
-	cgiProcess = t_cgiProcess();
+	cgiProcess.stdinFd = -1;
 }
 
-void	closeClientConnection(int fd, std::map<int, t_client> &clients, int err)
+size_t	computeCeilingBody(const t_listenServers &listenServers)
 {
-	if (fd >= 0)
-	{
-		clients.erase(fd);
-		close(fd);
-	}
-	if (err == EPOLLERR)
-		std::cerr << "Connection: Error condition happened on the associated file descriptor." << std::endl;
-	else if (err == EPOLLHUP)
-		std::cerr << "Connection: Abrupt close happened on the associated file descriptor" << std::endl;
-	else if (err == EPOLLIN)
-		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
-	else
-		std::cerr << "Error: " << strerror(err) << std::endl;
-	//WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
-}
+	size_t	ceilingClientMaxBodySize;
 
-void	closeListeningSockets(t_listeningSockets &listeningSockets)
-{
-	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
+	for(t_listenServers::const_iterator it = listenServers.begin(); it != listenServers.end(); it ++)
 	{
-		// std::cout << "cleanupServ cleaned fd = " << it->first << std::endl;
-		if (it->first >= 0)
-			close (it->first);
+		for (size_t i = 0; i < it->second.size(); i ++)
+		{
+			if (it->second[i]->ceilingClientMaxBodySize > ceilingClientMaxBodySize)
+				ceilingClientMaxBodySize = it->second[i]->ceilingClientMaxBodySize;
+		}
 	}
 }
 
-void	cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients)
+void	finishCgiRequest(int epfd, int clientFd, std::map<int, t_client> &clients, t_cgiOutput &cgiOutput)
 {
-	closeListeningSockets(listeningSockets);
-	if (epfd >= 0)
-		close (epfd);
-	for (std::map<int, t_client>::iterator it = clients.begin(); it != clients.end(); it ++)
-		close(it->first);
+	;//send cgiOutput to Erjon
+	if (epollSet(epfd, EPOLL_CTL_MOD, clientFd, EPOLLOUT) < 0)
+		closeClientConnection(clientFd, clients, errno);
+}
+
+int	registerCgiPipes(int epfd, t_cgiProcess &cgiProcess, int clientFd, std::map<int, int> &fdPipeToClient)
+{
+	if (fcntl(cgiProcess.stdoutFd, F_SETFL, O_NONBLOCK) < 0)
+		return (-1);
+	fdPipeToClient[cgiProcess.stdoutFd] = clientFd;
+	if (epollSet(epfd, EPOLL_CTL_ADD, cgiProcess.stdoutFd, EPOLLIN) < 0)
+		return (-1);
+	if (cgiProcess.stdinFd != -1)
+	{
+		if (fcntl(cgiProcess.stdinFd, F_SETFL, O_NONBLOCK) < 0)
+			return (-1);
+		fdPipeToClient[cgiProcess.stdinFd] = clientFd;
+		if (epollSet(epfd, EPOLL_CTL_ADD, cgiProcess.stdinFd, EPOLLOUT) < 0)
+			return (-1);
+	}
+	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/08 17:45:30 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/09 15:37:28 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,10 +21,11 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 
-# include "httpRequestParser.hpp"
 # include "serverEvent.hpp"
 # include "serverInit.hpp"
 # include "serverUtils.hpp"
+# include "serverClean.hpp"
+# include "httpRequestParser.hpp"
 # include "requestRouting.hpp"
 # include "requestValidation.hpp"
 # include "requestValidationUtils.hpp"
@@ -41,7 +42,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	//accept();
 	struct sockaddr_storage	client_addr;
 	socklen_t				addr_size;
-	int						fdClient;
+	int						clientFd;
 	t_client 				new_client;
 	std::map<int, t_client>	clients;
 	//recv(),send()
@@ -79,14 +80,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		}
 		std::cout << "listening sockets = " << it->second.first << ":" << it->second.second << std::endl;
 	}
-	for(t_listenServers::iterator it = listenServers.begin(); it != listenServers.end(); it ++)//make helper function
-	{
-		for (size_t i = 0; i < it->second.size(); i ++)
-		{
-			if (it->second[i]->ceilingClientMaxBodySize > ceilingClientMaxBodySize)
-				ceilingClientMaxBodySize = it->second[i]->ceilingClientMaxBodySize;
-		}
-	}
+	ceilingClientMaxBodySize = computeCeilingBody(listenServers);
 	while (1)
 	{
 		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);
@@ -104,30 +98,25 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				/***********************************SERVER: ACCEPT A CONNECTING CLIENT**************************************/
 				if (!(evs[i].events & EPOLLIN))
 					continue ;
-				addr_size = sizeof(client_addr);
-				fdClient = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
-				if (fdClient < 0)
+/*acceptClient(...)*/				addr_size = sizeof(client_addr);
+				clientFd = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
+				if (clientFd < 0)
 				{
-					closeClientConnection(fdClient, clients, errno);
+					closeClientConnection(clientFd, clients, errno);
 					continue ;
 				}
-				if (fcntl(fdClient, F_SETFL, O_NONBLOCK) < 0)
+				if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
 				{
-					closeClientConnection(fdClient, clients, errno);
+					closeClientConnection(clientFd, clients, errno);
 					continue ;
 				}
-				ev.events = EPOLLIN;
-				ev.data.fd = fdClient;
-				if (epoll_ctl(epfd, EPOLL_CTL_ADD, fdClient, &ev) < 0)
+				if (epollSet(epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
 				{
-					closeClientConnection(fdClient, clients, errno);
+					closeClientConnection(clientFd, clients, errno);
 					continue ;
 				}
-				clients[fdClient].pairAddressPort = listeningSockets[fd];
-				clients[fdClient].bytesSent = 0;
-
-				// clients[fdClient].request.clear();//are these necessary? this is always a new client and therefore a new buffer isn't it?
-				// clients[fdClient].response.clear();
+				clients[clientFd].pairAddressPort = listeningSockets[fd];
+				clients[clientFd].bytesSent = 0;
 			}
 			else if (fdPipeToClient.find(fd) != fdPipeToClient.end())
 			{
@@ -137,9 +126,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				{
 					if (evs[i].events & (EPOLLERR | EPOLLHUP))
 					{
-						close (fd);
-						fdPipeToClient.erase(fd);
-						clients[clientFd].cgiProcess.stdinFd = -1;
+						closeCgiStdin(clients[clientFd].cgiProcess, fdPipeToClient);
 						continue ;
 					}
 					const std::string &body = clients[clientFd].cgiProcess.body;
@@ -151,9 +138,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					clients[clientFd].cgiProcess.bytesSent += byteCount;
 					if (clients[clientFd].cgiProcess.bytesSent == body.size())
 					{
-						close (fd);
-						fdPipeToClient.erase(fd);
-						clients[clientFd].cgiProcess.stdinFd = -1;
+						closeCgiStdin(clients[clientFd].cgiProcess, fdPipeToClient);
 						continue ;
 					}
 				}
@@ -162,28 +147,23 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					if (evs[i].events & EPOLLERR)
 					{
 						cleanupCgi(clients[clientFd].cgiProcess, fdPipeToClient, true, NULL);
-						closeClientConnection(clientFd, clients, EPOLLERR);
-						;//send cgiOutput to Erjon
+						finishCgiRequest(epfd, clientFd, clients, cgiOutput);
 						continue ;
 					}
 					byteCount = read(fd, buf, sizeof(buf));
 					if (byteCount == 0)
 					{
+						cgiOutput.buffer = clients[clientFd].cgiProcess.output;
 						cleanupCgi(clients[clientFd].cgiProcess, fdPipeToClient, false, &wstatus);
 						if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
-						{
-							cgiOutput.buffer = clients[clientFd].cgiProcess.output;
 							cgiOutput.success = true;
-						}
-						;//send cgiOutput to Erjon
-						closeClientConnection(clientFd, clients, EPOLLERR);
+						finishCgiRequest(epfd, clientFd, clients, cgiOutput);
 						continue ;
 					}
 					else if (byteCount < 0)
 					{
 						cleanupCgi(clients[clientFd].cgiProcess, fdPipeToClient, true, NULL);
-						closeClientConnection(clientFd, clients, EPOLLERR);
-						;//send cgiOutput to Erjon
+						finishCgiRequest(epfd, clientFd, clients, cgiOutput);
 						continue ;
 					}
 					else if (byteCount > 0)
@@ -193,7 +173,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 				}
 			}
-			else
+			else if (clients.find(fd) != clients.end())
 			{
 				/******************************CLIENT: HANDLING REQUEST/SENDING RESPONSE******************************/
 				if (evs[i].events & EPOLLERR)
@@ -211,7 +191,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				else if (evs[i].events & EPOLLIN)
 				{
 					/********CLIENT: RECEIVE**********/
-					 std::cout << "Server ready to receive" << std::endl;
+					std::cout << "Server ready to receive" << std::endl;
 					byteCount = recv(fd, buf, sizeof(buf), 0);
 					if (byteCount == 0)
 					{
@@ -249,65 +229,33 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 							clients[fd].bytesSent = 0;
 							clients[fd].keepAlive = false;
 						}
-
-						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
-
-						// std::cout << "responseInstructions" << std::endl
-						// 			<< "statusCode: " << responseInstructions.statusCode << std::endl
-						// 			<< "isRedirect: " << responseInstructions.isRedirect << std::endl
-						// 			<< "redirectLocation: " << responseInstructions.redirectLocation << std::endl
-						// 			<< "isCgi: " << responseInstructions.isCgi << std::endl
-						// 			<< "isAutoIndex: " << responseInstructions.isAutoIndex << std::endl
-						// 			<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
-						// 			<< "contentType: " << responseInstructions.contentType << std::endl;
-
+						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);
 						if (responseInstructions.isCgi)
 						{
 							cgiOutput = t_cgiOutput();
+							cgiProcess = t_cgiProcess();
 							if (executeCgi(httpRequest, responseInstructions, cgiProcess) != 0)
 							{
 								;//send cgiOutput to Erjon
-								continue ;
+								//delete
 							}
-							if (fcntl(cgiProcess.stdoutFd, F_SETFL, O_NONBLOCK) < 0)
+							else if (registerCgiPipes(epfd, cgiProcess, fd, fdPipeToClient) < 0)
 							{
-								int err = errno;
-								cleanupCgi(cgiProcess, fdPipeToClient, true, NULL);
 								;//send cgiOutput to Erjon
-								continue ;
-							}
-							fdPipeToClient[cgiProcess.stdoutFd] = fd;
-							ev.events = EPOLLIN;
-							ev.data.fd = cgiProcess.stdoutFd;
-							if (epoll_ctl(epfd, EPOLL_CTL_ADD, cgiProcess.stdoutFd, &ev) < 0)
-							{
-								int err = errno;
 								cleanupCgi(cgiProcess, fdPipeToClient, true, NULL);
-								;//send cgiOutput to Erjon
-								continue ;
 							}
-							if (cgiProcess.stdinFd != -1)
+							else
 							{
-								if (fcntl(cgiProcess.stdinFd, F_SETFL, O_NONBLOCK) < 0)
+								clients[fd].cgiProcess = cgiProcess;
+								clients[fd].cgiProcess.body = httpRequest.body;
+								if (epollSet(epfd, EPOLL_CTL_MOD, fd, 0) < 0)
 								{
 									int err = errno;
-									cleanupCgi(cgiProcess, fdPipeToClient, true, NULL);
-									;//send cgiOutput to Erjon
-									continue ;
+									cleanupCgi(clients[fd].cgiProcess, fdPipeToClient, true, NULL);
+									closeClientConnection(fd, clients, err);
 								}
-								fdPipeToClient[cgiProcess.stdinFd] = fd;
-								ev.events = EPOLLOUT;
-								ev.data.fd = cgiProcess.stdinFd;
-								if (epoll_ctl(epfd, EPOLL_CTL_ADD, cgiProcess.stdinFd, &ev) < 0)
-								{
-									int err = errno;
-									cleanupCgi(cgiProcess, fdPipeToClient, true, NULL);
-									;//send cgiOutput to Erjon
-									continue ;
-								}
+								continue ;
 							}
-							clients[fd].cgiProcess = cgiProcess;
-							clients[fd].cgiProcess.body = httpRequest.body;
 						}
 
 						//what about keep-alive or close at this point?
@@ -319,10 +267,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					}
 					//else if PARSE_INCOMPLETE, don't do anything.
 						//continue;????
-					
-					ev.events = EPOLLOUT;
-					ev.data.fd = fd;
-					if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)
+					if (epollSet(epfd, EPOLL_CTL_ADD, cgiProcess.stdoutFd, EPOLLOUT) < 0)
 					{
 						closeClientConnection(fd, clients, errno);
 						continue ;
@@ -332,16 +277,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				else if (evs[i].events & EPOLLOUT)
 				{
 					/********CLIENT: RESPOND**********/
-
-					//////////////////////////////////////////////////////////test
-					char buf2[1024];
-					memset(buf2, 0, sizeof(buf2));
-					std::cout << "read is happening... " << std::endl;
-					read(0, buf2, sizeof(buf2));
-					clients[fd].response.append(buf2, strlen(buf2));
-					std::cout << "read happened... " << std::endl;
-					//////////////////////////////////////////////////////////
-
 					byteCount = 0;
 					response = clients[fd].response;
 					bytesSent = clients[fd].bytesSent;
@@ -359,11 +294,8 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					{
 						std::cout << "response completed..." << std::endl;
 						clients[fd].bytesSent = 0;
-						ev.events = EPOLLIN;
-						ev.data.fd = fd;
-						if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)
+						if (epollSet(epfd, EPOLL_CTL_MOD, fd, EPOLLIN) < 0)
 						{
-							std::cout << "it will finish on modify..." << std::endl;
 							closeClientConnection(fd, clients, errno);
 							continue ;
 						}
