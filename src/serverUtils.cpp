@@ -14,6 +14,7 @@
 # include <unistd.h>
 # include <errno.h>
 # include <fcntl.h>
+# include <sys/socket.h>
 
 # include "serverUtils.hpp"
 # include "cgiExecute.hpp"
@@ -73,4 +74,28 @@ int	registerCgiPipes(int epfd, t_cgiProcess &cgiProcess, int clientFd, std::map<
 			return (-1);
 	}
 	return (0);
+}
+
+void	acceptClient(int epfd, int fd, std::map<int, t_client> &clients, t_listeningSockets &listeningSockets)
+{
+	struct sockaddr_storage	client_addr;
+	socklen_t				addr_size;
+	int						clientFd;
+
+	addr_size = sizeof(client_addr);
+	clientFd = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
+	if (clientFd < 0)
+		return ;
+	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
+	{
+		closeClientConnection(clientFd, clients, errno);
+		return ;
+	}
+	if (epollSet(epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
+	{
+		closeClientConnection(clientFd, clients, errno);
+		return ;
+	}
+	clients[clientFd].pairAddressPort = listeningSockets[fd];
+	clients[clientFd].bytesSent = 0;
 }

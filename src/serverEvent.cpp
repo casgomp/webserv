@@ -31,6 +31,81 @@
 # include "requestValidationUtils.hpp"
 # include "cgiExecute.hpp"
 
+void	handleClientReceive(int epfd, int fd, std::map<int, t_client>	&clients, size_t ceilingClientMaxBodySize,
+								t_listenServers &listenServers, std::map<int, int> &fdPipeToClient)
+{
+	int				byteCount;
+	char			buf[BUFFER_SIZE];
+	t_cgiOutput		cgiOutput;
+	t_cgiProcess	cgiProcess;
+
+	byteCount = recv(fd, buf, sizeof(buf), 0);
+	if (byteCount == 0)
+	{
+		closeClientConnection(fd, clients, EPOLLIN);
+		return ;
+	}
+	if (byteCount < 0)
+	{
+		closeClientConnection(fd, clients, errno);
+		return ;
+	}
+	clients[fd].request.append(buf, byteCount);
+	HttpRequest	httpRequest;
+	int requestStatus = parseRequest(clients[fd].request, httpRequest, ceilingClientMaxBodySize);
+	std::cout << "*********requestStatus: " << requestStatus << std::endl;
+	if (requestStatus == INCOMPLETE)
+		return ;
+	else if (requestStatus == ERROR)
+	{
+		//prepare response struct with error info.
+	}
+	else if (requestStatus == COMPLETE)
+	{
+		try
+		{
+			requestRouting(fd, clients, listenServers, httpRequest);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << std::endl;
+			//clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
+			clients[fd].bytesSent = 0;
+			clients[fd].keepAlive = false;
+		}
+		t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);
+		if (responseInstructions.isCgi)
+		{
+			if (executeCgi(httpRequest, responseInstructions, cgiProcess) != 0)
+			{
+				;//send cgiOutput to Erjon
+			}
+			else if (registerCgiPipes(epfd, cgiProcess, fd, fdPipeToClient) < 0)
+			{
+				;//send cgiOutput to Erjon
+				cleanupCgi(cgiProcess, fdPipeToClient, true, NULL);
+			}
+			else
+			{
+				clients[fd].cgiProcess = cgiProcess;
+				clients[fd].cgiProcess.body = httpRequest.body;
+				if (epollSet(epfd, EPOLL_CTL_MOD, fd, 0) < 0)
+				{
+					int err = errno;
+					cleanupCgi(clients[fd].cgiProcess, fdPipeToClient, true, NULL);
+					closeClientConnection(fd, clients, err);
+				}
+				return ;
+			}
+		}
+	}
+	if (epollSet(epfd, EPOLL_CTL_MOD, fd, EPOLLOUT) < 0)
+	{
+		closeClientConnection(fd, clients, errno);
+		return ;
+	}
+}
+
 void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets)
 {
 	int						fd;
@@ -40,10 +115,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	struct epoll_event		evs[MAX_EVENTS];
 	int						nreadyfds;
 	//accept();
-	struct sockaddr_storage	client_addr;
-	socklen_t				addr_size;
 	int						clientFd;
-	t_client 				new_client;
 	std::map<int, t_client>	clients;
 	//recv(),send()
 	int						byteCount;
@@ -60,8 +132,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	int						wstatus = 0;
 	t_cgiOutput				cgiOutput;
 	int						cgiBytesSent;
-
-	(void)listenServers;
 
 	epfd = epoll_create(1);
 	if (epfd < 0)
@@ -95,28 +165,9 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 			if (listeningSockets.find(fd) != listeningSockets.end())
 			{
-				/***********************************SERVER: ACCEPT A CONNECTING CLIENT**************************************/
 				if (!(evs[i].events & EPOLLIN))
 					continue ;
-/*acceptClient(...)*/				addr_size = sizeof(client_addr);
-				clientFd = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
-				if (clientFd < 0)
-				{
-					closeClientConnection(clientFd, clients, errno);
-					continue ;
-				}
-				if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
-				{
-					closeClientConnection(clientFd, clients, errno);
-					continue ;
-				}
-				if (epollSet(epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
-				{
-					closeClientConnection(clientFd, clients, errno);
-					continue ;
-				}
-				clients[clientFd].pairAddressPort = listeningSockets[fd];
-				clients[clientFd].bytesSent = 0;
+				acceptClient(epfd, fd, clients, listeningSockets);
 			}
 			else if (fdPipeToClient.find(fd) != fdPipeToClient.end())
 			{
@@ -190,88 +241,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				}
 				else if (evs[i].events & EPOLLIN)
 				{
-					/********CLIENT: RECEIVE**********/
-					std::cout << "Server ready to receive" << std::endl;
-					byteCount = recv(fd, buf, sizeof(buf), 0);
-					if (byteCount == 0)
-					{
-						closeClientConnection(fd, clients, EPOLLIN);
-						continue ;
-					}
-					if (byteCount < 0)
-					{
-						closeClientConnection(fd, clients, errno);
-						continue ;
-					}
-					clients[fd].request.append(buf, byteCount);
-					memset(buf, 0, BUFFER_SIZE);
-
-					/*#############***PARSE AND ROUTING***##############*/
-					HttpRequest	httpRequest;
-					// std::cout << "!!!!!!!!!!!!!!!!!!clients[fd].request: " << clients[fd].request << std::endl;
-					int requestStatus = parseRequest(clients[fd].request, httpRequest, ceilingClientMaxBodySize);
-					//int requestStatus = COMPLETE;///////
-					std::cout << "*********requestStatus: " << requestStatus << std::endl;
-					if (requestStatus == ERROR)
-					{
-						//prepare response struct with error info.
-					}
-					if (requestStatus == COMPLETE)
-					{
-						try
-						{
-							requestRouting(fd, clients, listenServers, httpRequest);
-						}
-						catch (const std::exception &e)
-						{
-							std::cerr << e.what() << std::endl;
-							//clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
-							clients[fd].bytesSent = 0;
-							clients[fd].keepAlive = false;
-						}
-						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);
-						if (responseInstructions.isCgi)
-						{
-							cgiOutput = t_cgiOutput();
-							cgiProcess = t_cgiProcess();
-							if (executeCgi(httpRequest, responseInstructions, cgiProcess) != 0)
-							{
-								;//send cgiOutput to Erjon
-								//delete
-							}
-							else if (registerCgiPipes(epfd, cgiProcess, fd, fdPipeToClient) < 0)
-							{
-								;//send cgiOutput to Erjon
-								cleanupCgi(cgiProcess, fdPipeToClient, true, NULL);
-							}
-							else
-							{
-								clients[fd].cgiProcess = cgiProcess;
-								clients[fd].cgiProcess.body = httpRequest.body;
-								if (epollSet(epfd, EPOLL_CTL_MOD, fd, 0) < 0)
-								{
-									int err = errno;
-									cleanupCgi(clients[fd].cgiProcess, fdPipeToClient, true, NULL);
-									closeClientConnection(fd, clients, err);
-								}
-								continue ;
-							}
-						}
-
-						//what about keep-alive or close at this point?
-
-						//create reponse for client[fd].response = responseCreate(responseInstructions);
-
-						// std::cout << "we received from client: " << clients[fd].request << std::endl;
-						
-					}
-					//else if PARSE_INCOMPLETE, don't do anything.
-						//continue;????
-					if (epollSet(epfd, EPOLL_CTL_ADD, cgiProcess.stdoutFd, EPOLLOUT) < 0)
-					{
-						closeClientConnection(fd, clients, errno);
-						continue ;
-					}
+					handleClientReceive(epfd, fd, clients, ceilingClientMaxBodySize, listenServers, fdPipeToClient);
 				}
 
 				else if (evs[i].events & EPOLLOUT)

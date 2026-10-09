@@ -35,5 +35,6 @@ void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
 size_t	computeCeilingBody(const t_listenServers &listenServers);
 void	finishCgiRequest(int epfd, int clientFd, std::map<int, t_client> &clients, t_cgiOutput &cgiOutput);
 int		registerCgiPipes(int epfd, t_cgiProcess &cgiProcess, int clientFd, std::map<int, int> &fdPipeToClient);
+void	acceptClient(int epfd, int fd, std::map<int, t_client> &clients, t_listeningSockets &listeningSockets);
 
 #endif
