@@ -6,18 +6,15 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/09 15:37:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/10 17:14:15 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include <sys/epoll.h>
 # include <unistd.h>
 # include <errno.h>
-# include <fcntl.h>
-# include <sys/socket.h>
 
 # include "serverUtils.hpp"
-# include "cgiExecute.hpp"
 # include "serverInit.hpp"
 # include "serverClean.hpp"
 
@@ -30,16 +27,9 @@ int	epollSet(int epfd, int operation, int fd, int events)
 	return (epoll_ctl(epfd, operation, fd, &ev));
 }
 
-void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
-{
-	close (cgiProcess.stdinFd);
-	fdPipeToClient.erase(cgiProcess.stdinFd);
-	cgiProcess.stdinFd = -1;
-}
-
 size_t	computeCeilingBody(const t_listenServers &listenServers)
 {
-	size_t	ceilingClientMaxBodySize;
+	size_t	ceilingClientMaxBodySize = 0;
 
 	for(t_listenServers::const_iterator it = listenServers.begin(); it != listenServers.end(); it ++)
 	{
@@ -49,53 +39,5 @@ size_t	computeCeilingBody(const t_listenServers &listenServers)
 				ceilingClientMaxBodySize = it->second[i]->ceilingClientMaxBodySize;
 		}
 	}
-}
-
-void	finishCgiRequest(int epfd, int clientFd, std::map<int, t_client> &clients, t_cgiOutput &cgiOutput)
-{
-	;//send cgiOutput to Erjon
-	if (epollSet(epfd, EPOLL_CTL_MOD, clientFd, EPOLLOUT) < 0)
-		closeClientConnection(clientFd, clients, errno);
-}
-
-int	registerCgiPipes(int epfd, t_cgiProcess &cgiProcess, int clientFd, std::map<int, int> &fdPipeToClient)
-{
-	if (fcntl(cgiProcess.stdoutFd, F_SETFL, O_NONBLOCK) < 0)
-		return (-1);
-	fdPipeToClient[cgiProcess.stdoutFd] = clientFd;
-	if (epollSet(epfd, EPOLL_CTL_ADD, cgiProcess.stdoutFd, EPOLLIN) < 0)
-		return (-1);
-	if (cgiProcess.stdinFd != -1)
-	{
-		if (fcntl(cgiProcess.stdinFd, F_SETFL, O_NONBLOCK) < 0)
-			return (-1);
-		fdPipeToClient[cgiProcess.stdinFd] = clientFd;
-		if (epollSet(epfd, EPOLL_CTL_ADD, cgiProcess.stdinFd, EPOLLOUT) < 0)
-			return (-1);
-	}
-	return (0);
-}
-
-void	acceptClient(int epfd, int fd, std::map<int, t_client> &clients, t_listeningSockets &listeningSockets)
-{
-	struct sockaddr_storage	client_addr;
-	socklen_t				addr_size;
-	int						clientFd;
-
-	addr_size = sizeof(client_addr);
-	clientFd = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
-	if (clientFd < 0)
-		return ;
-	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
-	{
-		closeClientConnection(clientFd, clients, errno);
-		return ;
-	}
-	if (epollSet(epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
-	{
-		closeClientConnection(clientFd, clients, errno);
-		return ;
-	}
-	clients[clientFd].pairAddressPort = listeningSockets[fd];
-	clients[clientFd].bytesSent = 0;
+	return (ceilingClientMaxBodySize);
 }

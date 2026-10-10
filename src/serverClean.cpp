@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 11:30:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/09 12:08:08 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/10 16:59:43 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 # include "serverUtils.hpp"
 # include "serverInit.hpp"
 # include "cgiExecute.hpp"
+# include "serverEvent.hpp"
 
 void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient, bool killChild, int *wstatus)
 {
@@ -39,11 +40,13 @@ void	cleanupCgi(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient, bo
 	cgiProcess = t_cgiProcess();
 }
 
-void	closeClientConnection(int fd, std::map<int, t_client> &clients, int err)
+void	closeClientConnection(t_serverState &ctx, int fd, int err)
 {
 	if (fd >= 0)
 	{
-		clients.erase(fd);
+		if (ctx.clients.find(fd) != ctx.clients.end() && ctx.clients[fd].cgiProcess.pid > 0)
+			cleanupCgi(ctx.clients[fd].cgiProcess, ctx.fdPipeToClient, true, NULL);
+		ctx.clients.erase(fd);
 		close(fd);
 	}
 	if (err == EPOLLERR)
@@ -67,12 +70,16 @@ void	closeListeningSockets(t_listeningSockets &listeningSockets)
 	}
 }
 
-void	cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients)
+void	cleanupServ(t_serverState &ctx, t_listeningSockets &listeningSockets)
 {
 	closeListeningSockets(listeningSockets);
-	if (epfd >= 0)
-		close (epfd);
-	for (std::map<int, t_client>::iterator it = clients.begin(); it != clients.end(); it ++)
+	if (ctx.epfd >= 0)
+		close (ctx.epfd);
+	for (std::map<int, t_client>::iterator it = ctx.clients.begin(); it != ctx.clients.end(); it ++)
+	{
+		if  (it->second.cgiProcess.pid > 0)
+			cleanupCgi(it->second.cgiProcess, ctx.fdPipeToClient, true, NULL);
 		close(it->first);
+	}
 }
 

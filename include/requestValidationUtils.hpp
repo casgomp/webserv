@@ -6,12 +6,12 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:16:23 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/03 15:05:48 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/10 17:30:46 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef _HPP
-# define _HPP
+#ifndef REQUEST_VALIDATION_UTILS_HPP
+# define REQUEST_VALIDATION_UTILS_HPP
 
 # include <cstring>
 # include <map>
