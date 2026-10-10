@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 13:44:42 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/09 12:08:03 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 		if (p == NULL)
 			throw std::runtime_error(strerror(errno));
 		listeningSockets[fdServer] = std::make_pair(it->first.first, it->first.second);
-		std::cout << "listening on " << it->first.first << ":" << it->first.second << std::endl;
+		std::cout << "listening on " << it->first.first << ":" << it->first.second << std::endl;//DEBUGGING*********
 	}
 	return (listeningSockets);
 }

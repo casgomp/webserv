@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 00:36:27 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/10 17:13:22 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,62 +18,149 @@
 # include <sys/epoll.h>
 # include <sys/socket.h>
 # include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
-# include "httpRequestParser.hpp"
 # include "serverEvent.hpp"
 # include "serverInit.hpp"
 # include "serverUtils.hpp"
+# include "serverClean.hpp"
+# include "httpRequestParser.hpp"
 # include "requestRouting.hpp"
 # include "requestValidation.hpp"
 # include "requestValidationUtils.hpp"
+# include "cgiExecute.hpp"
+# include "cgiHandle.hpp"
+
+void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSockets)
+{
+	struct sockaddr_storage	client_addr;
+	socklen_t				addr_size;
+	int						clientFd;
+
+	addr_size = sizeof(client_addr);
+	clientFd = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
+	if (clientFd < 0)
+		return ;
+	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
+	{
+		closeClientConnection(ctx, clientFd, errno);
+		return ;
+	}
+	if (epollSet(ctx.epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
+	{
+		closeClientConnection(ctx, clientFd, errno);
+		return ;
+	}
+	ctx.clients[clientFd].pairAddressPort = listeningSockets[fd];
+	ctx.clients[clientFd].bytesSent = 0;
+}
+
+void	handleClientSend(t_serverState &ctx, int fd)
+{
+	int byteCount = 0;
+	const std::string &response = ctx.clients[fd].response;
+	size_t bytesSent = ctx.clients[fd].bytesSent;
+	byteCount = send(fd, response.c_str() + bytesSent, response.size() - bytesSent, 0);
+	if (byteCount < 0)
+	{
+		closeClientConnection(ctx, fd, errno);
+		return ;
+	}
+	ctx.clients[fd].bytesSent += byteCount;
+	if (ctx.clients[fd].bytesSent == response.size())
+	{
+		ctx.clients[fd].bytesSent = 0;
+		if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLIN) < 0)
+		{
+			closeClientConnection(ctx, fd, errno);
+			return ;
+		}
+	}
+	//keep alive??
+}
+
+void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
+{
+	int				byteCount;
+	char			buf[BUFFER_SIZE];
+
+	byteCount = recv(fd, buf, sizeof(buf), 0);
+	if (byteCount == 0)
+	{
+		closeClientConnection(ctx, fd, EPOLLIN);
+		return ;
+	}
+	if (byteCount < 0)
+	{
+		closeClientConnection(ctx, fd, errno);
+		return ;
+	}
+	ctx.clients[fd].request.append(buf, byteCount);
+	HttpRequest	httpRequest;
+	int requestStatus = parseRequest(ctx.clients[fd].request, httpRequest, ceilingClientMaxBodySize);
+	std::cout << "*********requestStatus: " << requestStatus << std::endl;
+	if (requestStatus == INCOMPLETE)
+		return ;
+	else if (requestStatus == ERROR)
+	{
+		//prepare response struct with error info.
+	}
+	else if (requestStatus == COMPLETE)
+	{
+		try
+		{
+			requestRouting(fd, ctx.clients, listenServers, httpRequest);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << std::endl;
+			//ctx.clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
+			ctx.clients[fd].bytesSent = 0;
+			ctx.clients[fd].keepAlive = false;
+		}
+		t_responseInstructions responseInstructions = requestValidation(httpRequest, ctx.clients[fd].serverConf);
+		if (responseInstructions.isCgi && cgiStart(ctx, fd, responseInstructions, httpRequest) == 0)
+			return ;
+	}
+	if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLOUT) < 0)
+	{
+		closeClientConnection(ctx, fd, errno);
+		return ;
+	}
+}
 
 void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets)
 {
+	t_serverState			ctx;
 	int						fd;
-	//epoll()
-	int						epfd = -1;
-	struct epoll_event		ev;
 	struct epoll_event		evs[MAX_EVENTS];
 	int						nreadyfds;
-	//accept();
-	struct sockaddr_storage	client_addr;
-	socklen_t				addr_size;
-	int						fdClient;
-	t_client 				new_client;
-	std::map<int, t_client>	clients;
-	//recv(),send()
-	int						byteCount;
-	char					buf[BUFFER_SIZE];
-	// int						bytes_read;
-	std::string 			response = "hello from server!";
-	int						bytesSent;
+	int						clientFd;
+	size_t					ceilingClientMaxBodySize = 0;
 
-	(void)listenServers;
-
-	epfd = epoll_create(1);
-	if (epfd < 0)
+	ctx.epfd = epoll_create(1);
+	if (ctx.epfd < 0)
 	{
 		closeListeningSockets(listeningSockets);
 		throw std::runtime_error(strerror(errno));
 	}
-	//ADDING LISTENING SOCKETS WITH EPOLL_CTL SHOULD BE IN LOOP FOR EACH LISTENING SOCKET
 	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
 	{
-		ev.events = EPOLLIN;
-		ev.data.fd = it->first;
-		if (epoll_ctl(epfd, EPOLL_CTL_ADD, it->first, &ev) < 0)
+		if (epollSet(ctx.epfd, EPOLL_CTL_ADD, it->first, EPOLLIN) < 0)
 		{
-			cleanupServ(listeningSockets, epfd, clients);
-			throw std::runtime_error(strerror(errno));
+			int err = errno;
+			cleanupServ(ctx, listeningSockets);
+			throw std::runtime_error(strerror(err));
 		}
-		std::cout << "listening sockets = " << it->second.first << ":" << it->second.second << std::endl;
 	}
+	ceilingClientMaxBodySize = computeCeilingBody(listenServers);
 	while (1)
 	{
-		nreadyfds = epoll_wait(epfd, evs, MAX_EVENTS, -1);
+		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, -1);
 		if (nreadyfds < 0)
 		{
-			cleanupServ(listeningSockets, epfd, clients);
+			cleanupServ(ctx, listeningSockets);
 			throw std::runtime_error(strerror(errno));
 		}
 		for (int i = 0; i < nreadyfds; i++)
@@ -82,169 +169,35 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 
 			if (listeningSockets.find(fd) != listeningSockets.end())
 			{
-				/***********************************SERVER: ACCEPT A CONNECTING CLIENT**************************************/
 				if (!(evs[i].events & EPOLLIN))
 					continue ;
-				addr_size = sizeof(client_addr);
-				fdClient = accept(fd, (struct sockaddr *)&client_addr, &addr_size);
-				if (fdClient < 0)
-				{
-					closeClientConnection(fdClient, clients, errno);
-					continue ;
-				}
-				if (fcntl(fdClient, F_SETFL, O_NONBLOCK) < 0)
-				{
-					closeClientConnection(fdClient, clients, errno);
-					continue ;
-				}
-				ev.events = EPOLLIN;
-				ev.data.fd = fdClient;
-				if (epoll_ctl(epfd, EPOLL_CTL_ADD, fdClient, &ev) < 0)
-				{
-					closeClientConnection(fdClient, clients, errno);
-					continue ;
-				}
-				clients[fdClient].pairAddressPort = listeningSockets[fd];
-				clients[fdClient].bytesSent = 0;
-				// clients[fdClient].request.clear();//are these necessary? this is always a new client and therefore a new buffer isn't it?
-				// clients[fdClient].response.clear();
+				acceptClient(ctx, fd, listeningSockets);
 			}
-
-			else
+			else if (ctx.fdPipeToClient.find(fd) != ctx.fdPipeToClient.end())
+			{
+				clientFd = ctx.fdPipeToClient[fd];
+				if (fd == ctx.clients[clientFd].cgiProcess.stdinFd)
+					handleCgiStdin(ctx, fd, clientFd, evs[i].events);
+				else if (fd == ctx.clients[clientFd].cgiProcess.stdoutFd)
+					handleCgiStdout(ctx, fd, clientFd, evs[i].events);
+			}
+			else if (ctx.clients.find(fd) != ctx.clients.end())
 			{
 				/******************************CLIENT: HANDLING REQUEST/SENDING RESPONSE******************************/
 				if (evs[i].events & EPOLLERR)
 				{
-					// std::cout << "EPOLLERR: " << std::endl;
-					closeClientConnection(fd, clients, EPOLLERR);
+					closeClientConnection(ctx, fd, EPOLLERR);
 					continue ;
 				}
 				else if (evs[i].events & EPOLLHUP)
 				{
-					// std::cout << "EPOLLHUP: " << std::endl;
-					closeClientConnection(fd, clients, EPOLLHUP);
+					closeClientConnection(ctx, fd, EPOLLHUP);
 					continue ;
 				}
 				else if (evs[i].events & EPOLLIN)
-				{
-					/********CLIENT: RECEIVE**********/
-					 std::cout << "Server ready to receive" << std::endl;
-					byteCount = recv(fd, buf, sizeof(buf), 0);
-					if (byteCount == 0)
-					{
-						closeClientConnection(fd, clients, EPOLLIN);
-						continue ;
-					}
-					if (byteCount < 0)
-					{
-						closeClientConnection(fd, clients, errno);
-						continue ;
-					}
-					clients[fd].request.append(buf, byteCount);
-					memset(buf, 0, BUFFER_SIZE);
-
-					/*#############***SETUP REQUEST ROUTING***##############*/
-						//protocol version = HTTP 1.1
-						//path = /
-						//method = GET,POST,DELETE
-						//host = www.mywebsite.com
-						//user-agent = ? curl?
-						//accept = ?
-						//connection = keep-alive
-						//content-type = ?
-						//content lentght = ?
-						//body?
-					HttpRequest httpRequest;
-					// std::cout << "!!!!!!!!!!!!!!!!!!clients[fd].request: " << clients[fd].request << std::endl;
-					int requestStatus = parseRequest(clients[fd].request, httpRequest, 10000); // TODO: use effective client_max_body_size
-					//int requestStatus = COMPLETE;///////
-					std::cout << "*********requestStatus: " << requestStatus << std::endl;
-					if (requestStatus == ERROR)
-					{
-						//prepare response struct with error info.
-					}
-					if (requestStatus == COMPLETE)
-					{
-						try
-						{
-							requestRouting(fd, clients, listenServers, httpRequest);
-						}
-						catch (const std::exception &e)
-						{
-							std::cerr << e.what() << std::endl;
-							//clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
-							clients[fd].bytesSent = 0;
-							clients[fd].keepAlive = false;
-						}
-
-						t_responseInstructions responseInstructions = requestValidation(httpRequest, clients[fd].serverConf);//create the responseInstructions struct
-
-						std::cout << "responseInstructions" << std::endl
-									<< "statusCode: " << responseInstructions.statusCode << std::endl
-									<< "isRedirect: " << responseInstructions.isRedirect << std::endl
-									<< "redirectLocation: " << responseInstructions.redirectLocation << std::endl
-									<< "isCgi: " << responseInstructions.isCgi << std::endl
-									<< "isAutoIndex: " << responseInstructions.isAutoIndex << std::endl
-									<< "resolvedPath: " << responseInstructions.resolvedPath << std::endl
-									<< "contentType: " << responseInstructions.contentType << std::endl;
-
-
-						//create reponse for client[fd].response = responseCreate(responseInstructions);
-
-						// std::cout << "we received from client: " << clients[fd].request << std::endl;
-
-
-					}
-					//else if PARSE_INCOMPLETE, don't do anything.
-					ev.events = EPOLLOUT;
-					ev.data.fd = fd;
-					if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)
-					{
-						closeClientConnection(fd, clients, errno);
-						continue ;
-					}
-				}
-
+					handleClientReceive(ctx, fd, ceilingClientMaxBodySize, listenServers);
 				else if (evs[i].events & EPOLLOUT)
-				{
-					/********CLIENT: RESPOND**********/
-
-					//////////////////////////////////////////////////////////test
-					char buf2[1024];
-					memset(buf2, 0, sizeof(buf2));
-					std::cout << "read is happening... " << std::endl;
-					read(0, buf2, sizeof(buf2));
-					clients[fd].response.append(buf2, strlen(buf2));
-					std::cout << "read happened... " << std::endl;
-					//////////////////////////////////////////////////////////
-
-					byteCount = 0;
-					response = clients[fd].response;
-					bytesSent = clients[fd].bytesSent;
-					std::cout << "Server ready to send" << std::endl;
-					byteCount = send(fd, response.c_str() + bytesSent, response.size() - bytesSent, 0);
-					std::cout << "send happend, byte count: " << byteCount << std::endl;
-					if (byteCount < 0)
-					{
-						std::cout << "byte count < 0 " << std::endl;
-						closeClientConnection(fd, clients, errno);
-						continue ;
-					}
-					clients[fd].bytesSent += byteCount;
-					if (clients[fd].bytesSent == response.size())
-					{
-						std::cout << "response completed..." << std::endl;
-						clients[fd].bytesSent = 0;
-						ev.events = EPOLLIN;
-						ev.data.fd = fd;
-						if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) < 0)
-						{
-							std::cout << "it will finish on modify..." << std::endl;
-							closeClientConnection(fd, clients, errno);
-							continue ;
-						}
-					}
-				}
+					handleClientSend(ctx, fd);
 				//when deciding whether to terminate a connection, check also:
 				//timeout?
 				//http request header connection: keep-alive or close?
