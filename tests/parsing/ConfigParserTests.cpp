@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:29:09 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 15:23:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/04 12:14:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,73 @@
 # include "configParse.hpp"
 
 ConfigParserTests::ConfigParserTests() : TestSuite("ConfigParserTests") {}
+
+void	ConfigParserTests::test_addCgiExtension()
+{
+	t_locationConf	locationConf;
+	bool			success = true;
+	bool			successSecond = true;
+	bool			failEmpty = false;
+	bool			failNoDot = false;
+	bool			failOneArg = false;
+	bool			failThreeArgs = false;
+	bool			failWhitespaceOnly = false;
+
+	try {
+		addCgiExtension(locationConf, ".py /usr/bin/python3");
+	} catch (const std::exception &e) {
+		success = false;
+	}
+	try {
+		addCgiExtension(locationConf, ".php /usr/bin/php-cgi");
+	} catch (const std::exception &e) {
+		successSecond = false;
+	}
+	try {
+		addCgiExtension(locationConf, "");
+	} catch (const std::exception &e) {
+		failEmpty = true;
+	}
+	try {
+		addCgiExtension(locationConf, "py /usr/bin/python3");
+	} catch (const std::exception &e) {
+		failNoDot = true;
+	}
+	try {
+		addCgiExtension(locationConf, ".sh");
+	} catch (const std::exception &e) {
+		failOneArg = true;
+	}
+	try {
+		addCgiExtension(locationConf, ".sh /bin/sh extra");
+	} catch (const std::exception &e) {
+		failThreeArgs = true;
+	}
+	try {
+		addCgiExtension(locationConf, "   ");
+	} catch (const std::exception &e) {
+		failWhitespaceOnly = true;
+	}
+
+	check(success, "addCgiExtension accepts a valid input without throwing");
+	check(successSecond, "addCgiExtension accepts a second extension on the same location");
+	check(failEmpty, "addCgiExtension throws on empty string");
+	check(failNoDot, "addCgiExtension throws when extension has no leading dot");
+	check(failOneArg, "addCgiExtension throws with only one argument");
+	check(failThreeArgs, "addCgiExtension throws with more than two arguments");
+	check(failWhitespaceOnly, "addCgiExtension throws on whitespace-only string");
+
+	check(locationConf.cgiExtension["py"] == "/usr/bin/python3", "addCgiExtension stores interpreter under 'py' (dot stripped)");
+	check(locationConf.cgiExtension["php"] == "/usr/bin/php-cgi", "addCgiExtension stores interpreter under 'php' (dot stripped)");
+	check(locationConf.cgiExtension.size() == 2, "addCgiExtension did not store anything for the invalid inputs");
+
+	try {
+		addCgiExtension(locationConf, ".py /usr/local/bin/python3");
+	} catch (const std::exception &e) {
+	}
+	check(locationConf.cgiExtension["py"] == "/usr/local/bin/python3", "addCgiExtension overwrites interpreter for a repeated extension");
+	check(locationConf.cgiExtension.size() == 2, "addCgiExtension repeated extension does not add a new entry");
+}
 
 void	ConfigParserTests::test_addRedirection()
 {
@@ -343,6 +410,7 @@ void	ConfigParserTests::run_all()
 	// test_addErrorPages();
 	test_addAllowedMethods();
 	test_addRedirection();
+	test_addCgiExtension();
 
 	printSummary();
 }

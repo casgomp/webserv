@@ -6,54 +6,38 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 13:54:30 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/10 17:14:15 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// #include "serverUtils.hpp"
-
-# include <cstring>
-# include <iostream>
-# include <map>
 # include <sys/epoll.h>
 # include <unistd.h>
+# include <errno.h>
 
 # include "serverUtils.hpp"
 # include "serverInit.hpp"
+# include "serverClean.hpp"
 
-void	closeClientConnection(int fd, std::map<int, t_client> &clients, int err)
+int	epollSet(int epfd, int operation, int fd, int events)
 {
-	if (fd >= 0)
-	{
-		clients.erase(fd);
-		close(fd);
-	}
-	if (err == EPOLLERR)
-		std::cerr << "Connection: Error condition happened on the associated file descriptor." << std::endl;
-	else if (err == EPOLLHUP)
-		std::cerr << "Connection: Abrupt close happened on the associated file descriptor" << std::endl;
-	else if (err == EPOLLIN)
-		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
-	else
-		std::cerr << "Error: " << strerror(err) << std::endl;
-	//WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
+	struct epoll_event	ev;
+
+	ev.events = events;
+	ev.data.fd = fd;
+	return (epoll_ctl(epfd, operation, fd, &ev));
 }
 
-void	closeListeningSockets(t_listeningSockets &listeningSockets)
+size_t	computeCeilingBody(const t_listenServers &listenServers)
 {
-	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
-	{
-		// std::cout << "cleanupServ cleaned fd = " << it->first << std::endl;
-		if (it->first >= 0)
-			close (it->first);
-	}
-}
+	size_t	ceilingClientMaxBodySize = 0;
 
-void	cleanupServ(t_listeningSockets &listeningSockets, int epfd, std::map<int, t_client> &clients)
-{
-	closeListeningSockets(listeningSockets);
-	if (epfd >= 0)
-		close (epfd);
-	for (std::map<int, t_client>::iterator it = clients.begin(); it != clients.end(); it ++)
-		close(it->first);
+	for(t_listenServers::const_iterator it = listenServers.begin(); it != listenServers.end(); it ++)
+	{
+		for (size_t i = 0; i < it->second.size(); i ++)
+		{
+			if (it->second[i]->ceilingClientMaxBodySize > ceilingClientMaxBodySize)
+				ceilingClientMaxBodySize = it->second[i]->ceilingClientMaxBodySize;
+		}
+	}
+	return (ceilingClientMaxBodySize);
 }

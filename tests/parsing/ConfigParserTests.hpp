@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 11:28:56 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/13 17:19:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/04 12:07:43 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,9 +28,10 @@ class ConfigParserTests : public TestSuite {
 		void	test_checkIndexFiles();
 		void	test_addServerNames();
 		void	test_addListenAddressPort();
-		void	test_addErrorPages();
+		// void	test_addErrorPages();
 		void	test_addAllowedMethods();
 		void	test_addRedirection();
+		void	test_addCgiExtension();
 
 		void	run_all();
 };
