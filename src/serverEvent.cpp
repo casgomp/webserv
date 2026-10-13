@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/13 14:51:17 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/13 23:21:39 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,7 @@ void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSocke
 	ctx.clients[clientFd].pairAddressPort = listeningSockets[fd];
 	ctx.clients[clientFd].bytesSent = 0;
 	ctx.clients[clientFd].lastActivity = time(NULL);
+	ctx.clients[clientFd].waitingForClient = true;
 }
 
 void	handleClientSend(t_serverState &ctx, int fd)
@@ -73,6 +74,8 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	if (ctx.clients[fd].bytesSent == response.size())
 	{
 		ctx.clients[fd].bytesSent = 0;
+		ctx.clients[fd].waitingForClient = true;
+		ctx.clients[fd].lastActivity = time(NULL);
 		if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLIN) < 0)
 		{
 			closeClientConnection(ctx, fd, errno);
@@ -85,7 +88,7 @@ void	handleClientSend(t_serverState &ctx, int fd)
 void checkClientTimeouts(t_serverState &ctx)
 {
     const time_t now = time(NULL);
-    const time_t idleTimeout = 5;
+    const time_t idleTimeout = 60;
 
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
@@ -95,7 +98,7 @@ void checkClientTimeouts(t_serverState &ctx)
         t_client &client = it->second;
         ++it;
 
-        if (now - client.lastActivity >= idleTimeout)
+        if (client.waitingForClient && now - client.lastActivity >= idleTimeout)
             closeClientConnection(ctx, fd, -1);
     }
 }
@@ -125,10 +128,12 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		return ;
 	else if (requestStatus == ERROR)
 	{
+		ctx.clients[fd].waitingForClient = false;
 		//prepare response struct with error info.
 	}
 	else if (requestStatus == COMPLETE)
 	{
+		ctx.clients[fd].waitingForClient = false;
 		try
 		{
 			requestRouting(fd, ctx.clients, listenServers, httpRequest);
