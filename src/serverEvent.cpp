@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/10 17:13:22 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/13 14:51:17 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,7 @@ void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSocke
 	}
 	ctx.clients[clientFd].pairAddressPort = listeningSockets[fd];
 	ctx.clients[clientFd].bytesSent = 0;
+	ctx.clients[clientFd].lastActivity = time(NULL);
 }
 
 void	handleClientSend(t_serverState &ctx, int fd)
@@ -68,6 +69,7 @@ void	handleClientSend(t_serverState &ctx, int fd)
 		return ;
 	}
 	ctx.clients[fd].bytesSent += byteCount;
+	ctx.clients[fd].lastActivity = time(NULL);
 	if (ctx.clients[fd].bytesSent == response.size())
 	{
 		ctx.clients[fd].bytesSent = 0;
@@ -78,6 +80,24 @@ void	handleClientSend(t_serverState &ctx, int fd)
 		}
 	}
 	//keep alive??
+}
+
+void checkClientTimeouts(t_serverState &ctx)
+{
+    const time_t now = time(NULL);
+    const time_t idleTimeout = 5;
+
+    std::map<int, t_client>::iterator it = ctx.clients.begin();
+
+    while (it != ctx.clients.end())
+    {
+        int fd = it->first;
+        t_client &client = it->second;
+        ++it;
+
+        if (now - client.lastActivity >= idleTimeout)
+            closeClientConnection(ctx, fd, -1);
+    }
 }
 
 void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
@@ -96,6 +116,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		closeClientConnection(ctx, fd, errno);
 		return ;
 	}
+	ctx.clients[fd].lastActivity = time(NULL);
 	ctx.clients[fd].request.append(buf, byteCount);
 	HttpRequest	httpRequest;
 	int requestStatus = parseRequest(ctx.clients[fd].request, httpRequest, ceilingClientMaxBodySize);
@@ -157,7 +178,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	ceilingClientMaxBodySize = computeCeilingBody(listenServers);
 	while (1)
 	{
-		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, -1);
+		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, 1000);
 		if (nreadyfds < 0)
 		{
 			cleanupServ(ctx, listeningSockets);
@@ -207,6 +228,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 				// }
 			}
 		}
+		checkClientTimeouts(ctx);
 	}
 }
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverUtils.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/10 17:31:29 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/13 12:57:50 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ typedef struct	s_client {
 	std::string							response;
 	size_t								bytesSent;
 	bool								keepAlive;
+	time_t								lastActivity;
 } t_client;
 
 int		epollSet(int epfd, int operation, int fd, int events);
