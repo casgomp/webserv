@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:58 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/21 22:43:46 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/14 14:10:27 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class HttpRequestParserTests : public TestSuite {
 		void testRequestLineLength();
 
 		// Headers and framing
+		void testHeaderSizeLimit();
 		void testHostHeader();
 		void testContentLength();
 		void testTransferEncoding();
