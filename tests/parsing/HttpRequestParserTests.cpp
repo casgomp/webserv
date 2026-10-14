@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:47 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 00:27:58 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/14 14:18:44 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ void HttpRequestParserTests::run_all()
 	testHttpVersion();
 	testRequestLineLength();
 	//Headers and framing
+	testHeaderSizeLimit();
 	testHostHeader();
 	testContentLength();
 	testTransferEncoding();
@@ -266,6 +267,32 @@ void	HttpRequestParserTests::testRequestLineLength()
 	result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
 	check((result == ERROR) && (httpRequest.statusCode == 414),
 		"overlong incomplete request line returns ERROR with 414");
+}
+
+void	HttpRequestParserTests::testHeaderSizeLimit()
+{
+    std::string headers = "Host: localhost\r\n";
+
+    // Build many short headers to test the total size limit.
+    for (int i = 0; i < 1000; ++i)
+        headers += "X-Test: abcdefghij\r\n";
+    HttpRequest httpRequest;
+    std::string request = "GET / HTTP/1.1\r\n" + headers + "\r\n";
+    ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+    check(result == ERROR && httpRequest.statusCode == 431,
+        "headers exceeding max headers size return ERROR with 431");
+
+    // Remove the terminating CRLF to simulate incomplete headers.
+    request = "GET / HTTP/1.1\r\n" + headers;
+    result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+    check(result == ERROR && httpRequest.statusCode == 431,
+        "incomplete headers exceeding max headers size return ERROR with 431");
+
+    // Small, valid headers should still work.
+    request = "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n";
+    result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
+    check(result == COMPLETE && httpRequest.statusCode == 0,
+        "headers below max headers size return COMPLETE");
 }
 
 void	HttpRequestParserTests::testHostHeader()
