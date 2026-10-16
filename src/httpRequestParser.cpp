@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestParser.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/14 14:07:21 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/16 12:53:48 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 

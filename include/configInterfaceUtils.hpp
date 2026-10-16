@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:13:18 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/03 14:14:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 12:09:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,5 +28,6 @@ void						addListenAddressPort(t_serverConf &serverConf, const std::string &inpu
 void						addAllowedMethods(t_locationConf &locationConf, const std::string &input);
 void						addRedirection(t_locationConf &locationConf, const std::string &input);
 void						addCgiExtension(t_locationConf &locationConf, const std::string &input);
+void						addErrorPages(t_serverConf &serverConf, const std::string &input);
 
 #endif

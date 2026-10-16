@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 18:08:42 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 12:18:52 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,8 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			addListenAddressPort(serverConf, serverTreeConf.directives.at(i).second);
 			hasListen = true;
 		}
-		// if (serverTreeConf.directives.at(i).first == "error_page")
-		// addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
+		if (serverTreeConf.directives.at(i).first == "error_page")
+			addErrorPages(serverConf, serverTreeConf.directives.at(i).second);
 	}
 	if (hasListen == false)
 		throw std::runtime_error("config file does not contain listen directive");
@@ -106,6 +106,7 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 		if (locationConf.clientMaxBodySize > serverConf.ceilingClientMaxBodySize)
 			serverConf.ceilingClientMaxBodySize = locationConf.clientMaxBodySize;
 	}
+	//call error pages validation
 	return (serverConf);
 }
 

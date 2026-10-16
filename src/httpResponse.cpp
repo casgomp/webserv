@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/02 18:27:23 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/16 12:53:49 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
 	reasonPhrase[415] = "Unsupported Media Type";
 	reasonPhrase[429] = "Too Many Requests";
 	reasonPhrase[500] = "Internal Server Error";
-}
+}//504 is timeout server error  and 431 for http headers
 
 static std::string getReasonPhrase(int statusCode)
 {
@@ -208,7 +208,7 @@ static bool writePostBody(const std::string &path, const std::string &requestBod
 
 std::string	buildHttpResponse(const t_responseInstructions &instructions,
 							const std::string &requestBody,
-							const std::string &method)
+							const std::string &method)//why separate method and requestbody , why not all in the t_responseInstructions?
 {
 	std::string				response;
 	std::string				body;
