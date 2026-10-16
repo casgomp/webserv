@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:13:18 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:22:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:38:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,6 @@ void						addAllowedMethods(t_locationConf &locationConf, const std::string &inp
 void						addRedirection(t_locationConf &locationConf, const std::string &input);
 void						addCgiExtension(t_locationConf &locationConf, const std::string &input);
 void						addErrorPages(t_serverConf &serverConf, const std::string &input);
-void						validateErrorPagesPaths(t_serverConf *serverConf);
+void						validateErrorPagesPaths(t_serverConf &serverConf);
 
 #endif
