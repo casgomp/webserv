@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 12:18:07 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:28:50 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@
 
 # include "configInterfaceUtils.hpp"
 # include "configConf.hpp"
+# include "configInterfaceUtils.hpp"
+# include "requestValidationUtils.cpp"
 
 bool	isNumeric(const std::string &str)
 {
@@ -77,6 +79,7 @@ void	addRedirection(t_locationConf &locationConf, const std::string &input)
 void	addAllowedMethods(t_locationConf &locationConf, const std::string &input)
 {
 	if (input.empty())
+# include "configInterfaceUtils.hpp"
 		throw std::runtime_error("empty string (allowed_methods)");
 	
 	std::istringstream						ss(input);
@@ -90,6 +93,21 @@ void	addAllowedMethods(t_locationConf &locationConf, const std::string &input)
 		vec.push_back(str);
 	}
 	locationConf.allowedMethods = vec;
+}
+
+void	validateErrorPagesPaths(t_serverConf &serverConf)
+{
+	if (!serverConf.errorPages.empty() && serverConf.root.empty())
+			throw std::runtime_error("error page requires a server-level root");
+	for (std::map<int, std::string>::iterator	it = serverConf.errorPages.begin();	it != serverConf.errorPages.end(); it ++)
+	{
+		it->second = joinedPath(serverConf.root, it->second);
+		if (!pathIsFile(it->second) || access(it->second.c_str(), R_OK) == -1)
+		{
+			std::cerr << it->second << " is invalid error_page path" << std::endl;
+			it->second = "";
+		}
+	}
 }
 
 void	addErrorPages(t_serverConf &serverConf, const std::string &input)

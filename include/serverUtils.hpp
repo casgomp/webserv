@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverUtils.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/13 22:40:04 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/16 18:19:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ typedef struct	s_client {
 	bool								waitingForClient;
 } t_client;
 
-int		epollSet(int epfd, int operation, int fd, int events);
-size_t	computeCeilingBody(const t_listenServers &listenServers);
+int						epollSet(int epfd, int operation, int fd, int events);
+size_t					computeCeilingBody(const t_listenServers &listenServers);
+t_responseInstructions	buildErrorInstructions(const int &status, const t_serverConf &serverConf);
 #endif

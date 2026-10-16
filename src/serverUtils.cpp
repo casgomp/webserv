@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/10 17:14:15 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:30:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include "serverUtils.hpp"
 # include "serverInit.hpp"
 # include "serverClean.hpp"
+# include "requestValidationUtils.hpp"
 
 int	epollSet(int epfd, int operation, int fd, int events)
 {
@@ -40,4 +41,18 @@ size_t	computeCeilingBody(const t_listenServers &listenServers)
 		}
 	}
 	return (ceilingClientMaxBodySize);
+}
+
+t_responseInstructions	buildErrorInstructions(const int &status, const t_serverConf *serverConf)
+{
+	t_responseInstructions						instructions;
+	std::map<int,std::string>::const_iterator	it;
+	
+	instructions.statusCode = status;
+	it = serverConf->errorPages.find(status);
+	if (it != serverConf->errorPages.end())
+		instructions.resolvedPath = it->second;
+	else
+		instructions.resolvedPath = "";
+	return (instructions);
 }

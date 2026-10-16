@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 12:18:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 17:57:38 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 		if (locationConf.clientMaxBodySize > serverConf.ceilingClientMaxBodySize)
 			serverConf.ceilingClientMaxBodySize = locationConf.clientMaxBodySize;
 	}
-	//call error pages validation
+	validateErrorPagesPaths(serverConf);
 	return (serverConf);
 }
 
