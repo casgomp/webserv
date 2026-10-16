@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:30:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:42:54 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ size_t	computeCeilingBody(const t_listenServers &listenServers)
 	return (ceilingClientMaxBodySize);
 }
 
-t_responseInstructions	buildErrorInstructions(const int &status, const t_serverConf *serverConf)
+t_responseInstructions	buildErrorInstructions(const int &status, t_serverConf *serverConf)
 {
 	t_responseInstructions						instructions;
 	std::map<int,std::string>::const_iterator	it;

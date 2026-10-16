@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:28:50 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:47:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@
 # include "configInterfaceUtils.hpp"
 # include "configConf.hpp"
 # include "configInterfaceUtils.hpp"
-# include "requestValidationUtils.cpp"
+# include "requestValidationUtils.hpp"
 
 bool	isNumeric(const std::string &str)
 {

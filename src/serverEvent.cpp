@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:29:57 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:43:47 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		catch (const std::exception &e)
 		{
 			std::cerr << e.what() << std::endl;
-			ctx.clients[fd].response = buildHttpResponse(buildErrorInstructions(500, *(ctx.clients[fd].serverConf)), "requestbody?", "method?");
+			ctx.clients[fd].response = buildHttpResponse(buildErrorInstructions(500, ctx.clients[fd].serverConf), "requestbody?", "method?");
 			ctx.clients[fd].bytesSent = 0;
 			ctx.clients[fd].keepAlive = false;
 		}

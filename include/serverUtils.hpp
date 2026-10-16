@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:19:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:43:18 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,5 +35,6 @@ typedef struct	s_client {
 
 int						epollSet(int epfd, int operation, int fd, int events);
 size_t					computeCeilingBody(const t_listenServers &listenServers);
-t_responseInstructions	buildErrorInstructions(const int &status, const t_serverConf &serverConf);
+t_responseInstructions	buildErrorInstructions(const int &status, t_serverConf *serverConf);
+
 #endif
