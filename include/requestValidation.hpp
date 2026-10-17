@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:32:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/17 16:22:16 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 // # include "main.hpp"
 # include "httpRequestParser.hpp"
 # include "configConf.hpp"
-# include "requestValidationUtils.hpp"
+# include "serverUtils.hpp"
 
 t_responseInstructions	requestValidation(HttpRequest &httpRequest, t_serverConf *serverConf);
 

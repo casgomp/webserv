@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/10 17:48:10 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/17 16:24:10 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,12 +78,12 @@ int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &res
 		dup2(pipeW[1], STDOUT_FILENO);
 		close(pipeW[1]);
 		std::vector<std::string>	args;
-		args.push_back(responseInstructions.cgiInterpreter);
+		args.push_back(responseInstructions.cgi.interpreter);
 		args.push_back(responseInstructions.resolvedPath);
 		std::vector<char *>	argv = toCharPtrs(args);
 		std::vector<std::string>	env = buildCgiEnvp(httpRequest);
 		std::vector<char *>	envp = toCharPtrs(env);
-		execve(responseInstructions.cgiInterpreter.c_str(), &argv[0], &envp[0]);
+		execve(responseInstructions.cgi.interpreter.c_str(), &argv[0], &envp[0]);
 		_exit (127);
 	}
 	close(pipeR[0]);

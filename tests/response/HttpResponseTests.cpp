@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponseTests.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 11:36:28 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/02 18:28:11 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/17 16:35:16 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,10 @@ void	HttpResponseTests::validateResponseLine()
 	t_responseInstructions instructions;
 	instructions.statusCode = 404;
 	instructions.contentType = "text/html";
-	instructions.closeConnection = true;
-	std::string result = buildHttpResponse(instructions, "", "GET");
+	instructions.keepAlive = true;
+	instructions.body = "";
+	instructions.method = "GET";
+	std::string result = buildHttpResponse(instructions);
 	std::string response = "HTTP/1.1 404 Not Found\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 151\r\n"
@@ -58,9 +60,11 @@ void	HttpResponseTests::validateResponseLine()
 	emptyFile.close();
 	instructions.statusCode = 200;
 	instructions.contentType = "text/html";
-	instructions.closeConnection = false;
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 	instructions.resolvedPath = "test_empty.html";
-	result = buildHttpResponse(instructions, "", "GET");
+	result = buildHttpResponse(instructions);
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
@@ -72,9 +76,11 @@ void	HttpResponseTests::validateResponseLine()
 
 	instructions.statusCode = 200;
 	instructions.contentType = "text/html";
-	instructions.closeConnection = false;
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 	instructions.resolvedPath = "response/test_files/hello.txt";
-	result = buildHttpResponse(instructions, "", "GET");
+	result = buildHttpResponse(instructions);
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 5\r\n"
@@ -85,10 +91,12 @@ void	HttpResponseTests::validateResponseLine()
 
 	instructions.statusCode = 308;
 	instructions.contentType = "text/html";
-	instructions.closeConnection = false;
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 	instructions.isRedirect = true;
 	instructions.redirectLocation = "/fruits";
-	result = buildHttpResponse(instructions, "", "GET");
+	result = buildHttpResponse(instructions);
 	response = "HTTP/1.1 308 Permanent Redirect\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
@@ -99,10 +107,12 @@ void	HttpResponseTests::validateResponseLine()
 
 	instructions.statusCode = 308;
 	instructions.contentType = "text/html";
-	instructions.closeConnection = false;
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 	instructions.isRedirect = true;
 	instructions.redirectLocation = "/vegetables";
-	result = buildHttpResponse(instructions, "", "GET");
+	result = buildHttpResponse(instructions);
 	response = "HTTP/1.1 308 Permanent Redirect\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
@@ -113,12 +123,14 @@ void	HttpResponseTests::validateResponseLine()
 
 	instructions.statusCode = 200;
 	instructions.contentType = "text/plain";
-	instructions.closeConnection = false;
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 	instructions.isRedirect = false;
 	instructions.resolvedPath =
 		"response/test_files/hello.txt";
 
-	result = buildHttpResponse(instructions, "", "GET");
+	result = buildHttpResponse(instructions);
 
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/plain\r\n"
@@ -140,8 +152,11 @@ void	HttpResponseTests::testAutoIndex()
 	instructions.isAutoIndex = true;
 	instructions.resolvedPath = "response/test_files/fruits";
 	instructions.contentType = "text/html";
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 
-	std::string result = buildHttpResponse(instructions, "", "GET");
+	std::string result = buildHttpResponse(instructions);
 
 	check(result.find("apple.html") != std::string::npos && result.find("banana.txt") != std::string::npos, "AutoIndex lists directory entries");
 	std::cout << "Result: " << result << std::endl;
@@ -152,10 +167,13 @@ void	HttpResponseTests::testGet()
 	t_responseInstructions instructions;
 	std::string result;
 
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "GET";
 	instructions.statusCode = 200;
 	instructions.contentType = "text/plain";
 	instructions.resolvedPath = "nonexistent_file.txt";
-	result = buildHttpResponse(instructions, "", "GET");
+	result = buildHttpResponse(instructions);
 	check(result.find("HTTP/1.1 500 Internal Server Error\r\n") == 0,
 		"GET returns 500 when file opening fails");
 }
@@ -167,7 +185,10 @@ void	HttpResponseTests::testPost()
     instructions.contentType = "text/plain";
     instructions.resolvedPath = "response/test_files/post_test.txt";
     std::string requestBody = "Hello from POST!";
-	std::string result = buildHttpResponse(instructions, requestBody, "POST");
+	instructions.keepAlive = false;
+	instructions.body = requestBody;
+	instructions.method = "POST";
+	std::string result = buildHttpResponse(instructions);
 	check(result.find("HTTP/1.1 201 Created\r\n") == 0,
 		"POST returns 201 Created");
 
@@ -181,7 +202,7 @@ void	HttpResponseTests::testPost()
 
 	instructions.resolvedPath = "response/test_files/nonexistent_dir/post.txt";
 	std::string failedResult =
-		buildHttpResponse(instructions, requestBody, "POST");
+		buildHttpResponse(instructions);
 	check(failedResult.find("HTTP/1.1 500 Internal Server Error\r\n") == 0,
 		"POST returns 500 when file creation fails");
 	check(failedResult.find("<h1>500 Internal Server Error</h1>") != std::string::npos,
@@ -200,7 +221,10 @@ void	HttpResponseTests::testDelete()
     instructions.statusCode = 204;
     instructions.resolvedPath = path;
     instructions.contentType = "text/plain";
-    std::string result = buildHttpResponse(instructions, "", "DELETE");
+	instructions.keepAlive = false;
+	instructions.body = "";
+	instructions.method = "DELETE";
+    std::string result = buildHttpResponse(instructions);
     check(result.find("HTTP/1.1 204 No Content\r\n") == 0,
         "DELETE returns 204 No Content");
 
@@ -208,7 +232,7 @@ void	HttpResponseTests::testDelete()
     check(!deletedFile.is_open(),
         "DELETE removes the file");
 
-	std::string failedResult = buildHttpResponse(instructions, "", "DELETE");
+	std::string failedResult = buildHttpResponse(instructions);
 	check(failedResult.find("HTTP/1.1 500 Internal Server Error\r\n") == 0,
 		"DELETE returns 500 when file removal fails");
 
@@ -237,7 +261,10 @@ void	HttpResponseTests::testErrorResponses()
 
         instructions.statusCode = codes[i];
         instructions.contentType = "text/plain";
-        std::string result = buildHttpResponse(instructions, "", "GET");
+		instructions.keepAlive = false;
+		instructions.body = "";
+		instructions.method = "GET";
+        std::string result = buildHttpResponse(instructions);
         std::stringstream expected;
         expected << "<h1>" << codes[i] << " " << messages[i] << "</h1>";
         check(result.find(expected.str()) != std::string::npos,

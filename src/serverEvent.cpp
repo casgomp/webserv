@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:43:47 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/17 16:59:03 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSocke
 	}
 	ctx.clients[clientFd].pairAddressPort = listeningSockets[fd];
 	ctx.clients[clientFd].bytesSent = 0;
-	ctx.clients[clientFd].keepAlive = true;
+	ctx.clients[clientFd].responseInstructions.keepAlive = true;
 	ctx.clients[clientFd].lastActivity = time(NULL);
 	ctx.clients[clientFd].waitingForClient = true;
 }
@@ -63,7 +63,8 @@ void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSocke
 void	handleClientSend(t_serverState &ctx, int fd)
 {
 	int byteCount = 0;
-	const std::string &response = ctx.clients[fd].response;
+
+	std::string response = buildHttpResponse(ctx.clients[fd].responseInstructions);//too many calls when chunked response?
 	size_t bytesSent = ctx.clients[fd].bytesSent;
 	byteCount = send(fd, response.c_str() + bytesSent, response.size() - bytesSent, 0);
 	if (byteCount < 0)
@@ -75,7 +76,7 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	ctx.clients[fd].lastActivity = time(NULL);
 	if (ctx.clients[fd].bytesSent == response.size())
 	{
-		if (!ctx.clients[fd].keepAlive)
+		if (!ctx.clients[fd].responseInstructions.keepAlive)
 		{
 			closeClientConnection(ctx, fd, 0);
 			return ;
@@ -122,6 +123,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	}
 	if (byteCount < 0)
 	{
+		//should we send error message before closing connection?
 		closeClientConnection(ctx, fd, errno);
 		return ;
 	}
@@ -146,27 +148,32 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		std::cout << "*********requestStatus: COMPLETE" << std::endl;
 		ctx.clients[fd].request.erase(0, httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
+		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method; 
+		ctx.clients[fd].responseInstructions.body = httpRequest.body;
 		if (httpRequest.headers.find("connection") == httpRequest.headers.end()
 			|| httpRequest.headers["connection"] != "close")
 		{
-			ctx.clients[fd].keepAlive = true;
+			ctx.clients[fd].responseInstructions.keepAlive = true;
 		}
 		else
-			ctx.clients[fd].keepAlive = false;
+			ctx.clients[fd].responseInstructions.keepAlive = false;
 		try
 		{
 			requestRouting(fd, ctx.clients, listenServers, httpRequest);
+			t_responseInstructions responseInstructions = requestValidation(httpRequest, ctx.clients[fd].serverConf);
+			if (responseInstructions.isCgi && cgiStart(ctx, fd, responseInstructions, httpRequest) == 0)
+				return ;
 		}
 		catch (const std::exception &e)
 		{
+
 			std::cerr << e.what() << std::endl;
-			ctx.clients[fd].response = buildHttpResponse(buildErrorInstructions(500, ctx.clients[fd].serverConf), "requestbody?", "method?");
+			// ctx.clients[fd].response = buildHttpResponse(buildErrorInstructions(500, ctx.clients[fd].serverConf), "requestbody?", "method?");
+			ctx.clients[fd].responseInstructions = buildErrorInstructions(500, ctx.clients[fd].serverConf);//, "requestbody?", "method?;
 			ctx.clients[fd].bytesSent = 0;
-			ctx.clients[fd].keepAlive = false;
+			ctx.clients[fd].responseInstructions.keepAlive = false;
 		}
-		t_responseInstructions responseInstructions = requestValidation(httpRequest, ctx.clients[fd].serverConf);
-		if (responseInstructions.isCgi && cgiStart(ctx, fd, responseInstructions, httpRequest) == 0)
-			return ;
+		
 	}
 	if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLOUT) < 0)
 	{
@@ -228,7 +235,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			}
 			else if (ctx.clients.find(fd) != ctx.clients.end())
 			{
-				/******************************CLIENT: HANDLING REQUEST/SENDING RESPONSE******************************/
 				if (evs[i].events & EPOLLERR)
 				{
 					closeClientConnection(ctx, fd, EPOLLERR);
@@ -243,13 +249,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					handleClientReceive(ctx, fd, ceilingClientMaxBodySize, listenServers);
 				else if (evs[i].events & EPOLLOUT)
 					handleClientSend(ctx, fd);
-				//when deciding whether to terminate a connection, check also:
-				//timeout?
-				//http request header connection: keep-alive or close?
-				// if (httpRequest.header["connection"] == "close")
-				// {
-				// 	// close connection
-				// }
 			}
 		}
 		checkClientTimeouts(ctx);

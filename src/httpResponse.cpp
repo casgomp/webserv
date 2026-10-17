@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/16 12:53:49 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/17 15:46:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -181,7 +181,7 @@ static void	buildHeaders(std::string &response,
 	response += "Content-Length: " + len.str() + "\r\n";
 	if (instructions.statusCode >= 300 && instructions.statusCode < 400 && instructions.isRedirect)
 		response += "Location: " + instructions.redirectLocation + "\r\n";
-	if (!instructions.closeConnection)
+	if (!instructions.keepAlive)
 		response += "Connection: keep-alive\r\n";
 	else
 		response += "Connection: close\r\n";
@@ -206,32 +206,30 @@ static bool writePostBody(const std::string &path, const std::string &requestBod
 	return true;
 }
 
-std::string	buildHttpResponse(const t_responseInstructions &instructions,
-							const std::string &requestBody,
-							const std::string &method)//why separate method and requestbody , why not all in the t_responseInstructions?
+std::string	buildHttpResponse(const t_responseInstructions &instructions)
 {
 	std::string				response;
 	std::string				body;
 	t_responseInstructions	result;
 
 	result = instructions;
-	if (method == "DELETE" && result.statusCode == 204)
+	if (result.method == "DELETE" && result.statusCode == 204)
 	{
 		if (!deleteFile(result.resolvedPath))
 			result.statusCode = 500;
 	}
-	if (method == "POST" && result.statusCode == 201)
+	if (result.method == "POST" && result.statusCode == 201)
 	{
-		if (!writePostBody(result.resolvedPath, requestBody))
+		if (!writePostBody(result.resolvedPath, result.body))
 			result.statusCode = 500;
 	}
-	if (method == "GET" && result.statusCode == 200)
+	if (result.method == "GET" && result.statusCode == 200)
 	{
 		if (!buildBody(body, result))
 			result.statusCode = 500;
 	}
 	if (result.statusCode >= 400 && result.statusCode <= 599)
-		body = buildErrorBody(result.statusCode);
+		body = buildErrorBody(result.statusCode);//put errors at begining with else if?
 	buildStatusLine(response, result);
 
 	buildHeaders(response, result, body);
