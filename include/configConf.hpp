@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 13:29:25 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/07 18:08:27 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 12:53:33 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct	s_serverConf {
 	std::vector<std::string>							serverNames;
 	std::vector<std::pair<std::string, std::string> >	listen;
 	size_t												ceilingClientMaxBodySize;
+	std::map<int, std::string>							errorPages;
 	std::vector<t_locationConf>							locations;
 	s_serverConf() : clientMaxBodySize(0), autoindex(false), ceilingClientMaxBodySize(0) {}
 } t_serverConf;

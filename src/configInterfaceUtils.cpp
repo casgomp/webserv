@@ -6,11 +6,12 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/04 12:01:20 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/16 18:47:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include <cerrno>
+# include <climits>
 # include <cstdlib>
 # include <cstring>
 # include <dirent.h>
@@ -21,6 +22,8 @@
 
 # include "configInterfaceUtils.hpp"
 # include "configConf.hpp"
+# include "configInterfaceUtils.hpp"
+# include "requestValidationUtils.hpp"
 
 bool	isNumeric(const std::string &str)
 {
@@ -76,6 +79,7 @@ void	addRedirection(t_locationConf &locationConf, const std::string &input)
 void	addAllowedMethods(t_locationConf &locationConf, const std::string &input)
 {
 	if (input.empty())
+# include "configInterfaceUtils.hpp"
 		throw std::runtime_error("empty string (allowed_methods)");
 	
 	std::istringstream						ss(input);
@@ -91,32 +95,45 @@ void	addAllowedMethods(t_locationConf &locationConf, const std::string &input)
 	locationConf.allowedMethods = vec;
 }
 
-// void	addErrorPages(t_serverConf &serverConf, const std::string &input)
-// {
-// 	if (input.empty())
-// 		throw std::runtime_error("empty string (error_page)");
+void	validateErrorPagesPaths(t_serverConf &serverConf)
+{
+	if (!serverConf.errorPages.empty() && serverConf.root.empty())
+			throw std::runtime_error("error page requires a server-level root");
+	for (std::map<int, std::string>::iterator	it = serverConf.errorPages.begin();	it != serverConf.errorPages.end(); it ++)
+	{
+		it->second = joinedPath(serverConf.root, it->second);
+		if (!pathIsFile(it->second) || access(it->second.c_str(), R_OK) == -1)
+		{
+			std::cerr << it->second << " is invalid error_page path" << std::endl;
+			it->second = "";
+		}
+	}
+}
+
+void	addErrorPages(t_serverConf &serverConf, const std::string &input)
+{
+	if (input.empty())
+		throw std::runtime_error("empty string (error_page)");
 		
-// 	std::istringstream			ss(input);
-// 	std::string					str;
-// 	std::vector<std::string>	vec;
-// 	int							num;
-// 	std::map<int, std::string>	errorPageMap;
+	std::istringstream			ss(input);
+	std::string					str;
+	std::vector<std::string>	vec;
+	int							num;
 	
-// 	while (ss >> str)
-// 		vec.push_back(str);
-// 	if (vec.size() < 2)
-// 		throw std::runtime_error("arguments < 2 (redirection)");
-// 	if (vec.back().at(0) != '/')
-// 		throw std::runtime_error("invalid uri (error_page)");
-// 	for (size_t i = 0; i < vec.size() - 1; i ++)
-// 	{
-// 		num = strToNum(vec.at(i));
-// 		if (!(num >= 400 && num < 600))
-// 			throw std::runtime_error("invalid code (error_page)");
-// 		errorPageMap[num] = vec.back();
-// 	}
-// 	serverConf.errorPages = errorPageMap;
-// }
+	while (ss >> str)
+		vec.push_back(str);
+	if (vec.size() < 2)
+		throw std::runtime_error("arguments < 2 (error_page)");
+	if (vec.back().at(0) != '/')
+		throw std::runtime_error("invalid uri (error_page)");
+	for (size_t i = 0; i < vec.size() - 1; i ++)
+	{
+		num = strToNum(vec.at(i));
+		if (!(num >= 400 && num < 600))
+			throw std::runtime_error("invalid code (error_page)");
+		serverConf.errorPages[num] = vec.back();
+	}
+}
 
 void	addListenAddressPort(t_serverConf &serverConf, const std::string &input)
 {
@@ -180,11 +197,16 @@ int	checkAutoindex(const std::string &autoindex)
 
 int	strToNum(const std::string &str)
 {
+	long long n;
+
 	if (str.empty())
 		throw std::runtime_error("empty string for int conversion");
 	if (!isNumeric(str))
-		throw std::runtime_error("string (client_max_body_size) contains non numeric character");
-	return (atoi(str.c_str()));
+		throw std::runtime_error("string contains non numeric character");
+	n = strtoll(str.c_str(), NULL, 10);
+	if (n > INT_MAX)
+		throw std::runtime_error("number too large");
+	return (static_cast<int>(n));
 }
 
 void	checkIfValidDir(const std::string &path)

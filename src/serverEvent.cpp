@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/14 15:56:03 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/16 18:43:47 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@
 # include "requestValidationUtils.hpp"
 # include "cgiExecute.hpp"
 # include "cgiHandle.hpp"
+# include "httpResponse.hpp"
 
 void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSockets)
 {
@@ -159,7 +160,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		catch (const std::exception &e)
 		{
 			std::cerr << e.what() << std::endl;
-			//ctx.clients[fd].response = buildErrorResponse(500, "Internal Server Error");//buildErrorResponse is part of response not yet implemented
+			ctx.clients[fd].response = buildHttpResponse(buildErrorInstructions(500, ctx.clients[fd].serverConf), "requestbody?", "method?");
 			ctx.clients[fd].bytesSent = 0;
 			ctx.clients[fd].keepAlive = false;
 		}
