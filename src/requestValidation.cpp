@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/08 09:51:37 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/17 16:23:42 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,9 +91,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 				return (responseInstructions);
 			}
 			responseInstructions.isCgi = true;
-			responseInstructions.cgiInterpreter = it->second;
+			responseInstructions.cgi.interpreter = it->second;
 			responseInstructions.resolvedPath = resolvedPath;
-			responseInstructions.queryString = httpRequest.requestLine.queryString;
+			responseInstructions.cgi.queryString = httpRequest.requestLine.queryString;
 			return (responseInstructions);
 		}
 	}

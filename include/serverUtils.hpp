@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:43:18 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/17 16:23:30 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,40 @@
 
 # include "configConf.hpp"
 # include "configConf.hpp"
-# include "cgiExecute.hpp"
 # include "serverInit.hpp"
+# include "cgiTypes.hpp"
+
+typedef struct	s_cgi {
+	bool		success;
+	std::string	interpreter;
+	std::string	queryString;
+	time_t		timeout;
+	s_cgi() : success (false), interpreter(""), queryString("") {}
+} t_cgi;
+
+typedef struct	s_responseInstructions {
+	int			statusCode;
+	bool		isRedirect;
+	std::string	redirectLocation;
+	bool		isCgi;
+	t_cgi		cgi;
+	bool		isAutoIndex;
+	std::string	resolvedPath;
+	std::string	contentType;
+	std::string	method;
+	std::string body;
+	bool		keepAlive;
+	s_responseInstructions() : statusCode(0), isRedirect(false), redirectLocation(""), isCgi(false), 
+		isAutoIndex(false), resolvedPath(""), contentType(""), keepAlive(false) {}
+} t_responseInstructions;
 
 typedef struct	s_client {
 	std::pair<std::string, std::string>	pairAddressPort;
 	t_serverConf						*serverConf;
 	t_cgiProcess						cgiProcess;
 	std::string							request;
-	std::string							response;
+	t_responseInstructions				responseInstructions;
 	size_t								bytesSent;
-	bool								keepAlive;
 	time_t								lastActivity;
 	bool								waitingForClient;
 } t_client;
