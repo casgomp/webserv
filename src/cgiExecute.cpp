@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 11:02:32 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 17:17:45 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 # include "cgiExecute.hpp"
 # include "httpRequestParserUtils.hpp"
+# include "requestValidationUtils.hpp"
 # include "requestValidationUtils.hpp"
 
 std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest)
