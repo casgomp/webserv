@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:58:17 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 15:46:26 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 12:05:01 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,33 @@ t_responseInstructions	buildErrorInstructions(const int &status, t_serverConf *s
 	std::map<int,std::string>::const_iterator	it;
 	
 	instructions.statusCode = status;
-	it = serverConf->errorPages.find(status);
-	if (it != serverConf->errorPages.end())
-		instructions.resolvedPath = it->second;
-	else
+	if (serverConf == NULL)
 		instructions.resolvedPath = "";
+	else
+	{
+		it = serverConf->errorPages.find(status);
+		if (it != serverConf->errorPages.end())
+			instructions.resolvedPath = it->second;
+		else
+			instructions.resolvedPath = "";
+	}
 	return (instructions);
+}
+
+void	resetInstructions(t_client &client, const t_responseInstructions &newInstructions)
+{
+	std::string	method = client.responseInstructions.method;
+	bool		keepAlive = client.responseInstructions.keepAlive;
+
+	client.responseInstructions = newInstructions;
+	client.responseInstructions.method = method;
+	client.responseInstructions.keepAlive = keepAlive;
+}
+
+void	resetErrorInstructions(t_serverState &ctx, const int &fd, const int &status)
+{
+	t_responseInstructions	responseInstructions;
+
+	responseInstructions = buildErrorInstructions(status, ctx.clients[fd].serverConf);
+	resetInstructions(ctx.clients[fd], responseInstructions);
 }

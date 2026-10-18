@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 16:23:42 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 15:10:53 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,16 +31,10 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 
 	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
 	if (location == NULL)
-	{
-		responseInstructions.statusCode = 404;
-		return (responseInstructions);
-	}
+		return (buildErrorInstructions(404, serverConf));
 	status = validateMethod(location->allowedMethods, httpRequest.requestLine.method);
 	if (status != 0)
-	{
-		responseInstructions.statusCode = status;
-		return (responseInstructions);
-	}
+		return (buildErrorInstructions(status, serverConf));
 	if (location->redirection.first != 0)
 	{
 		responseInstructions.statusCode = location->redirection.first;
@@ -56,10 +50,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	if (!isFile)
 	{
 		if (!pathIsDir(resolvedPath))
-		{
-			responseInstructions.statusCode = 404;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(404, serverConf));
 		if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
 		{
 			responseInstructions.statusCode = 301;
@@ -71,25 +62,16 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	if (!location->cgiExtension.empty())
 	{
 		if (!isFile)
-		{
-			responseInstructions.statusCode = 404;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(404, serverConf));
 		size_t	dot = resolvedPath.find_last_of('.');
 		if (dot == std::string::npos)
-		{
-			responseInstructions.statusCode = 403;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(403, serverConf));
 		std::string ext = resolvedPath.substr(dot + 1);
 		std::map<std::string, std::string>::const_iterator it = location->cgiExtension.find(ext);
 		if (it != location->cgiExtension.end())
 		{
 			if (access(resolvedPath.c_str(), R_OK) != 0)
-			{
-				responseInstructions.statusCode = 403;
-				return (responseInstructions);
-			}
+				return (buildErrorInstructions(403, serverConf));
 			responseInstructions.isCgi = true;
 			responseInstructions.cgi.interpreter = it->second;
 			responseInstructions.resolvedPath = resolvedPath;
@@ -110,16 +92,10 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			else if (location->autoindex)
 				responseInstructions.isAutoIndex = true;
 			else
-			{
-				responseInstructions.statusCode = 403;
-				return (responseInstructions);
-			}
+				return (buildErrorInstructions(403, serverConf));
 		}
 		if (access(resolvedPath.c_str(), R_OK) != 0)
-		{
-			responseInstructions.statusCode = 403;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(403, serverConf));
 		std::cout << "resolvedPath2: " << resolvedPath << std::endl;////////////////////////////////////////
 		responseInstructions.resolvedPath = resolvedPath;
 		responseInstructions.contentType = getContentType(resolvedPath);
@@ -130,30 +106,18 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		std::cout << "*****POST request validation******" << std::endl;
 		if (httpRequest.body.size() > location->clientMaxBodySize)
-		{
-			responseInstructions.statusCode = 413;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(413, serverConf));
 		if (getContentType(resolvedPath) == "application/octet-stream")
-		{
-			responseInstructions.statusCode = 415;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(415, serverConf));
 		if (isFile)
 		{
 			if (access(resolvedPath.c_str(), W_OK) != 0)
-			{
-				responseInstructions.statusCode = 403;
-				return (responseInstructions);
-			}
+				return (buildErrorInstructions(403, serverConf));
 		}
 		else
 		{
 			if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
-			{
-				responseInstructions.statusCode = 403;
-				return (responseInstructions);
-			}
+				return (buildErrorInstructions(403, serverConf));
 		}
 		responseInstructions.resolvedPath = resolvedPath;
 		responseInstructions.contentType = getContentType(resolvedPath);
@@ -164,15 +128,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		std::cout << "*****DELETE request validation******" << std::endl;
 		if (!isFile)
-		{
-			responseInstructions.statusCode = 403;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(403, serverConf));
 		if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
-		{
-			responseInstructions.statusCode = 403;
-			return (responseInstructions);
-		}
+			return (buildErrorInstructions(403, serverConf));
 		responseInstructions.statusCode = 204;
 		return (responseInstructions);
 	}

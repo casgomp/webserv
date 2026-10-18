@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 16:24:10 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 11:02:32 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ static std::vector<char *>	toCharPtrs(const std::vector<std::string> &strs)
 	return (ptrs);
 }
 
-int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &responseInstructions, t_cgiProcess &proc)
+int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd)
 {
 	int				pipeR[2] = {-1, -1};
 	int				pipeW[2] = {-1, -1};
@@ -62,12 +62,12 @@ int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &res
 	{
 		;//return error?
 	}
-	proc.pid = fork();
-	if (proc.pid == -1)
+	ctx.clients[fd].cgiProcess.pid = fork();
+	if (ctx.clients[fd].cgiProcess.pid == -1)
 	{
 		;//return error?
 	}
-	if (proc.pid == 0)
+	if (ctx.clients[fd].cgiProcess.pid == 0)
 	{
 		if (pipeR[1] != -1)
 			close(pipeR[1]);
@@ -78,12 +78,12 @@ int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &res
 		dup2(pipeW[1], STDOUT_FILENO);
 		close(pipeW[1]);
 		std::vector<std::string>	args;
-		args.push_back(responseInstructions.cgi.interpreter);
-		args.push_back(responseInstructions.resolvedPath);
+		args.push_back(ctx.clients[fd].responseInstructions.cgi.interpreter);
+		args.push_back(ctx.clients[fd].responseInstructions.resolvedPath);
 		std::vector<char *>	argv = toCharPtrs(args);
 		std::vector<std::string>	env = buildCgiEnvp(httpRequest);
 		std::vector<char *>	envp = toCharPtrs(env);
-		execve(responseInstructions.cgi.interpreter.c_str(), &argv[0], &envp[0]);
+		execve(ctx.clients[fd].responseInstructions.cgi.interpreter.c_str(), &argv[0], &envp[0]);
 		_exit (127);
 	}
 	close(pipeR[0]);
@@ -93,7 +93,7 @@ int	executeCgi(const HttpRequest &httpRequest, const t_responseInstructions &res
 		close (pipeR[1]);
 		pipeR[1] = -1;
 	}
-	proc.stdinFd = pipeR[1];
-	proc.stdoutFd = pipeW[0];
+	ctx.clients[fd].cgiProcess.stdinFd = pipeR[1];
+	ctx.clients[fd].cgiProcess.stdoutFd = pipeW[0];
 	return (0);
 }

@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 16:23:30 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 15:15:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,14 +50,25 @@ typedef struct	s_client {
 	t_serverConf						*serverConf;
 	t_cgiProcess						cgiProcess;
 	std::string							request;
+	std::string							response;
 	t_responseInstructions				responseInstructions;
 	size_t								bytesSent;
 	time_t								lastActivity;
 	bool								waitingForClient;
+	s_client() : serverConf(NULL) {}
 } t_client;
+
+typedef struct	s_serverState {
+	int						epfd;
+	std::map<int, t_client>	clients;
+	std::map<int, int>		fdPipeToClient;
+	s_serverState() : epfd (-1) {}
+} t_serverState;
 
 int						epollSet(int epfd, int operation, int fd, int events);
 size_t					computeCeilingBody(const t_listenServers &listenServers);
 t_responseInstructions	buildErrorInstructions(const int &status, t_serverConf *serverConf);
+void					resetInstructions(t_client &client, const t_responseInstructions &newInstructions);
+void					resetErrorInstructions(t_serverState &ctx, const int &fd, const int &status);
 
 #endif
