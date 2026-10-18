@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 15:47:29 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/18 17:17:32 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,6 +143,14 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		std::cout << "*********requestStatus: ERROR" << std::endl;
 		ctx.clients[fd].waitingForClient = false;
 		ctx.clients[fd].responseInstructions.keepAlive = false;//check with Erjon if makes sense here or he handles it somewhere else.
+		try
+		{
+			requestRouting(fd, ctx.clients, listenServers, httpRequest);
+		}
+		catch (const std::exception &e)
+		{
+			std::cerr << e.what() << std::endl;
+		}
 		resetErrorInstructions(ctx, fd, httpRequest.statusCode ? httpRequest.statusCode: 400);//status code is always be set in httpRequest?
 		ctx.clients[fd].request.clear();
 	}
@@ -151,8 +159,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		std::cout << "*********requestStatus: COMPLETE" << std::endl;
 		ctx.clients[fd].request.erase(0, httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
-		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method;
-		ctx.clients[fd].responseInstructions.body = httpRequest.body;///this is wrong? check all body attributes in all structs including cgi.
+		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method; 
 		if (httpRequest.headers.find("connection") == httpRequest.headers.end()
 			|| httpRequest.headers["connection"] != "close")
 		{
@@ -164,6 +171,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		{
 			requestRouting(fd, ctx.clients, listenServers, httpRequest);
 			resetInstructions(ctx.clients[fd], requestValidation(httpRequest, ctx.clients[fd].serverConf));
+			ctx.clients[fd].responseInstructions.body = httpRequest.body;///and cgi body?
 			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, httpRequest) == 0)
 				return ;
 		}
