@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/17 15:46:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 14:47:48 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,8 +122,11 @@ static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
 	reasonPhrase[413] = "Content Too Large";
 	reasonPhrase[415] = "Unsupported Media Type";
 	reasonPhrase[429] = "Too Many Requests";
+	reasonPhrase[431] = "Request Header Fields Too Large";
 	reasonPhrase[500] = "Internal Server Error";
-}//504 is timeout server error  and 431 for http headers
+	reasonPhrase[503] = "Service Unavailable";
+	reasonPhrase[504] = "Gateway Timeout";
+}
 
 static std::string getReasonPhrase(int statusCode)
 {
@@ -181,7 +184,7 @@ static void	buildHeaders(std::string &response,
 	response += "Content-Length: " + len.str() + "\r\n";
 	if (instructions.statusCode >= 300 && instructions.statusCode < 400 && instructions.isRedirect)
 		response += "Location: " + instructions.redirectLocation + "\r\n";
-	if (!instructions.keepAlive)
+	if (instructions.keepAlive)
 		response += "Connection: keep-alive\r\n";
 	else
 		response += "Connection: close\r\n";
@@ -206,7 +209,27 @@ static bool writePostBody(const std::string &path, const std::string &requestBod
 	return true;
 }
 
-std::string	buildHttpResponse(const t_responseInstructions &instructions)
+static std::string	buildConfiguredErrorBody(int statusCode, const std::map<int, std::string> &errorPages)
+{
+	std::map<int, std::string>::const_iterator it;
+
+	it = errorPages.find(statusCode);
+	if (it != errorPages.end() && !it->second.empty())
+	{
+		std::ifstream file(it->second.c_str(), std::ios::binary);
+		if (file.is_open())
+		{
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			if (!file.bad())
+				return buffer.str();
+		}
+	}
+	return buildErrorBody(statusCode);
+}
+
+std::string	buildHttpResponse(const t_responseInstructions &instructions,
+								 const std::map<int, std::string> &errorPages)
 {
 	std::string				response;
 	std::string				body;
@@ -228,8 +251,10 @@ std::string	buildHttpResponse(const t_responseInstructions &instructions)
 		if (!buildBody(body, result))
 			result.statusCode = 500;
 	}
+
 	if (result.statusCode >= 400 && result.statusCode <= 599)
-		body = buildErrorBody(result.statusCode);//put errors at begining with else if?
+		body = buildConfiguredErrorBody(result.statusCode, errorPages);
+
 	buildStatusLine(response, result);
 
 	buildHeaders(response, result, body);
