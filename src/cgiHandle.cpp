@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/10 13:10:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 16:58:05 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 15:04:01 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,9 @@ void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
 
 void	finishCgiRequest(t_serverState &ctx, int clientFd)
 {
-	//std::string response = httpResponse(ctx.clients[fd].responseInstructions); //or just fill instructions?
+	if (ctx.clients[clientFd].responseInstructions.cgi.success == false)
+		resetErrorInstructions(ctx, clientFd, 500);
+	resetErrorInstructions(ctx, clientFd, 500);
 	if (epollSet(ctx.epfd, EPOLL_CTL_MOD, clientFd, EPOLLOUT) < 0)
 		closeClientConnection(ctx, clientFd, errno);
 }
@@ -74,7 +76,11 @@ void	handleCgiStdin(t_serverState &ctx, int fd, int clientFd, const uint32_t &ev
 	cgiBytesSent = ctx.clients[clientFd].cgiProcess.bytesSent;
 	byteCount =	write(fd, body.c_str() + cgiBytesSent, body.size() - cgiBytesSent);
 	if (byteCount < 0)
-		return ;//also set instructions for failure? ...and change to epollout?
+	{
+		cleanupCgi(ctx.clients[clientFd].cgiProcess, ctx.fdPipeToClient, true, NULL);
+		finishCgiRequest(ctx, clientFd);
+		return ;
+	}
 	ctx.clients[clientFd].cgiProcess.bytesSent += byteCount;
 	if (ctx.clients[clientFd].cgiProcess.bytesSent == body.size())
 	{
@@ -100,10 +106,10 @@ void	handleCgiStdout(t_serverState &ctx, int fd, int clientFd, const uint32_t &e
 	{
 		ctx.clients[clientFd].responseInstructions.body = ctx.clients[clientFd].cgiProcess.output;
 		cleanupCgi(ctx.clients[clientFd].cgiProcess, ctx.fdPipeToClient, false, &wstatus);
-		if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0)
+		if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0 && !ctx.clients[clientFd].responseInstructions.body.empty())
 			ctx.clients[clientFd].responseInstructions.cgi.success = true;
-		else
-			ctx.clients[clientFd].responseInstructions.body.clear();
+		if (ctx.clients[clientFd].responseInstructions.cgi.success == false)
+			resetErrorInstructions(ctx, clientFd, 500);
 		finishCgiRequest(ctx, clientFd);
 		return ;
 	}
@@ -120,25 +126,22 @@ void	handleCgiStdout(t_serverState &ctx, int fd, int clientFd, const uint32_t &e
 	}
 }
 
-int	cgiStart(t_serverState &ctx, int fd, const t_responseInstructions &responseInstructions,
-				const HttpRequest &httpRequest)
+int	cgiStart(t_serverState &ctx, int fd, const HttpRequest &httpRequest)
 {
-	t_cgiProcess	cgiProcess;
-
-	if (executeCgi(httpRequest, responseInstructions, cgiProcess) != 0)
+	if (executeCgi(httpRequest, ctx, fd) != 0)
 	{
-		;//send cgiOutput to Erjon 500
+		resetErrorInstructions(ctx, fd, 500);
 		return (-1);
 	}
-	else if (registerCgiPipes(ctx, cgiProcess, fd) < 0)
+	else if (registerCgiPipes(ctx, ctx.clients[fd].cgiProcess, fd) < 0)
 	{
-		;//send cgiOutput to Erjon 500
-		cleanupCgi(cgiProcess, ctx.fdPipeToClient, true, NULL);
+		cleanupCgi(ctx.clients[fd].cgiProcess, ctx.fdPipeToClient, true, NULL);
+		resetErrorInstructions(ctx, fd, 500);
 		return (-1);
 	}
 	else
 	{
-		ctx.clients[fd].cgiProcess = cgiProcess;
+		ctx.clients[fd].cgiProcess = ctx.clients[fd].cgiProcess;
 		ctx.clients[fd].cgiProcess.body = httpRequest.body;
 		if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, 0) < 0)
 		{
