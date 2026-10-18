@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 16:59:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 14:29:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,9 +64,10 @@ void	handleClientSend(t_serverState &ctx, int fd)
 {
 	int byteCount = 0;
 
-	std::string response = buildHttpResponse(ctx.clients[fd].responseInstructions);//too many calls when chunked response?
+	if (ctx.clients[fd].response.empty())
+		ctx.clients[fd].response = buildHttpResponse(ctx.clients[fd].responseInstructions);
 	size_t bytesSent = ctx.clients[fd].bytesSent;
-	byteCount = send(fd, response.c_str() + bytesSent, response.size() - bytesSent, 0);
+	byteCount = send(fd, ctx.clients[fd].response.c_str() + bytesSent, ctx.clients[fd].response.size() - bytesSent, 0);
 	if (byteCount < 0)
 	{
 		closeClientConnection(ctx, fd, errno);
@@ -74,13 +75,14 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	}
 	ctx.clients[fd].bytesSent += byteCount;
 	ctx.clients[fd].lastActivity = time(NULL);
-	if (ctx.clients[fd].bytesSent == response.size())
+	if (ctx.clients[fd].bytesSent == ctx.clients[fd].response.size())
 	{
 		if (!ctx.clients[fd].responseInstructions.keepAlive)
 		{
 			closeClientConnection(ctx, fd, 0);
 			return ;
 		}
+		ctx.clients[fd].response.clear();
 		ctx.clients[fd].bytesSent = 0;
 		ctx.clients[fd].waitingForClient = true;
 		ctx.clients[fd].lastActivity = time(NULL);
@@ -123,7 +125,6 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	}
 	if (byteCount < 0)
 	{
-		//should we send error message before closing connection?
 		closeClientConnection(ctx, fd, errno);
 		return ;
 	}
@@ -140,8 +141,9 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	{
 		std::cout << "*********requestStatus: ERROR" << std::endl;
 		ctx.clients[fd].waitingForClient = false;
-		// Build and send the appropriate HTTP error response later.
-		return;
+		ctx.clients[fd].responseInstructions.keepAlive = false;//check with Erjon if makes sense here or he handles it somewhere else.
+		resetErrorInstructions(ctx, fd, httpRequest.statusCode ? httpRequest.statusCode: 400);//status code is always be set in httpRequest?
+		ctx.clients[fd].request.clear();
 	}
 	else if (requestStatus == COMPLETE)
 	{
@@ -149,7 +151,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		ctx.clients[fd].request.erase(0, httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
 		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method; 
-		ctx.clients[fd].responseInstructions.body = httpRequest.body;
+		ctx.clients[fd].responseInstructions.body = httpRequest.body;///this is wrong? check all body attributes in all structs including cgi.
 		if (httpRequest.headers.find("connection") == httpRequest.headers.end()
 			|| httpRequest.headers["connection"] != "close")
 		{
@@ -160,20 +162,17 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		try
 		{
 			requestRouting(fd, ctx.clients, listenServers, httpRequest);
-			t_responseInstructions responseInstructions = requestValidation(httpRequest, ctx.clients[fd].serverConf);
-			if (responseInstructions.isCgi && cgiStart(ctx, fd, responseInstructions, httpRequest) == 0)
+			resetInstructions(ctx.clients[fd], requestValidation(httpRequest, ctx.clients[fd].serverConf));
+			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, httpRequest) == 0)
 				return ;
 		}
 		catch (const std::exception &e)
 		{
-
 			std::cerr << e.what() << std::endl;
-			// ctx.clients[fd].response = buildHttpResponse(buildErrorInstructions(500, ctx.clients[fd].serverConf), "requestbody?", "method?");
-			ctx.clients[fd].responseInstructions = buildErrorInstructions(500, ctx.clients[fd].serverConf);//, "requestbody?", "method?;
+			resetErrorInstructions(ctx, fd, 500);
 			ctx.clients[fd].bytesSent = 0;
 			ctx.clients[fd].responseInstructions.keepAlive = false;
 		}
-		
 	}
 	if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLOUT) < 0)
 	{
