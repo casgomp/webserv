@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 14:29:37 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 15:47:29 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,8 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	int byteCount = 0;
 
 	if (ctx.clients[fd].response.empty())
-		ctx.clients[fd].response = buildHttpResponse(ctx.clients[fd].responseInstructions);
+		ctx.clients[fd].response = buildHttpResponse(ctx.clients[fd].responseInstructions,
+									ctx.clients[fd].serverConf->errorPages);
 	size_t bytesSent = ctx.clients[fd].bytesSent;
 	byteCount = send(fd, ctx.clients[fd].response.c_str() + bytesSent, ctx.clients[fd].response.size() - bytesSent, 0);
 	if (byteCount < 0)
@@ -150,7 +151,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		std::cout << "*********requestStatus: COMPLETE" << std::endl;
 		ctx.clients[fd].request.erase(0, httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
-		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method; 
+		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method;
 		ctx.clients[fd].responseInstructions.body = httpRequest.body;///this is wrong? check all body attributes in all structs including cgi.
 		if (httpRequest.headers.find("connection") == httpRequest.headers.end()
 			|| httpRequest.headers["connection"] != "close")

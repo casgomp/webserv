@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiHandle.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/10 13:10:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 15:04:01 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 16:55:31 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,6 @@ void	finishCgiRequest(t_serverState &ctx, int clientFd)
 {
 	if (ctx.clients[clientFd].responseInstructions.cgi.success == false)
 		resetErrorInstructions(ctx, clientFd, 500);
-	resetErrorInstructions(ctx, clientFd, 500);
 	if (epollSet(ctx.epfd, EPOLL_CTL_MOD, clientFd, EPOLLOUT) < 0)
 		closeClientConnection(ctx, clientFd, errno);
 }
