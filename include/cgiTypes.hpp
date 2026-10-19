@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/17 16:06:16 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/17 16:25:00 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/19 15:32:50 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ typedef struct s_cgiProcess {
 	std::string	body;
 	std::string	output;
 	size_t		bytesSent;
-	s_cgiProcess() : pid(-1), stdinFd(-1), stdoutFd(-1) {}
+	s_cgiProcess() : pid(-1), stdinFd(-1), stdoutFd(-1), bytesSent(0) {}
 } t_cgiProcess;
 
 #endif

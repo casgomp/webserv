@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 17:17:45 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/19 16:02:26 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,17 +56,21 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 	int				pipeW[2] = {-1, -1};
 
 	if (pipe(pipeR) == -1)
-	{
-		;//return error?
-	}
+		return (-1);
 	if (pipe(pipeW) == -1)
 	{
-		;//return error?
+		close (pipeR[0]);
+		close (pipeR[1]);
+		return (-1);
 	}
 	ctx.clients[fd].cgiProcess.pid = fork();
 	if (ctx.clients[fd].cgiProcess.pid == -1)
 	{
-		;//return error?
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
 	}
 	if (ctx.clients[fd].cgiProcess.pid == 0)
 	{

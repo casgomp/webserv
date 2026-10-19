@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverClean.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 11:30:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/13 22:18:49 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/19 16:01:04 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,22 +65,24 @@ void	closeListeningSockets(t_listeningSockets &listeningSockets)
 {
 	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
 	{
-		// std::cout << "cleanupServ cleaned fd = " << it->first << std::endl;
 		if (it->first >= 0)
 			close (it->first);
 	}
 }
 
+void	cleanupCgiProcesses(t_serverState &ctx)
+{
+	for (std::map<int, t_client>::iterator it = ctx.clients.begin(); it != ctx.clients.end(); it ++)
+		cleanupCgi(it->second.cgiProcess, ctx.fdPipeToClient, true, NULL);
+}
+
 void	cleanupServ(t_serverState &ctx, t_listeningSockets &listeningSockets)
 {
+	cleanupCgiProcesses(ctx);
+	for (std::map<int, t_client>::iterator it = ctx.clients.begin(); it != ctx.clients.end(); it ++)
+		close(it->first);
 	closeListeningSockets(listeningSockets);
 	if (ctx.epfd >= 0)
 		close (ctx.epfd);
-	for (std::map<int, t_client>::iterator it = ctx.clients.begin(); it != ctx.clients.end(); it ++)
-	{
-		if  (it->second.cgiProcess.pid > 0)
-			cleanupCgi(it->second.cgiProcess, ctx.fdPipeToClient, true, NULL);
-		close(it->first);
-	}
 }
 

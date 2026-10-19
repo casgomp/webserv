@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 17:17:32 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/19 15:56:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@
 # include "cgiExecute.hpp"
 # include "cgiHandle.hpp"
 # include "httpResponse.hpp"
+# include "signals.hpp"
 
 void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSockets)
 {
@@ -215,11 +216,14 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		}
 	}
 	ceilingClientMaxBodySize = computeCeilingBody(listenServers);
-	while (1)
+	setupSignals();
+	while (!signalReceived)
 	{
 		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, 1000);
 		if (nreadyfds < 0)
 		{
+			if (errno == EINTR)
+				continue ;
 			cleanupServ(ctx, listeningSockets);
 			throw std::runtime_error(strerror(errno));
 		}
@@ -261,5 +265,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		}
 		checkClientTimeouts(ctx);
 	}
+	cleanupServ(ctx, listeningSockets);
 }
 
