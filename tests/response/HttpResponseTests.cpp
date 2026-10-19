@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponseTests.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 11:36:28 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/17 16:35:16 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 21:18:46 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	HttpResponseTests::validateResponseLine()
 	instructions.keepAlive = true;
 	instructions.body = "";
 	instructions.method = "GET";
-	std::string result = buildHttpResponse(instructions);
+	std::string result = buildHttpResponse(instructions, std::map<int, std::string>());
 	std::string response = "HTTP/1.1 404 Not Found\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 151\r\n"
@@ -64,7 +64,7 @@ void	HttpResponseTests::validateResponseLine()
 	instructions.body = "";
 	instructions.method = "GET";
 	instructions.resolvedPath = "test_empty.html";
-	result = buildHttpResponse(instructions);
+	result = buildHttpResponse(instructions, std::map<int, std::string>());
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
@@ -80,7 +80,7 @@ void	HttpResponseTests::validateResponseLine()
 	instructions.body = "";
 	instructions.method = "GET";
 	instructions.resolvedPath = "response/test_files/hello.txt";
-	result = buildHttpResponse(instructions);
+	result = buildHttpResponse(instructions, std::map<int, std::string>());
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 5\r\n"
@@ -96,7 +96,7 @@ void	HttpResponseTests::validateResponseLine()
 	instructions.method = "GET";
 	instructions.isRedirect = true;
 	instructions.redirectLocation = "/fruits";
-	result = buildHttpResponse(instructions);
+	result = buildHttpResponse(instructions, std::map<int, std::string>());
 	response = "HTTP/1.1 308 Permanent Redirect\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
@@ -112,7 +112,7 @@ void	HttpResponseTests::validateResponseLine()
 	instructions.method = "GET";
 	instructions.isRedirect = true;
 	instructions.redirectLocation = "/vegetables";
-	result = buildHttpResponse(instructions);
+	result = buildHttpResponse(instructions, std::map<int, std::string>());
 	response = "HTTP/1.1 308 Permanent Redirect\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
@@ -130,7 +130,7 @@ void	HttpResponseTests::validateResponseLine()
 	instructions.resolvedPath =
 		"response/test_files/hello.txt";
 
-	result = buildHttpResponse(instructions);
+	result = buildHttpResponse(instructions, std::map<int, std::string>());
 
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/plain\r\n"
@@ -156,7 +156,7 @@ void	HttpResponseTests::testAutoIndex()
 	instructions.body = "";
 	instructions.method = "GET";
 
-	std::string result = buildHttpResponse(instructions);
+	std::string result = buildHttpResponse(instructions, std::map<int, std::string>());
 
 	check(result.find("apple.html") != std::string::npos && result.find("banana.txt") != std::string::npos, "AutoIndex lists directory entries");
 	std::cout << "Result: " << result << std::endl;
@@ -173,7 +173,7 @@ void	HttpResponseTests::testGet()
 	instructions.statusCode = 200;
 	instructions.contentType = "text/plain";
 	instructions.resolvedPath = "nonexistent_file.txt";
-	result = buildHttpResponse(instructions);
+	result = buildHttpResponse(instructions, std::map<int, std::string>());
 	check(result.find("HTTP/1.1 500 Internal Server Error\r\n") == 0,
 		"GET returns 500 when file opening fails");
 }
@@ -188,7 +188,7 @@ void	HttpResponseTests::testPost()
 	instructions.keepAlive = false;
 	instructions.body = requestBody;
 	instructions.method = "POST";
-	std::string result = buildHttpResponse(instructions);
+	std::string result = buildHttpResponse(instructions, std::map<int, std::string>());
 	check(result.find("HTTP/1.1 201 Created\r\n") == 0,
 		"POST returns 201 Created");
 
@@ -202,7 +202,7 @@ void	HttpResponseTests::testPost()
 
 	instructions.resolvedPath = "response/test_files/nonexistent_dir/post.txt";
 	std::string failedResult =
-		buildHttpResponse(instructions);
+		buildHttpResponse(instructions, std::map<int, std::string>());
 	check(failedResult.find("HTTP/1.1 500 Internal Server Error\r\n") == 0,
 		"POST returns 500 when file creation fails");
 	check(failedResult.find("<h1>500 Internal Server Error</h1>") != std::string::npos,
@@ -224,7 +224,7 @@ void	HttpResponseTests::testDelete()
 	instructions.keepAlive = false;
 	instructions.body = "";
 	instructions.method = "DELETE";
-    std::string result = buildHttpResponse(instructions);
+    std::string result = buildHttpResponse(instructions, std::map<int, std::string>());
     check(result.find("HTTP/1.1 204 No Content\r\n") == 0,
         "DELETE returns 204 No Content");
 
@@ -232,7 +232,7 @@ void	HttpResponseTests::testDelete()
     check(!deletedFile.is_open(),
         "DELETE removes the file");
 
-	std::string failedResult = buildHttpResponse(instructions);
+	std::string failedResult = buildHttpResponse(instructions, std::map<int, std::string>());
 	check(failedResult.find("HTTP/1.1 500 Internal Server Error\r\n") == 0,
 		"DELETE returns 500 when file removal fails");
 
@@ -264,7 +264,7 @@ void	HttpResponseTests::testErrorResponses()
 		instructions.keepAlive = false;
 		instructions.body = "";
 		instructions.method = "GET";
-        std::string result = buildHttpResponse(instructions);
+        std::string result = buildHttpResponse(instructions, std::map<int, std::string>());
         std::stringstream expected;
         expected << "<h1>" << codes[i] << " " << messages[i] << "</h1>";
         check(result.find(expected.str()) != std::string::npos,

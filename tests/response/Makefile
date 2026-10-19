@@ -1,5 +1,5 @@
 CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -std=c++98
+CXXFLAGS = -Wall -Wextra -Werror -std=c++98 -I../../include
 NAME = run_response_tests
 
 OBJ_DIR = objs
@@ -7,7 +7,9 @@ OBJ_DIR = objs
 SRCS = main_response_tests.cpp \
        ../TestSuite.cpp \
        HttpResponseTests.cpp \
-       ../../src/httpResponse.cpp
+       ../../src/httpResponse.cpp\
+	   ../../src/httpRequestHeaders.cpp \
+		../../src/httpRequestLine.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 

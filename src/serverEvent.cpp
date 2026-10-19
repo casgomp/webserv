@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
 /*   Updated: 2026/10/18 17:17:32 by pecastro         ###   ########.fr       */
@@ -65,7 +65,8 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	int byteCount = 0;
 
 	if (ctx.clients[fd].response.empty())
-		ctx.clients[fd].response = buildHttpResponse(ctx.clients[fd].responseInstructions);
+		ctx.clients[fd].response = buildHttpResponse(ctx.clients[fd].responseInstructions,
+									ctx.clients[fd].serverConf->errorPages);
 	size_t bytesSent = ctx.clients[fd].bytesSent;
 	byteCount = send(fd, ctx.clients[fd].response.c_str() + bytesSent, ctx.clients[fd].response.size() - bytesSent, 0);
 	if (byteCount < 0)

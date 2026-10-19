@@ -3,14 +3,15 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/17 15:46:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/18 20:59:09 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/httpResponse.hpp"
+#include "../include/httpRequestParserUtils.hpp"
 #include <sstream>
 #include <map>
 #include <fstream>
@@ -122,8 +123,11 @@ static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
 	reasonPhrase[413] = "Content Too Large";
 	reasonPhrase[415] = "Unsupported Media Type";
 	reasonPhrase[429] = "Too Many Requests";
+	reasonPhrase[431] = "Request Header Fields Too Large";
 	reasonPhrase[500] = "Internal Server Error";
-}//504 is timeout server error  and 431 for http headers
+	reasonPhrase[503] = "Service Unavailable";
+	reasonPhrase[504] = "Gateway Timeout";
+}
 
 static std::string getReasonPhrase(int statusCode)
 {
@@ -166,25 +170,48 @@ static void	buildStatusLine(std::string &response, const t_responseInstructions 
 	response =  "HTTP/1.1 " + ss.str() + " " + getReasonPhrase(instructions.statusCode) + "\r\n";
 }
 
-static void	buildHeaders(std::string &response,
-	const t_responseInstructions &instructions, const std::string &body)
+static void	 buildHeaders(std::string &response,
+	const t_responseInstructions &instructions, const std::string &body,
+	const std::map<std::string, std::string> &parsedHeaders)
 {
-	if ((instructions.statusCode >= 400 && instructions.statusCode <= 599) ||
-		instructions.isAutoIndex)
-	{
+	std::map<std::string, std::string>::const_iterator it;
+	it = parsedHeaders.find("content-type");
+
+	if (it != parsedHeaders.end())
+		response += "Content-Type: " + it->second + "\r\n";
+	else if ((instructions.statusCode >= 400 && instructions.statusCode <= 599) ||
+			instructions.isAutoIndex)
 		response += "Content-Type: text/html\r\n";
-	}
 	else
 		response += "Content-Type: " + instructions.contentType + "\r\n";
 	std::stringstream len;
 	len << body.size();
 	response += "Content-Length: " + len.str() + "\r\n";
-	if (instructions.statusCode >= 300 && instructions.statusCode < 400 && instructions.isRedirect)
+	std::map<std::string, std::string>::const_iterator location;
+	location = parsedHeaders.find("location");
+	if (location != parsedHeaders.end())
+		response += "Location: " + location->second + "\r\n";
+	else if (instructions.statusCode >= 300 && instructions.statusCode < 400
+			&& instructions.isRedirect)
+	{
 		response += "Location: " + instructions.redirectLocation + "\r\n";
+	}
 	if (!instructions.keepAlive)
 		response += "Connection: keep-alive\r\n";
 	else
 		response += "Connection: close\r\n";
+	for (std::map<std::string, std::string>::const_iterator it = parsedHeaders.begin();
+    	it != parsedHeaders.end(); ++it)
+	{
+		if (it->first == "status" ||
+			it->first == "content-type" ||
+			it->first == "content-length" ||
+			it->first == "connection" ||
+			it->first == "location")
+			continue;
+
+		response += it->first + ": " + it->second + "\r\n";
+	}
 }
 
 static bool deleteFile(const std::string &path)
@@ -206,33 +233,133 @@ static bool writePostBody(const std::string &path, const std::string &requestBod
 	return true;
 }
 
-std::string	buildHttpResponse(const t_responseInstructions &instructions)
+static std::string	buildConfiguredErrorBody(int statusCode, const std::map<int, std::string> &errorPages)
 {
-	std::string				response;
-	std::string				body;
-	t_responseInstructions	result;
+	std::map<int, std::string>::const_iterator it;
+
+	it = errorPages.find(statusCode);
+	if (it != errorPages.end() && !it->second.empty())
+	{
+		std::ifstream file(it->second.c_str(), std::ios::binary);
+		if (file.is_open())
+		{
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			if (!file.bad())
+				return buffer.str();
+		}
+	}
+	return buildErrorBody(statusCode);
+}
+
+static bool	splitCgiOutput(const std::string &output, std::string& headers, std::string& body)
+{
+	size_t	pos = output.find("\r\n\r\n");
+	size_t	separatorLen = 4;
+
+	if (pos == std::string::npos)
+	{
+		pos = output.find("\n\n");
+		separatorLen = 2;
+	}
+	if (pos == std::string::npos)
+		return false;
+	headers = output.substr(0, pos);
+	body = output.substr(pos + separatorLen);
+	return true;
+}
+
+static bool parseCgiHeaders(const std::string &cgiHeaders,
+                            std::map<std::string, std::string> &parsedHeaders)
+{
+    std::istringstream stream(cgiHeaders);
+    std::string line;
+
+    while (std::getline(stream, line))
+    {
+        if (!line.empty() && line[line.size() - 1] == '\r')
+            line.erase(line.size() - 1);
+
+        std::string key;
+        std::string value;
+
+        if (!parseHeaderLine(line, key, value))
+            return false;
+
+        parsedHeaders[key] = value;
+    }
+    return true;
+}
+
+std::string	buildHttpResponse(const t_responseInstructions &instructions,
+								 const std::map<int, std::string> &errorPages)
+{
+	std::string							response;
+	std::string							body;
+	std::string							cgiHeaders;
+	t_responseInstructions				result;
+	std::map<std::string, std::string>	parsedHeaders;
 
 	result = instructions;
-	if (result.method == "DELETE" && result.statusCode == 204)
+	if (result.isCgi)
+	{
+		if (!result.cgi.success)
+			result.statusCode = 500;
+		else
+		{
+			if (result.statusCode == 0)
+				result.statusCode = 200;
+			// decide cgiheaders max size
+			if (!splitCgiOutput(result.body, cgiHeaders, body))
+				result.statusCode = 500;
+			else if (!parseCgiHeaders(cgiHeaders, parsedHeaders))
+				result.statusCode = 500;
+			else
+			{
+				if (parsedHeaders.find("location") != parsedHeaders.end()
+					&& parsedHeaders.find("status") == parsedHeaders.end())
+					result.statusCode = 302;
+				std::map<std::string, std::string>::const_iterator it;
+				it = parsedHeaders.find("status");
+
+				if (it != parsedHeaders.end())
+				{
+					std::istringstream ss(it->second);
+					int status;
+
+					if (!(ss >> status) || status < 100 || status > 599)
+						result.statusCode = 500;
+					else
+						result.statusCode = status;
+				}
+			}
+		}
+	}
+	else if (result.method == "DELETE" && result.statusCode == 204)
 	{
 		if (!deleteFile(result.resolvedPath))
 			result.statusCode = 500;
 	}
-	if (result.method == "POST" && result.statusCode == 201)
+	else if (result.method == "POST" && result.statusCode == 201)
 	{
 		if (!writePostBody(result.resolvedPath, result.body))
 			result.statusCode = 500;
 	}
-	if (result.method == "GET" && result.statusCode == 200)
+	else if (result.method == "GET" && result.statusCode == 200)
 	{
 		if (!buildBody(body, result))
 			result.statusCode = 500;
 	}
-	if (result.statusCode >= 400 && result.statusCode <= 599)
-		body = buildErrorBody(result.statusCode);//put errors at begining with else if?
+
+	if (result.statusCode >= 400 && result.statusCode <= 599
+    	&& (!result.isCgi || !result.cgi.success || parsedHeaders.empty()))
+	{
+    	body = buildConfiguredErrorBody(result.statusCode, errorPages);
+	}
+
 	buildStatusLine(response, result);
 
-	buildHeaders(response, result, body);
+	buildHeaders(response, result, body, parsedHeaders);
 
 	response += "\r\n";
 	response += body;
