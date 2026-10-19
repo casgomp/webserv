@@ -23,7 +23,8 @@ SRCS = main.cpp \
 		requestValidationUtils.cpp \
 		cgiHandle.cpp \
 		cgiExecute.cpp \
-		httpResponse.cpp
+		httpResponse.cpp \
+		signals.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))
 
