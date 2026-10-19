@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 17:17:32 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/20 01:29:42 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,6 +113,36 @@ void checkClientTimeouts(t_serverState &ctx)
     }
 }
 
+void checkCgiTimeouts(t_serverState &ctx)
+{
+    const time_t now = time(NULL);
+    const time_t cgiTimeout = 5;
+    std::map<int, t_client>::iterator it = ctx.clients.begin();
+
+    while (it != ctx.clients.end())
+    {
+        int fd = it->first;
+        t_client &client = it->second;
+        ++it;
+        if (client.cgiProcess.pid > 0
+            && now - client.cgiProcess.startTime >= cgiTimeout)
+        {
+            if (client.cgiProcess.stdinFd >= 0)
+                epollSet(ctx.epfd, EPOLL_CTL_DEL,
+                    client.cgiProcess.stdinFd, 0);
+            if (client.cgiProcess.stdoutFd >= 0)
+                epollSet(ctx.epfd, EPOLL_CTL_DEL,
+                    client.cgiProcess.stdoutFd, 0);
+            cleanupCgi(client.cgiProcess, ctx.fdPipeToClient, true, NULL);
+            client.response.clear();
+            client.bytesSent = 0;
+            resetErrorInstructions(ctx, fd, 504);
+            if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLOUT) < 0)
+                closeClientConnection(ctx, fd, errno);
+        }
+    }
+}
+
 void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
 {
 	int				byteCount;
@@ -159,7 +189,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		std::cout << "*********requestStatus: COMPLETE" << std::endl;
 		ctx.clients[fd].request.erase(0, httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
-		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method; 
+		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method;
 		if (httpRequest.headers.find("connection") == httpRequest.headers.end()
 			|| httpRequest.headers["connection"] != "close")
 		{
@@ -260,6 +290,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 			}
 		}
 		checkClientTimeouts(ctx);
+		checkCgiTimeouts(ctx);
 	}
 }
 
