@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverUtils.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 15:15:24 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/20 01:00:20 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ typedef struct	s_cgi {
 	bool		success;
 	std::string	interpreter;
 	std::string	queryString;
-	time_t		timeout;
 	s_cgi() : success (false), interpreter(""), queryString("") {}
 } t_cgi;
 
@@ -41,7 +40,7 @@ typedef struct	s_responseInstructions {
 	std::string	method;
 	std::string body;
 	bool		keepAlive;
-	s_responseInstructions() : statusCode(0), isRedirect(false), redirectLocation(""), isCgi(false), 
+	s_responseInstructions() : statusCode(0), isRedirect(false), redirectLocation(""), isCgi(false),
 		isAutoIndex(false), resolvedPath(""), contentType(""), keepAlive(false) {}
 } t_responseInstructions;
 

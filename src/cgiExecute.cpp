@@ -3,13 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   cgiExecute.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/19 16:02:26 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/20 02:19:59 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+# include <ctime>
 # include <sstream>
 # include <string>
 # include <vector>
@@ -72,6 +73,8 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 		close (pipeW[1]);
 		return (-1);
 	}
+	if (ctx.clients[fd].cgiProcess.pid > 0)
+    	ctx.clients[fd].cgiProcess.startTime = time(NULL);
 	if (ctx.clients[fd].cgiProcess.pid == 0)
 	{
 		if (pipeR[1] != -1)
