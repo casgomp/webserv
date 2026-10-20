@@ -6,10 +6,11 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 01:09:37 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/20 02:19:59 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+# include <ctime>
 # include <sstream>
 # include <string>
 # include <vector>
@@ -56,17 +57,21 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 	int				pipeW[2] = {-1, -1};
 
 	if (pipe(pipeR) == -1)
-	{
-		;//return error?
-	}
+		return (-1);
 	if (pipe(pipeW) == -1)
 	{
-		;//return error?
+		close (pipeR[0]);
+		close (pipeR[1]);
+		return (-1);
 	}
 	ctx.clients[fd].cgiProcess.pid = fork();
 	if (ctx.clients[fd].cgiProcess.pid == -1)
 	{
-		;//return error?
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
 	}
 	if (ctx.clients[fd].cgiProcess.pid > 0)
     	ctx.clients[fd].cgiProcess.startTime = time(NULL);

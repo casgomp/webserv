@@ -6,11 +6,10 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 01:29:42 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/20 02:18:28 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include <cerrno>
 # include <cstring>
 # include <fcntl.h>
 # include <iostream>
@@ -20,6 +19,7 @@
 # include <unistd.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+#include <cerrno>
 
 # include "serverEvent.hpp"
 # include "serverInit.hpp"
@@ -32,6 +32,7 @@
 # include "cgiExecute.hpp"
 # include "cgiHandle.hpp"
 # include "httpResponse.hpp"
+# include "signals.hpp"
 
 void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSockets)
 {
@@ -245,11 +246,14 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		}
 	}
 	ceilingClientMaxBodySize = computeCeilingBody(listenServers);
-	while (1)
+	setupSignals();
+	while (!signalReceived)
 	{
 		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, 1000);
 		if (nreadyfds < 0)
 		{
+			if (errno == EINTR)
+				continue ;
 			cleanupServ(ctx, listeningSockets);
 			throw std::runtime_error(strerror(errno));
 		}
@@ -292,5 +296,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 		checkClientTimeouts(ctx);
 		checkCgiTimeouts(ctx);
 	}
+	cleanupServ(ctx, listeningSockets);
 }
 
