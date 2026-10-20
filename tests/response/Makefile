@@ -9,7 +9,9 @@ SRCS = main_response_tests.cpp \
        HttpResponseTests.cpp \
        ../../src/httpResponse.cpp\
 	   ../../src/httpRequestHeaders.cpp \
-		../../src/httpRequestLine.cpp
+		../../src/httpRequestLine.cpp \
+		../../src/httpResponseCgi.cpp \
+		../../src/httpResponseError.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 

@@ -24,6 +24,8 @@ SRCS = main.cpp \
 		cgiHandle.cpp \
 		cgiExecute.cpp \
 		httpResponse.cpp \
+		httpResponseCgi.cpp \
+		httpResponseError.cpp \
 		signals.cpp
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(SRCS))

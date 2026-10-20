@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 11:36:28 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/18 21:18:46 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/20 16:19:01 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void	HttpResponseTests::validateResponseLine()
 	std::string response = "HTTP/1.1 404 Not Found\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 151\r\n"
-		"Connection: close\r\n"
+		"Connection: keep-alive\r\n"
 		"\r\n"
 		"<html>\n"
 		"<head><title>404 Not Found</title></head>\n"
@@ -68,7 +68,7 @@ void	HttpResponseTests::validateResponseLine()
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
-		"Connection: keep-alive\r\n\r\n";
+		"Connection: close\r\n\r\n";
 	check(response == result, "GET empty file returns 200");
 
 	std::remove("test_empty.html");
@@ -84,7 +84,7 @@ void	HttpResponseTests::validateResponseLine()
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/html\r\n"
 		"Content-Length: 5\r\n"
-		"Connection: keep-alive\r\n\r\n"
+		"Connection: close\r\n\r\n"
 		"Hello";
 	check(response == result, "GET file returns 200 with body");
 	std::cout << "Result: " << result << std::endl;
@@ -101,7 +101,7 @@ void	HttpResponseTests::validateResponseLine()
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
 		"Location: /fruits\r\n"
-		"Connection: keep-alive\r\n\r\n";
+		"Connection: close\r\n\r\n";
 	check(response == result, "build response line for 308");
 	std::cout << "Result: " << result << std::endl;
 
@@ -117,7 +117,7 @@ void	HttpResponseTests::validateResponseLine()
 		"Content-Type: text/html\r\n"
 		"Content-Length: 0\r\n"
 		"Location: /vegetables\r\n"
-		"Connection: keep-alive\r\n\r\n";
+		"Connection: close\r\n\r\n";
 	check(response == result, "build response line for 308");
 	std::cout << "Result: " << result << std::endl;
 
@@ -135,7 +135,7 @@ void	HttpResponseTests::validateResponseLine()
 	response = "HTTP/1.1 200 OK\r\n"
 		"Content-Type: text/plain\r\n"
 		"Content-Length: 5\r\n"
-		"Connection: keep-alive\r\n"
+		"Connection: close\r\n"
 		"\r\n"
 		"Hello";
 
