@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/20 16:25:59 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/21 15:28:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,7 +213,8 @@ std::string	buildHttpResponse(const t_responseInstructions &instructions,
 			result.statusCode = 500;
 	}
 	if (result.statusCode >= 400 && result.statusCode <= 599 && (!result.isCgi || !result.cgi.success || parsedHeaders.empty()))
-    	body = buildConfiguredErrorBody(result.statusCode, errorPages);
+		if (result.statusCode != 405)
+    		body = buildConfiguredErrorBody(result.statusCode, errorPages);
 	buildStatusLine(response, result);
 	buildHeaders(response, result, body, parsedHeaders);
 	response += "\r\n";

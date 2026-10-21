@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:19:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/21 14:56:51 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <sys/stat.h>
 # include <vector>
 # include <unistd.h>
+# include <iostream>
 
 # include "requestValidationUtils.hpp"
 # include "configConf.hpp"
@@ -50,6 +51,7 @@ std::string	getContentType(const std::string &path)
 	size_t											dot;
 	std::string										ext;
 
+	std::cout << "getContentType: resolved path: " << path << std::endl;
 	dot = path.find_last_of('.');
 	if (dot == std::string::npos)
 		return (fallbackMime);
@@ -141,7 +143,7 @@ int	validateMethod(const std::vector<std::string> &allowedMethods, const std::st
 	if (!(requestMethod == "GET" || requestMethod == "POST" || requestMethod == "DELETE"))
 		return (405);
 	else if (std::find(allowedMethods.begin(), allowedMethods.end(), requestMethod) == allowedMethods.end())
-		return (403);
+		return (405);
 	return(status);
 }
 

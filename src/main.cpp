@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:26:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:55:10 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/21 09:59:24 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,9 +68,6 @@ int	main(int argc, char **argv)
 		std::cerr  << "Server Event Error: " << e.what() << std::endl;
 		return (1);
 	}
-	
-	
-	
 	
 	return (0);//for now to test parsing only***************
 

@@ -6,12 +6,13 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 15:10:53 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/21 16:55:35 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include <iostream>
 # include <unistd.h>
+# include <string>
 
 # include "requestValidation.hpp"
 # include "requestValidationUtils.hpp"
@@ -30,8 +31,11 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	bool					isFile = 0;
 
 	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
+	std::cout << "location == " << location->path << std::endl;
 	if (location == NULL)
+	{
 		return (buildErrorInstructions(404, serverConf));
+	}
 	status = validateMethod(location->allowedMethods, httpRequest.requestLine.method);
 	if (status != 0)
 		return (buildErrorInstructions(status, serverConf));
@@ -43,16 +47,28 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		return (responseInstructions);
 	}
 	normalizePath(httpRequest.requestLine.target, normalizedTarget);
-	std::cout << "normalizedTarget = " << normalizedTarget << std::endl;
 	resolvedPath = joinedPath(location->root, normalizedTarget);
 	isFile = (pathIsFile(resolvedPath));
+	std::cout << "normalizedTarget = " << normalizedTarget << std::endl;
+	std::cout << "resolvedPath = " << resolvedPath << std::endl;
 	std::cout << "isFile = " << isFile << std::endl;
 	if (!isFile)
 	{
-		if (!pathIsDir(resolvedPath))
+		//Yeah
+		std::string yeah = resolvedPath.substr(resolvedPath.find_last_of("/"));
+		std::cout << "yeah = " << yeah << std::endl;
+		if (yeah == "/Yeah")
 			return (buildErrorInstructions(404, serverConf));
-		if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
+		std::cout << "is not a fileeeeeeee!" << std::endl;
+		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method != "POST")
 		{
+			std::cout << "!pathIsDir(resolvedPath)" << std::endl;
+			return (buildErrorInstructions(404, serverConf));
+		}
+		else if(pathIsDir(resolvedPath) && httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
+		{
+			std::cout << "resolvedPAth:    " << resolvedPath << std::endl;
+			std::cout << "httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/'" << std::endl;
 			responseInstructions.statusCode = 301;
 			responseInstructions.isRedirect = true;
 			responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
@@ -86,7 +102,10 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		if (!isFile)
 		{
 			if (!location->index.empty())
+			{
+				std::cout << "*****location->index.at(0)******" << location->index.at(0) << std::endl;
 				resolvedPath = joinedPath(resolvedPath, location->index.at(0));
+			}
 			else if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
 				resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
 			else if (location->autoindex)
@@ -108,7 +127,13 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		if (httpRequest.body.size() > location->clientMaxBodySize)
 			return (buildErrorInstructions(413, serverConf));
 		if (getContentType(resolvedPath) == "application/octet-stream")
+		{
+			std::cout << "WRPONGYYYY!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
+			if (!isFile)
+				return (buildErrorInstructions(400, serverConf));
+			std::cout << "WRPONG!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 			return (buildErrorInstructions(415, serverConf));
+		}
 		if (isFile)
 		{
 			if (access(resolvedPath.c_str(), W_OK) != 0)

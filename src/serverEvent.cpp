@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 02:18:28 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/20 17:07:27 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ void checkClientTimeouts(t_serverState &ctx)
 void checkCgiTimeouts(t_serverState &ctx)
 {
     const time_t now = time(NULL);
-    const time_t cgiTimeout = 5;
+    const time_t cgiTimeout = 10;
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
     while (it != ctx.clients.end())

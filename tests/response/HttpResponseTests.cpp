@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpResponseTests.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 11:36:28 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/20 16:19:01 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/21 12:02:39 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
