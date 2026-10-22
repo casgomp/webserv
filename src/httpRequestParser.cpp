@@ -6,12 +6,13 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/16 12:53:48 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/22 14:40:28 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "httpRequestParser.hpp"
 #include "httpRequestParserUtils.hpp"
+#include <iostream>
 
 const size_t MAX_HEADER_SIZE = 16 * 1024;
 
@@ -45,34 +46,44 @@ static bool	isHeaderSizeValid(const std::string &buffer)
 	return true;
 }
 
-ParseResult parseRequest(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize)
+ParseResult parseRequest(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize, 
+	size_t &parseStage, size_t &bytesValidated)
 {
-	clearRequest(request);
-	if (!parseStartLine(buffer, request))
+	if (parseStage == 0)
 	{
-		if (request.statusCode == 0)
+		if (!parseStartLine(buffer, request))
+		{
+			if (request.statusCode == 0)
+				return INCOMPLETE;
+			std::cout << "\nreturn error\n";
+			return ERROR;
+		}
+		parseStage = 1;
+	}
+	if (parseStage == 1)
+	{
+		if (parseStage == 1 && !isHeaderSizeValid(buffer))
+		{
+			request.statusCode = 431;
+			return ERROR;
+		}
+		if (buffer.find("\r\n\r\n") == std::string::npos)
+		{
+			request.statusCode = 0;
 			return INCOMPLETE;
-        return ERROR;
-	}
-		if (!isHeaderSizeValid(buffer))
-	{
-		request.statusCode = 431;
-		return ERROR;
-	}
-    if (buffer.find("\r\n\r\n") == std::string::npos)
-	{
-		request.statusCode = 0;
-        return INCOMPLETE;
-	}
-    if (!parseHeaders(buffer, request))
-	{
-		request.statusCode = 400;
-        return ERROR;
-	}
-    if (!checkRequiredHeaders(request))
-    {
-		request.statusCode = 400;
-		return ERROR;
+		}
+		parseStage = 2;
+		if (!parseHeaders(buffer, request))
+		{
+			request.statusCode = 400;
+			return ERROR;
+		}
+		if (!checkRequiredHeaders(request))
+		{
+			request.statusCode = 400;
+			return ERROR;
+		}
+		bytesValidated = buffer.find("\r\n\r\n") + 4;
 	}
 	if (hasTransferEncoding(request))
 	{

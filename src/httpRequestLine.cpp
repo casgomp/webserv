@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/21 14:53:43 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/22 14:44:40 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -206,7 +206,10 @@ bool parseStartLine(const std::string &buffer, HttpRequest &request)
 			return false;
 		}
 		if (buffer.size() > MAX_REQUEST_LINE)
+		{
 			request.statusCode = 414;
+			return false;
+		}
 		else
 			request.statusCode = 0;
 		return false;

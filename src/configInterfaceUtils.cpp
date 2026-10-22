@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:47:55 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/22 15:45:52 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ void	addCgiExtension(t_locationConf &locationConf, const std::string &input)
 	if (ext.empty() || ext.at(0) != '.')
 		throw std::runtime_error("extension must start with '.' (cgi extension/interpreter)");
 	locationConf.cgiExtension[ext.substr(1)] = vec.at(1);
-	// std::cout << "*******************locationConf.cgiExtension[" << ext.substr(1) << "] = " << locationConf.cgiExtension[ext.substr(1)] << std::endl;
+	std::cout << "*******************locationConf.cgiExtension[" << ext.substr(1) << "] = " << locationConf.cgiExtension[ext.substr(1)] << std::endl;
 }
 
 void	addRedirection(t_locationConf &locationConf, const std::string &input)

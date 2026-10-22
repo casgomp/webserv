@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverUtils.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 01:00:20 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/22 14:42:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include "configConf.hpp"
 # include "serverInit.hpp"
 # include "cgiTypes.hpp"
+# include "httpRequestParserUtils.hpp"
 
 typedef struct	s_cgi {
 	bool		success;
@@ -45,6 +46,7 @@ typedef struct	s_responseInstructions {
 } t_responseInstructions;
 
 typedef struct	s_client {
+	HttpRequest							httpRequest;
 	std::pair<std::string, std::string>	pairAddressPort;
 	t_serverConf						*serverConf;
 	t_cgiProcess						cgiProcess;
@@ -54,7 +56,9 @@ typedef struct	s_client {
 	size_t								bytesSent;
 	time_t								lastActivity;
 	bool								waitingForClient;
-	s_client() : serverConf(NULL) {}
+	size_t									parseStage;
+	size_t									bytesValidated;
+	s_client() : serverConf(NULL), parseStage(0) {}
 } t_client;
 
 typedef struct	s_serverState {

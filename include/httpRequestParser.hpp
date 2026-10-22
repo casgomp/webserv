@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestParser.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/06 23:47:13 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/22 13:06:59 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 # include "httpRequestParserUtils.hpp"
 
 ParseResult parseRequest(
-    const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize
-);
+    const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize,
+			size_t& parseStage, size_t &bytesValidated);
 
 #endif

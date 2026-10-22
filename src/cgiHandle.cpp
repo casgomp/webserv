@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiHandle.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/10 13:10:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 01:08:54 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/22 18:02:57 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # include "cgiExecute.hpp"
 # include "serverClean.hpp"
 # include "serverEvent.hpp"
+# include <iostream>
 
 void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
 {
@@ -38,7 +39,10 @@ void	closeCgiStdin(t_cgiProcess &cgiProcess, std::map<int, int> &fdPipeToClient)
 void	finishCgiRequest(t_serverState &ctx, int clientFd)
 {
 	if (ctx.clients[clientFd].responseInstructions.cgi.success == false)
+	{
+		std::cout << "finish Cgi REquest Cgi\n";
 		resetErrorInstructions(ctx, clientFd, 500);
+	}
 	if (epollSet(ctx.epfd, EPOLL_CTL_MOD, clientFd, EPOLLOUT) < 0)
 		closeClientConnection(ctx, clientFd, errno);
 }
@@ -103,10 +107,14 @@ void	handleCgiStdout(t_serverState &ctx, int fd, int clientFd, const uint32_t &e
 	byteCount = read(fd, buf, sizeof(buf));
 	if (byteCount == 0)
 	{
+		std::cout << "handle CGI STDOUT byteCount == 0\n";
 		ctx.clients[clientFd].responseInstructions.body = ctx.clients[clientFd].cgiProcess.output;
 		cleanupCgi(ctx.clients[clientFd].cgiProcess, ctx.fdPipeToClient, false, &wstatus);
 		if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0 && !ctx.clients[clientFd].responseInstructions.body.empty())
+		{
+			std::cout << "wifexted , etc, failed....." << std::endl;
 			ctx.clients[clientFd].responseInstructions.cgi.success = true;
+		}
 		if (ctx.clients[clientFd].responseInstructions.cgi.success == false)
 			resetErrorInstructions(ctx, clientFd, 500);
 		finishCgiRequest(ctx, clientFd);
@@ -129,11 +137,13 @@ int	cgiStart(t_serverState &ctx, int fd, const HttpRequest &httpRequest)
 {
 	if (executeCgi(httpRequest, ctx, fd) != 0)
 	{
+		std::cout << "execute Cgi\n";
 		resetErrorInstructions(ctx, fd, 500);
 		return (-1);
 	}
 	else if (registerCgiPipes(ctx, ctx.clients[fd].cgiProcess, fd) < 0)
 	{
+		std::cout << "registerCgiPipes Cgi\n";
 		cleanupCgi(ctx.clients[fd].cgiProcess, ctx.fdPipeToClient, true, NULL);
 		resetErrorInstructions(ctx, fd, 500);
 		return (-1);

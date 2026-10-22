@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 17:07:27 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/22 15:59:11 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,10 @@ void checkClientTimeouts(t_serverState &ctx)
         ++it;
 
         if (client.waitingForClient && now - client.lastActivity >= idleTimeout)
+		{
+			std::cout << "***************client timeout happened***************\n";
             closeClientConnection(ctx, fd, -1);
+		}
     }
 }
 
@@ -128,6 +131,7 @@ void checkCgiTimeouts(t_serverState &ctx)
         if (client.cgiProcess.pid > 0
             && now - client.cgiProcess.startTime >= cgiTimeout)
         {
+			std::cout << "***************cgi timeout happened***************\n";
             if (client.cgiProcess.stdinFd >= 0)
                 epollSet(ctx.epfd, EPOLL_CTL_DEL,
                     client.cgiProcess.stdinFd, 0);
@@ -161,38 +165,69 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		return ;
 	}
 	ctx.clients[fd].lastActivity = time(NULL);
+	ctx.clients[fd].bytesValidated = ctx.clients[fd].request.size();
+	if (ctx.clients[fd].parseStage == 0)
+	{
+		ctx.clients[fd].httpRequest = HttpRequest();
+	}
 	ctx.clients[fd].request.append(buf, byteCount);
-	HttpRequest	httpRequest;
-	int requestStatus = parseRequest(ctx.clients[fd].request, httpRequest, ceilingClientMaxBodySize);
+	if (ctx.clients[fd].parseStage == 2 && ctx.clients[fd].httpRequest.headers.find("transfer-encoding") != ctx.clients[fd].httpRequest.headers.end())
+	{
+		if (ctx.clients[fd].request.find("\r\n0\r\n\r\n") == std::string::npos)
+			return ;
+	}
+	// std::string bf = std::string(buf, byteCount);
+	// std::cout << "buffer: " << bf << std::endl ;
+	size_t reqLineEnd = ctx.clients[fd].request.find("\r\n");
+	if (reqLineEnd != std::string::npos && ctx.clients[fd].parseStage == 0)
+	{
+		std::cout << "\nREQUESTLine START\n";
+		std::cout << ctx.clients[fd].request.substr(0, reqLineEnd + 2);
+		// ctx.clients[fd].parseStage = 1;
+	}
+	size_t headersEnd = ctx.clients[fd].request.find("\r\n\r\n");
+	if (headersEnd != std::string::npos && ctx.clients[fd].parseStage == 1)
+	{
+		std::cout << "\nREQUEST HEADERS\n";
+		std::cout << ctx.clients[fd].request.substr(0, headersEnd + 4);
+		// ctx.clients[fd].parseStage = 2;
+	}
+	int requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize, ctx.clients[fd].parseStage,
+		ctx.clients[fd].bytesValidated);
+	
 	if (requestStatus == INCOMPLETE)
 	{
-		std::cout << "*********requestStatus: INCOMPLETE" << std::endl;
+		// std::cout << "*********requestStatus: INCOMPLETE" << std::endl;
 		return ;
 	}
 	else if (requestStatus == ERROR)
 	{
+		ctx.clients[fd].parseStage = 0;
+		ctx.clients[fd].bytesValidated = 0;
 		std::cout << "*********requestStatus: ERROR" << std::endl;
 		ctx.clients[fd].waitingForClient = false;
 		ctx.clients[fd].responseInstructions.keepAlive = false;//check with Erjon if makes sense here or he handles it somewhere else.
 		try
 		{
-			requestRouting(fd, ctx.clients, listenServers, httpRequest);
+			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
 		}
 		catch (const std::exception &e)
 		{
 			std::cerr << e.what() << std::endl;
 		}
-		resetErrorInstructions(ctx, fd, httpRequest.statusCode ? httpRequest.statusCode: 400);//status code is always be set in httpRequest?
+		resetErrorInstructions(ctx, fd, ctx.clients[fd].httpRequest.statusCode ? ctx.clients[fd].httpRequest.statusCode: 400);//status code is always be set in httpRequest?
 		ctx.clients[fd].request.clear();
 	}
 	else if (requestStatus == COMPLETE)
 	{
+		ctx.clients[fd].parseStage = 0;
+		ctx.clients[fd].bytesValidated = 0;
 		std::cout << "*********requestStatus: COMPLETE" << std::endl;
-		ctx.clients[fd].request.erase(0, httpRequest.consumedBytes);
+		ctx.clients[fd].request.erase(0, ctx.clients[fd].httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
-		ctx.clients[fd].responseInstructions.method = httpRequest.requestLine.method;
-		if (httpRequest.headers.find("connection") == httpRequest.headers.end()
-			|| httpRequest.headers["connection"] != "close")
+		ctx.clients[fd].responseInstructions.method = ctx.clients[fd].httpRequest.requestLine.method;
+		if (ctx.clients[fd].httpRequest.headers.find("connection") == ctx.clients[fd].httpRequest.headers.end()
+			|| ctx.clients[fd].httpRequest.headers["connection"] != "close")
 		{
 			ctx.clients[fd].responseInstructions.keepAlive = true;
 		}
@@ -200,10 +235,10 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 			ctx.clients[fd].responseInstructions.keepAlive = false;
 		try
 		{
-			requestRouting(fd, ctx.clients, listenServers, httpRequest);
-			resetInstructions(ctx.clients[fd], requestValidation(httpRequest, ctx.clients[fd].serverConf));
-			ctx.clients[fd].responseInstructions.body = httpRequest.body;///and cgi body?
-			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, httpRequest) == 0)
+			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
+			resetInstructions(ctx.clients[fd], requestValidation(ctx.clients[fd].httpRequest, ctx.clients[fd].serverConf));
+			ctx.clients[fd].responseInstructions.body = ctx.clients[fd].httpRequest.body;///and cgi body?
+			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, ctx.clients[fd].httpRequest) == 0)
 				return ;
 		}
 		catch (const std::exception &e)

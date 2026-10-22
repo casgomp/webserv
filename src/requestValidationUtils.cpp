@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/21 14:56:51 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/22 18:09:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ std::map<std::string, std::string>	getValidMimeTypes()
 	mime["gif"]  = "image/gif";
 	mime["pdf"]  = "application/pdf";
 	mime["mp4"]  = "video/mp4";
+	mime["bla"]  = "test/file";
 	return (mime);
 }
 
@@ -51,7 +52,7 @@ std::string	getContentType(const std::string &path)
 	size_t											dot;
 	std::string										ext;
 
-	std::cout << "getContentType: resolved path: " << path << std::endl;
+	// std::cout << "getContentType: resolved path: " << path << std::endl;
 	dot = path.find_last_of('.');
 	if (dot == std::string::npos)
 		return (fallbackMime);

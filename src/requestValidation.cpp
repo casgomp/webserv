@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/21 16:55:35 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/22 17:28:29 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,26 +75,35 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			return (responseInstructions);
 		}
 	}
-	if (!location->cgiExtension.empty())
+	// if (!location->cgiExtension.empty())
+	std::string ext;
+	std::map<std::string, std::string>::const_iterator it;
+	size_t	dot = resolvedPath.find_last_of('.');
+	if (dot != std::string::npos)
 	{
-		if (!isFile)
-			return (buildErrorInstructions(404, serverConf));
-		size_t	dot = resolvedPath.find_last_of('.');
-		if (dot == std::string::npos)
-			return (buildErrorInstructions(403, serverConf));
-		std::string ext = resolvedPath.substr(dot + 1);
-		std::map<std::string, std::string>::const_iterator it = location->cgiExtension.find(ext);
-		if (it != location->cgiExtension.end())
+		ext = resolvedPath.substr(dot + 1);
+		it = location->cgiExtension.find(ext);
+		if (isFile && it != location->cgiExtension.end())
 		{
+			// if (!isFile)
+			// 	return (buildErrorInstructions(404, serverConf));
+			// size_t	dot = resolvedPath.find_last_of('.');
+			// if (dot == std::string::npos)
+			// 	return (buildErrorInstructions(403, serverConf));
+			// std::string ext = resolvedPath.substr(dot + 1);
+			// std::map<std::string, std::string>::const_iterator it = location->cgiExtension.find(ext);
+			// if (it != location->cgiExtension.end())
 			if (access(resolvedPath.c_str(), R_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
 			responseInstructions.isCgi = true;
 			responseInstructions.cgi.interpreter = it->second;
 			responseInstructions.resolvedPath = resolvedPath;
+			std::cout << "is Cgi validation: responseInstructions.cgi.interpreter: " << responseInstructions.cgi.interpreter << std::endl;
 			responseInstructions.cgi.queryString = httpRequest.requestLine.queryString;
 			return (responseInstructions);
 		}
 	}
+	
 	if (httpRequest.requestLine.method == "GET")
 	{
 		std::cout << "*****GET request validation******" << std::endl;
