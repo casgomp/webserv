@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/22 15:59:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/23 15:08:16 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,17 @@ void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSocke
 		return ;
 	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
 	{
-		closeClientConnection(ctx, clientFd, errno);
+		close(clientFd);
+		return ;
+	}
+	if (fcntl(clientFd, F_SETFD, FD_CLOEXEC) < 0)
+	{
+		close(clientFd);
 		return ;
 	}
 	if (epollSet(ctx.epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
 	{
-		closeClientConnection(ctx, clientFd, errno);
+		close(clientFd);
 		return ;
 	}
 	ctx.clients[clientFd].pairAddressPort = listeningSockets[fd];
@@ -69,6 +74,11 @@ void	handleClientSend(t_serverState &ctx, int fd)
 		ctx.clients[fd].response = buildHttpResponse(ctx.clients[fd].responseInstructions,
 									ctx.clients[fd].serverConf->errorPages);
 	size_t bytesSent = ctx.clients[fd].bytesSent;
+	// if (ctx.clients[fd].response.find("\r\n") != std::string::npos)
+	// {
+	// 	std::cout << "fd = " << fd << "statusCode = " << ctx.clients[fd].responseInstructions.statusCode << std::endl;
+	// 	std::cout << "first line = " << ctx.clients[fd].response.substr(0, ctx.clients[fd].response.find("\r\n")) << std::endl;
+	// }
 	byteCount = send(fd, ctx.clients[fd].response.c_str() + bytesSent, ctx.clients[fd].response.size() - bytesSent, 0);
 	if (byteCount < 0)
 	{
@@ -120,7 +130,7 @@ void checkClientTimeouts(t_serverState &ctx)
 void checkCgiTimeouts(t_serverState &ctx)
 {
     const time_t now = time(NULL);
-    const time_t cgiTimeout = 10;
+    const time_t cgiTimeout = 60;
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
     while (it != ctx.clients.end())
@@ -173,7 +183,14 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	ctx.clients[fd].request.append(buf, byteCount);
 	if (ctx.clients[fd].parseStage == 2 && ctx.clients[fd].httpRequest.headers.find("transfer-encoding") != ctx.clients[fd].httpRequest.headers.end())
 	{
-		if (ctx.clients[fd].request.find("\r\n0\r\n\r\n") == std::string::npos)
+		if (byteCount > 6)
+		{
+			std::string buffer = buf;
+			buffer = buffer.substr(0, byteCount);
+			if (buffer.find("\r\n0\r\n\r\n") == std::string::npos)
+				return ;
+		}
+		else if (ctx.clients[fd].request.find("\r\n0\r\n\r\n") == std::string::npos)
 			return ;
 	}
 	// std::string bf = std::string(buf, byteCount);
@@ -268,8 +285,16 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	ctx.epfd = epoll_create(1);
 	if (ctx.epfd < 0)
 	{
+		int err = errno;
 		closeListeningSockets(listeningSockets);
-		throw std::runtime_error(strerror(errno));
+		throw std::runtime_error(strerror(err));
+	}
+	if (fcntl(ctx.epfd, F_SETFD, FD_CLOEXEC) < 0)
+	{
+		int err = errno;
+		close(ctx.epfd);
+		closeListeningSockets(listeningSockets);
+		throw std::runtime_error(strerror(err));
 	}
 	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
 	{

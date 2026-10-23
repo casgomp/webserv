@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/22 18:13:12 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/23 15:03:13 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <iostream>
 # include <stdio.h>
 # include <errno.h>
+# include <cctype>
 
 # include "cgiExecute.hpp"
 # include "httpRequestParserUtils.hpp"
@@ -32,6 +33,25 @@ std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest)
 	std::string					protocol = "HTTP/1.1";
 	std::string					method = httpRequest.requestLine.method;
 	std::string					path = httpRequest.requestLine.target;
+
+	std::map<std::string, std::string>::const_iterator it = httpRequest.headers.begin();
+	for(;it != httpRequest.headers.end(); it++)
+	{
+		std::string upHeader = it->first;
+		for (size_t i = 0; i < upHeader.size(); i++)
+		{
+			if (upHeader[i] == '-')
+			{
+				upHeader[i] = '_';
+				continue ;
+			}
+			char c = std::toupper(upHeader[i]);
+			upHeader[i] = c;
+		}
+		// upHeader += "=" + it->second;
+		// std::cout << "check upHeader: " << upHeader << std::endl;
+		cgiEnvp.push_back("HTTP_" + upHeader + "=" + it->second);
+	}
 
 	oss << httpRequest.body.size();
 	std::string					len = oss.str();
@@ -80,6 +100,38 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 		close (pipeR[1]);
 		return (-1);
 	}
+	if (fcntl(pipeR[0], F_SETFD, FD_CLOEXEC) < 0)
+	{
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
+	}
+	if (fcntl(pipeR[1], F_SETFD, FD_CLOEXEC) < 0)
+	{
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
+	}
+	if (fcntl(pipeW[0], F_SETFD, FD_CLOEXEC) < 0)
+	{
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
+	}
+	if (fcntl(pipeW[1], F_SETFD, FD_CLOEXEC) < 0)
+	{
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
+	}
 	ctx.clients[fd].cgiProcess.pid = fork();
 	if (ctx.clients[fd].cgiProcess.pid == -1)
 	{
@@ -101,6 +153,9 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 		close(pipeR[0]);
 		dup2(pipeW[1], STDOUT_FILENO);
 		close(pipeW[1]);
+
+
+
 		// std::vector<std::string>	args;
 		// args.push_back(ctx.clients[fd].responseInstructions.cgi.interpreter);
 		// args.push_back(ctx.clients[fd].responseInstructions.resolvedPath);

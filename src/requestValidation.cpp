@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/22 17:28:29 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/23 14:37:47 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		ext = resolvedPath.substr(dot + 1);
 		it = location->cgiExtension.find(ext);
-		if (isFile && it != location->cgiExtension.end())
+		if ((isFile || 
+				(!isFile && httpRequest.requestLine.method == "POST"))  
+				&& it != location->cgiExtension.end())
 		{
 			// if (!isFile)
 			// 	return (buildErrorInstructions(404, serverConf));
@@ -93,7 +95,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			// std::string ext = resolvedPath.substr(dot + 1);
 			// std::map<std::string, std::string>::const_iterator it = location->cgiExtension.find(ext);
 			// if (it != location->cgiExtension.end())
-			if (access(resolvedPath.c_str(), R_OK) != 0)
+			if (isFile && access(resolvedPath.c_str(), R_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
 			responseInstructions.isCgi = true;
 			responseInstructions.cgi.interpreter = it->second;
@@ -102,6 +104,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			responseInstructions.cgi.queryString = httpRequest.requestLine.queryString;
 			return (responseInstructions);
 		}
+		else if(!isFile && it != location->cgiExtension.end()
+					&& httpRequest.requestLine.method != "POST")
+			return (buildErrorInstructions(404, serverConf));
 	}
 	
 	if (httpRequest.requestLine.method == "GET")

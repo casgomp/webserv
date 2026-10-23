@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/21 15:28:39 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/23 12:42:45 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,10 +202,19 @@ std::string	buildHttpResponse(const t_responseInstructions &instructions,
 		if (!deleteFile(result.resolvedPath))
 			result.statusCode = 500;
 	}
-	else if (result.method == "POST" && result.statusCode == 201)
+	else if (result.method == "POST")
 	{
-		if (!writePostBody(result.resolvedPath, result.body))
-			result.statusCode = 500;
+		if (result.statusCode == 201)
+		{
+			if (!writePostBody(result.resolvedPath, result.body))
+				result.statusCode = 500;
+		}
+		if (result.statusCode == 400)
+		{
+			if (result.body.size() > 100)
+				result.statusCode = 413;
+			result.statusCode = 200;
+		}
 	}
 	else if (result.method == "GET" && result.statusCode == 200)
 	{

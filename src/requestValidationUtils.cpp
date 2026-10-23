@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/22 18:09:41 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/23 12:24:50 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,7 @@ bool	pathIsDir(const std::string &resolvedPath)
 
 	if (stat(resolvedPath.c_str(), &statbuf) == 0)
 		return (S_ISDIR(statbuf.st_mode));
+	std::cout << "stat != 0\n";
 	return (false);
 }
 
