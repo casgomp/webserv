@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/09 12:08:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 16:03:47 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 	struct addrinfo										*p;
 	int													fdServer = -1;
 	int													yes;
-	int													backlog = 32;
+	int													backlog = SOMAXCONN;
 	t_listeningSockets									listeningSockets;
 
 	memset(&hints, 0, sizeof(hints));
@@ -52,7 +52,7 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 			throw std::runtime_error(gai_strerror(status));
 		for (p = servinfo; p != NULL; p = p ->ai_next)
 		{
-			fdServer = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK, p->ai_protocol);
+			fdServer = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK | SOCK_CLOEXEC, p->ai_protocol);
 			if (fdServer < 0)
 			{
 				// std::cout << "socket" << std::endl;//DEBUGGING
