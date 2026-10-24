@@ -142,9 +142,9 @@ void	ServerTests::test_validateMethod()
 	allowedMethods.push_back("GET");
 	allowedMethods.push_back("DELETE");
 	location.allowedMethods = allowedMethods;
-	check(validateMethod(location.allowedMethods, "GET") == 0, "validateMethod returns 0 if request method is allowed in location");
-	check(validateMethod(location.allowedMethods, "PIZZA") == 405, "validateMethod returns 405 if request method is invalid");
-	check(validateMethod(location.allowedMethods, "POST") == 403, "validateMethod returns 403 if request method is now allowed in location");
+	check(validateMethod(location.allowedMethods, location.root, "GET") == 0, "validateMethod returns 0 if request method is allowed in location");
+	check(validateMethod(location.allowedMethods, location.root,"PIZZA") == 405, "validateMethod returns 405 if request method is invalid");
+	check(validateMethod(location.allowedMethods, location.root,"POST") == 403, "validateMethod returns 403 if request method is now allowed in location");
 }
 
 void	ServerTests::test_matchLocation()
