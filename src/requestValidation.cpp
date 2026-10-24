@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/18 15:10:53 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 18:05:14 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
 	if (location == NULL)
 		return (buildErrorInstructions(404, serverConf));
-	status = validateMethod(location->allowedMethods, httpRequest.requestLine.method);
+	status = validateMethod(location->allowedMethods, location->root, httpRequest.requestLine.method);
 	if (status != 0)
 		return (buildErrorInstructions(status, serverConf));
 	if (location->redirection.first != 0)
@@ -49,9 +49,10 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	std::cout << "isFile = " << isFile << std::endl;
 	if (!isFile)
 	{
-		if (!pathIsDir(resolvedPath))
+		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method!= "POST")
 			return (buildErrorInstructions(404, serverConf));
-		if (httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
+		else if (pathIsDir(resolvedPath) &&
+					httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
 		{
 			responseInstructions.statusCode = 301;
 			responseInstructions.isRedirect = true;
@@ -59,18 +60,18 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			return (responseInstructions);
 		}
 	}
-	if (!location->cgiExtension.empty())
+	std::string ext;
+	std::map<std::string, std::string>::const_iterator it;
+	size_t	dot = resolvedPath.find_last_of('.');
+	if (dot != std::string::npos)
 	{
-		if (!isFile)
-			return (buildErrorInstructions(404, serverConf));
-		size_t	dot = resolvedPath.find_last_of('.');
-		if (dot == std::string::npos)
-			return (buildErrorInstructions(403, serverConf));
-		std::string ext = resolvedPath.substr(dot + 1);
-		std::map<std::string, std::string>::const_iterator it = location->cgiExtension.find(ext);
-		if (it != location->cgiExtension.end())
+		ext = resolvedPath.substr(dot + 1);
+		it = location->cgiExtension.find(ext);
+		if ((isFile || 
+				(!isFile && httpRequest.requestLine.method == "POST"))  
+				&& it != location->cgiExtension.end())
 		{
-			if (access(resolvedPath.c_str(), R_OK) != 0)
+			if (isFile && access(resolvedPath.c_str(), R_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
 			responseInstructions.isCgi = true;
 			responseInstructions.cgi.interpreter = it->second;
@@ -78,6 +79,9 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			responseInstructions.cgi.queryString = httpRequest.requestLine.queryString;
 			return (responseInstructions);
 		}
+		else if(!isFile && it != location->cgiExtension.end()
+					&& httpRequest.requestLine.method != "POST")
+			return (buildErrorInstructions(404, serverConf));
 	}
 	if (httpRequest.requestLine.method == "GET")
 	{
@@ -94,6 +98,8 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 			else
 				return (buildErrorInstructions(403, serverConf));
 		}
+		if (access(resolvedPath.c_str(), F_OK) != 0)
+				return (buildErrorInstructions(404, serverConf));
 		if (access(resolvedPath.c_str(), R_OK) != 0)
 			return (buildErrorInstructions(403, serverConf));
 		std::cout << "resolvedPath2: " << resolvedPath << std::endl;////////////////////////////////////////
@@ -108,7 +114,11 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		if (httpRequest.body.size() > location->clientMaxBodySize)
 			return (buildErrorInstructions(413, serverConf));
 		if (getContentType(resolvedPath) == "application/octet-stream")
+		{
+			if (!isFile)
+				return (buildErrorInstructions(400, serverConf));
 			return (buildErrorInstructions(415, serverConf));
+		}
 		if (isFile)
 		{
 			if (access(resolvedPath.c_str(), W_OK) != 0)

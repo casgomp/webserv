@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 16:12:12 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 17:15:09 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,27 +16,53 @@
 # include <vector>
 # include <fcntl.h>
 # include <unistd.h>
+# include <cctype>
 
 # include "cgiExecute.hpp"
 # include "httpRequestParserUtils.hpp"
 # include "requestValidationUtils.hpp"
 # include "requestValidationUtils.hpp"
 
+void	buildCgiEnvpRequestHeaders(std::vector<std::string>	&cgiEnvp, const HttpRequest &httpRequest)
+{
+	std::map<std::string, std::string>::const_iterator it = httpRequest.headers.begin();
+	for(;it != httpRequest.headers.end(); it++)
+	{
+		std::string upHeader = it->first;
+		for (size_t i = 0; i < upHeader.size(); i++)
+		{
+			if (upHeader[i] == '-')
+			{
+				upHeader[i] = '_';
+				continue ;
+			}
+			char c = std::toupper(upHeader[i]);
+			upHeader[i] = c;
+		}
+		cgiEnvp.push_back("HTTP_" + upHeader + "=" + it->second);
+	}
+}
+
 std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest)
 {
 	std::vector<std::string>	cgiEnvp;
 	std::ostringstream			oss;
+	std::string					protocol = "HTTP/1.1";
 	std::string					method = httpRequest.requestLine.method;
+	std::string					path = httpRequest.requestLine.target;
 
-	oss << httpRequest.expectedBodyLength;
+	buildCgiEnvpRequestHeaders(cgiEnvp, httpRequest);
+	oss << httpRequest.body.size();
+	std::string					len = oss.str();
+	cgiEnvp.push_back("SERVER_PROTOCOL=" + protocol);
 	cgiEnvp.push_back("REQUEST_METHOD=" + method);
+	cgiEnvp.push_back("PATH_INFO=" + path);
 	if (method == "GET")
 		cgiEnvp.push_back("QUERY_STRING=" + httpRequest.requestLine.queryString);
 	else if (method == "POST")
 	{
 		cgiEnvp.push_back("CONTENT_LENGTH=" + oss.str());
-		//if httpRequest.headers.find("content-type") == httpRequest.headers.end()
-		//cgiEnvp.push_back("CONTENT_TYPE=" + httpRequest.headers[contentType]);//contentType is missing from httpRequest headers in cgi POST request.
+		cgiEnvp.push_back("CONTENT_TYPE=" + getContentType(path));
 	}
 	return (cgiEnvp);
 }
@@ -69,6 +95,12 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 	int				pipeR[2] = {-1, -1};
 	int				pipeW[2] = {-1, -1};
 
+	std::vector<std::string>	args;
+	args.push_back(ctx.clients[fd].responseInstructions.cgi.interpreter);
+	args.push_back(ctx.clients[fd].responseInstructions.resolvedPath);
+	std::vector<char *>	argv = toCharPtrs(args);
+	std::vector<std::string>	env = buildCgiEnvp(httpRequest);
+	std::vector<char *>	envp = toCharPtrs(env);
 	if (pipe(pipeR) == -1)
 		return (-1);
 	if (pipe(pipeW) == -1)
@@ -106,12 +138,6 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 		close(pipeR[0]);
 		dup2(pipeW[1], STDOUT_FILENO);
 		close(pipeW[1]);
-		std::vector<std::string>	args;
-		args.push_back(ctx.clients[fd].responseInstructions.cgi.interpreter);
-		args.push_back(ctx.clients[fd].responseInstructions.resolvedPath);
-		std::vector<char *>	argv = toCharPtrs(args);
-		std::vector<std::string>	env = buildCgiEnvp(httpRequest);
-		std::vector<char *>	envp = toCharPtrs(env);
 		execve(ctx.clients[fd].responseInstructions.cgi.interpreter.c_str(), &argv[0], &envp[0]);
 		_exit (127);
 	}

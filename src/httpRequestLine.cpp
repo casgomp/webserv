@@ -6,11 +6,10 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/24 16:12:57 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 18:41:23 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include <cctype>
 # include <string>
 
 # include "httpRequestParserUtils.hpp"
