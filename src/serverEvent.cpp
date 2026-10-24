@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 02:18:28 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 16:01:55 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,12 +46,17 @@ void	acceptClient(t_serverState &ctx, int fd, t_listeningSockets &listeningSocke
 		return ;
 	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
 	{
-		closeClientConnection(ctx, clientFd, errno);
+		close(clientFd);
+		return ;
+	}
+	if (fcntl(clientFd, F_SETFD, FD_CLOEXEC) < 0)
+	{
+		close(clientFd);
 		return ;
 	}
 	if (epollSet(ctx.epfd, EPOLL_CTL_ADD, clientFd, EPOLLIN) < 0)
 	{
-		closeClientConnection(ctx, clientFd, errno);
+		close(clientFd);
 		return ;
 	}
 	ctx.clients[clientFd].pairAddressPort = listeningSockets[fd];
@@ -233,8 +238,16 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	ctx.epfd = epoll_create(1);
 	if (ctx.epfd < 0)
 	{
+		int err = errno;
 		closeListeningSockets(listeningSockets);
-		throw std::runtime_error(strerror(errno));
+		throw std::runtime_error(strerror(err));
+	}
+	if (fcntl(ctx.epfd, F_SETFD, FD_CLOEXEC) < 0)
+	{
+		int err = errno;
+		close(ctx.epfd);
+		closeListeningSockets(listeningSockets);
+		throw std::runtime_error(strerror(err));
 	}
 	for (t_listeningSockets::iterator it = listeningSockets.begin(); it != listeningSockets.end(); it ++)
 	{
