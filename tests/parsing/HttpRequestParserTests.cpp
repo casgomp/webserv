@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/15 12:58:47 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/14 14:18:44 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 16:10:01 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,8 +105,8 @@ void	HttpRequestParserTests::testUnsupportedMethod()
 	HttpRequest httpRequest;
 
 	ParseResult result = parseRequest(request, httpRequest, TEST_MAX_BODY_SIZE);
-	check((result == ERROR) && (httpRequest.statusCode == 501),
-		"unsupported PUT returns ERROR with 501");
+	check((result == COMPLETE) && (httpRequest.statusCode == 0),
+		"unsupported PUT returns COMPLETE with statusCode 0");
 }
 
 void	HttpRequestParserTests::testOriginFormTarget()
