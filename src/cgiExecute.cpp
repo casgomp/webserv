@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   cgiExecute.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 02:19:59 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 16:12:12 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,19 @@ static std::vector<char *>	toCharPtrs(const std::vector<std::string> &strs)
 	return (ptrs);
 }
 
+int	fcntlSet(int pipeFd, int *pipeR, int *pipeW, int cmd, int arg)
+{
+	if (fcntl(pipeFd, cmd, arg) < 0)
+	{
+		close (pipeR[0]);
+		close (pipeR[1]);
+		close (pipeW[0]);
+		close (pipeW[1]);
+		return (-1);
+	}
+	return (0);
+}
+
 int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd)
 {
 	int				pipeR[2] = {-1, -1};
@@ -64,6 +77,14 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 		close (pipeR[1]);
 		return (-1);
 	}
+	if (fcntlSet(pipeR[0], pipeR, pipeW, F_SETFD, FD_CLOEXEC) < 0)
+		return (-1);
+	if (fcntlSet(pipeR[1], pipeR, pipeW, F_SETFD, FD_CLOEXEC) < 0)
+		return (-1);
+	if (fcntlSet(pipeW[0], pipeR, pipeW, F_SETFD, FD_CLOEXEC) < 0)
+		return (-1);
+	if (fcntlSet(pipeW[1], pipeR, pipeW, F_SETFD, FD_CLOEXEC) < 0)
+		return (-1);
 	ctx.clients[fd].cgiProcess.pid = fork();
 	if (ctx.clients[fd].cgiProcess.pid == -1)
 	{
