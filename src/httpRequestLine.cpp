@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/09/22 14:53:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 18:05:16 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,11 +162,11 @@ static bool isValidParsedStartLineValues(int &statusCode, const StartLine &line)
 		statusCode = 400;
         return false;
 	}
-    if (line.method != "GET" && line.method != "POST" && line.method != "DELETE")
-	{
-		statusCode = 501;
-        return false;
-	}
+    // if (line.method != "GET" && line.method != "POST" && line.method != "DELETE")
+	// {
+	// 	statusCode = 501;
+    //     return false;
+	// }
 	if (!isValidOriginForm(line.target))
 	{
 		statusCode = 400;

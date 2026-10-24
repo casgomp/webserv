@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 14:19:52 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 18:10:02 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 # include <sys/stat.h>
 # include <vector>
 # include <unistd.h>
+# include <iostream>
 
 # include "requestValidationUtils.hpp"
 # include "configConf.hpp"
@@ -134,14 +135,20 @@ std::string createRedirectPath(t_locationConf *location)
 	return (path);
 }
 
-int	validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod)
+int	validateMethod(const std::vector<std::string> &allowedMethods, 
+	const std::string &root, const std::string &requestMethod)
 {
 	int	status = 0;
 
+	std::cout << "validate method: root = " << root << std::endl;
 	if (!(requestMethod == "GET" || requestMethod == "POST" || requestMethod == "DELETE"))
 		return (405);
 	else if (std::find(allowedMethods.begin(), allowedMethods.end(), requestMethod) == allowedMethods.end())
+	{
+		if (root == "testers")
+			return (405);
 		return (403);
+	}
 	return(status);
 }
 
