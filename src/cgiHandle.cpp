@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/10 13:10:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 01:08:54 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 18:32:36 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 # include <sys/wait.h>
 # include <fcntl.h>
 # include <sys/types.h>
+# include <ctime>
 
 # include "cgiHandle.hpp"
 # include "serverUtils.hpp"
@@ -81,6 +82,7 @@ void	handleCgiStdin(t_serverState &ctx, int fd, int clientFd, const uint32_t &ev
 		return ;
 	}
 	ctx.clients[clientFd].cgiProcess.bytesSent += byteCount;
+	ctx.clients[clientFd].cgiProcess.startTime = time(NULL);
 	if (ctx.clients[clientFd].cgiProcess.bytesSent == body.size())
 	{
 		closeCgiStdin(ctx.clients[clientFd].cgiProcess, ctx.fdPipeToClient);
@@ -121,6 +123,7 @@ void	handleCgiStdout(t_serverState &ctx, int fd, int clientFd, const uint32_t &e
 	else if (byteCount > 0)
 	{
 		ctx.clients[clientFd].cgiProcess.output.append(buf, byteCount);
+		ctx.clients[clientFd].cgiProcess.startTime = time(NULL);
 		return ;
 	}
 }

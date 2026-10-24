@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configInterfaceUtils.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:47:55 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 18:58:09 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void	addCgiExtension(t_locationConf &locationConf, const std::string &input)
 {
 	if (input.empty())
 		throw std::runtime_error("empty string (cgi extension/interpreter)");
-	
+
 	std::istringstream			ss(input);
 	std::string					str;
 	std::vector<std::string>	vec;
@@ -60,7 +60,7 @@ void	addRedirection(t_locationConf &locationConf, const std::string &input)
 {
 	if (input.empty())
 		throw std::runtime_error("empty string (redirection)");
-	
+
 	std::istringstream			ss(input);
 	std::string					str;
 	std::vector<std::string>	vec;
@@ -79,9 +79,8 @@ void	addRedirection(t_locationConf &locationConf, const std::string &input)
 void	addAllowedMethods(t_locationConf &locationConf, const std::string &input)
 {
 	if (input.empty())
-# include "configInterfaceUtils.hpp"
 		throw std::runtime_error("empty string (allowed_methods)");
-	
+
 	std::istringstream						ss(input);
 	std::string								str;
 	std::vector<std::string>				vec;
@@ -114,12 +113,12 @@ void	addErrorPages(t_serverConf &serverConf, const std::string &input)
 {
 	if (input.empty())
 		throw std::runtime_error("empty string (error_page)");
-		
+
 	std::istringstream			ss(input);
 	std::string					str;
 	std::vector<std::string>	vec;
 	int							num;
-	
+
 	while (ss >> str)
 		vec.push_back(str);
 	if (vec.size() < 2)
@@ -176,7 +175,7 @@ std::vector<std::string>	checkIndexFiles(const std::string &input)
 {
 	if (input.empty())
 		throw std::runtime_error("empty string (index)");
-	
+
 	std::istringstream						ss(input);
 	std::string								str;
 	std::vector<std::string>				vec;

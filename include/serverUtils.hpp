@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 01:00:20 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 16:36:59 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include "configConf.hpp"
 # include "serverInit.hpp"
 # include "cgiTypes.hpp"
+# include "httpRequestParserUtils.hpp"
 
 typedef struct	s_cgi {
 	bool		success;
@@ -49,6 +50,7 @@ typedef struct	s_client {
 	t_serverConf						*serverConf;
 	t_cgiProcess						cgiProcess;
 	std::string							request;
+	HttpRequest							httpRequest;
 	std::string							response;
 	t_responseInstructions				responseInstructions;
 	size_t								bytesSent;

@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:47:22 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/06 23:14:29 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 16:55:48 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -168,14 +168,9 @@ bool hasTransferEncoding(const HttpRequest &request)
 
 bool isChunkedTransferEncoding(const HttpRequest &request)
 {
-	if (!hasTransferEncoding(request))
-		return false;
-	std::string value;
-	value = request.headers.find("transfer-encoding")->second;
+	std::string value = request.headers.find("transfer-encoding")->second;
 	toLowercase(value);
-	if (value != "chunked")
-		return false;
-	return true;
+	return (value == "chunked");
 }
 
 static bool stringToSizeT(
