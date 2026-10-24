@@ -3,14 +3,13 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestLine.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:04:55 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/24 18:26:11 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 18:41:23 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-# include <cctype>
 # include <string>
 
 # include "httpRequestParserUtils.hpp"
@@ -150,6 +149,16 @@ static bool isValidHttpVersion(const std::string &version)
 	return true;
 }
 
+static bool	isMethodNginx(const std::string &method)
+{
+	for (size_t i = 0; i < method.size(); i++)
+	{
+		if (method[i] < 'A' || method[i] > 'Z')
+			return false;
+	}
+	return true;
+}
+
 static bool isValidParsedStartLineValues(int &statusCode, const StartLine &line)
 {
     if (line.method.empty() || line.target.empty() || line.version.empty())
@@ -162,9 +171,9 @@ static bool isValidParsedStartLineValues(int &statusCode, const StartLine &line)
 		statusCode = 400;
         return false;
 	}
-    if (line.method != "GET" && line.method != "POST" && line.method != "DELETE")
+    if (!isMethodNginx(line.method))
 	{
-		statusCode = 501;
+		statusCode = 400;
         return false;
 	}
 	if (!isValidOriginForm(line.target))

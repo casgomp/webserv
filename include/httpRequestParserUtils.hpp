@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestParserUtils.hpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 11:36:52 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/16 12:53:46 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 17:09:45 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,14 @@
 
 # include <map>
 # include <string>
+
+enum ParseStage
+{
+    START_LINE,
+    HEADERS,
+    BODY,
+    FINISHED
+};
 
 struct StartLine
 {
@@ -32,6 +40,12 @@ struct HttpRequest
     size_t								expectedBodyLength;
     size_t								consumedBytes;
 	int									statusCode;
+	ParseStage							stage;
+	size_t								bodyStart;
+	size_t								chunkPos;
+	bool								isChunked;
+	HttpRequest() : expectedBodyLength(0), consumedBytes(0), statusCode(0),
+				stage(START_LINE), bodyStart(0), chunkPos(0), isChunked(false) {}
 };
 
 enum ParseResult

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpRequestParser.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/13 00:56:34 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/16 12:53:48 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/24 17:41:58 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,83 +15,99 @@
 
 const size_t MAX_HEADER_SIZE = 16 * 1024;
 
-void	clearRequest(HttpRequest &request)
-{
-	request.requestLine.method.clear();
-	request.requestLine.target.clear();
-	request.requestLine.queryString.clear();
-	request.requestLine.version.clear();
-    request.headers.clear();
-    request.body.clear();
-	request.expectedBodyLength = 0;
-	request.consumedBytes = 0;
-	request.statusCode = 0;
-}
-
 static bool	isHeaderSizeValid(const std::string &buffer)
 {
-	size_t headerStart = buffer.find("\r\n") + 2;
-	size_t headerEnd = buffer.find("\r\n\r\n", headerStart);
+	size_t headerStart = buffer.find("\r\n");
+    if (headerStart == std::string::npos)
+        return true;
+    headerStart += 2;
+    size_t headerEnd = buffer.find("\r\n\r\n", headerStart);
 
-	size_t headerSize;
+    size_t headerSize;
+    if (headerEnd == std::string::npos)
+        headerSize = buffer.size() - headerStart;
+    else
+        headerSize = headerEnd + 4 - headerStart;
 
-	if (headerEnd == std::string::npos)
-		headerSize = buffer.size() - headerStart;
-	else
-		headerSize = headerEnd + 4 - headerStart;
-
-	if (headerSize > MAX_HEADER_SIZE)
-		return false;
-	return true;
+    return headerSize <= MAX_HEADER_SIZE;
 }
 
-ParseResult parseRequest(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize)
+static ParseResult parseStartLineStage(const std::string &buffer, HttpRequest &request)
 {
-	clearRequest(request);
-	if (!parseStartLine(buffer, request))
-	{
-		if (request.statusCode == 0)
-			return INCOMPLETE;
+    if (!parseStartLine(buffer, request))
+        return request.statusCode == 0 ? INCOMPLETE : ERROR;
+
+    request.stage = HEADERS;
+    return COMPLETE;
+}
+
+static ParseResult parseHeadersStage(const std::string &buffer, HttpRequest &request, size_t maxBodySize)
+{
+    if (!isHeaderSizeValid(buffer))
+    {
+        request.statusCode = 431;
         return ERROR;
-	}
-		if (!isHeaderSizeValid(buffer))
-	{
-		request.statusCode = 431;
-		return ERROR;
-	}
-    if (buffer.find("\r\n\r\n") == std::string::npos)
+    }
+    size_t headerEnd = buffer.find("\r\n\r\n");
+    if (headerEnd == std::string::npos)
 	{
 		request.statusCode = 0;
         return INCOMPLETE;
 	}
-    if (!parseHeaders(buffer, request))
-	{
-		request.statusCode = 400;
-        return ERROR;
-	}
-    if (!checkRequiredHeaders(request))
+    if (!parseHeaders(buffer, request) || !checkRequiredHeaders(request))
     {
-		request.statusCode = 400;
-		return ERROR;
-	}
-	if (hasTransferEncoding(request))
-	{
-		if (!isChunkedTransferEncoding(request))
-		{
-			request.statusCode = 501;
-			return ERROR;
-		}
-		return parseChunkedBody(buffer, request, clientMaxBodySize);
-	}
-    if (!determineBodyLength(request))
-	{
-		request.statusCode = 400;
+        request.statusCode = 400;
         return ERROR;
-	}
-	if (request.expectedBodyLength > clientMaxBodySize)
-	{
-		request.statusCode = 413;
+    }
+    request.isChunked = hasTransferEncoding(request);
+    if (request.isChunked && !isChunkedTransferEncoding(request))
+    {
+        request.statusCode = 501;
         return ERROR;
-	}
-    return parseBody(buffer, request);
+    }
+    if (!request.isChunked)
+    {
+        if (!determineBodyLength(request))
+        {
+            request.statusCode = 400;
+            return ERROR;
+        }
+        if (request.expectedBodyLength > maxBodySize)
+        {
+            request.statusCode = 413;
+            return ERROR;
+        }
+    }
+    request.bodyStart = headerEnd + 4;
+    request.chunkPos = request.bodyStart;
+    request.stage = BODY;
+    return COMPLETE;
+}
+
+ParseResult parseRequest(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize)
+{
+	ParseResult result;
+
+    if (request.stage == START_LINE)
+    {
+        result = parseStartLineStage(buffer, request);
+        if (result != COMPLETE)
+            return result;
+    }
+	if (request.stage == HEADERS)
+    {
+        result = parseHeadersStage(buffer, request, clientMaxBodySize);
+        if (result != COMPLETE)
+            return result;
+    }
+	if (request.stage == FINISHED)
+        return COMPLETE;
+
+    if (request.isChunked)
+        result = parseChunkedBody(buffer, request, clientMaxBodySize);
+    else
+        result = parseBody(buffer, request);
+    if (result == COMPLETE)
+        request.stage = FINISHED;
+    return result;
 }

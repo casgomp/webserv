@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/09 12:00:31 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/07 00:09:12 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/24 17:37:45 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,80 +73,84 @@ static ParseResult parseFinalChunk(const std::string &buffer, size_t chunkSizeEn
 	}
 }
 
+static ParseResult parseChunkSize(const std::string &buffer, size_t pos,
+    size_t &chunkSizeEnd, size_t &chunkLength, HttpRequest &request)
+{
+    chunkSizeEnd = buffer.find("\r\n", pos);
+    if (chunkSizeEnd == std::string::npos)
+    {
+        request.statusCode = 0;
+        return INCOMPLETE;
+    }
+    std::string chunkSize = buffer.substr(pos, chunkSizeEnd - pos);
+    size_t semicolon = chunkSize.find(';');
+    if (semicolon != std::string::npos)
+        chunkSize = chunkSize.substr(0, semicolon);
+    if (!hexStringToSizeT(chunkSize, chunkLength))
+    {
+        request.statusCode = 400;
+        return ERROR;
+    }
+    return COMPLETE;
+}
+
+static ParseResult appendChunkData(const std::string &buffer, HttpRequest &request,
+	size_t chunkDataStart, size_t chunkLength, size_t maxBodySize)
+{
+    if (chunkDataStart > buffer.size() || chunkLength > buffer.size() - chunkDataStart)
+    {
+        request.statusCode = 0;
+        return INCOMPLETE;
+    }
+    size_t chunkDataEnd = chunkDataStart + chunkLength;
+    if (buffer.size() - chunkDataEnd < 2)
+    {
+        request.statusCode = 0;
+        return INCOMPLETE;
+    }
+    if (buffer[chunkDataEnd] != '\r' || buffer[chunkDataEnd + 1] != '\n')
+    {
+        request.statusCode = 400;
+        return ERROR;
+    }
+    if (request.body.size() > maxBodySize || chunkLength > maxBodySize - request.body.size())
+    {
+        request.statusCode = 413;
+        return ERROR;
+    }
+    request.body.append(buffer, chunkDataStart, chunkLength);
+    request.chunkPos = chunkDataEnd + 2;
+    return COMPLETE;
+}
+
 ParseResult	parseChunkedBody(const std::string &buffer, HttpRequest &request, size_t clientMaxBodySize)
 {
-	size_t bodyStart = buffer.find("\r\n\r\n");
-    if (bodyStart == std::string::npos)
-	{
-		request.statusCode = 0;
-        return INCOMPLETE;
-	}
-    bodyStart += 4;
-    size_t pos = bodyStart;
-    request.body.clear();
-    while (true)
+	while (true)
     {
-        size_t chunkSizeEnd = buffer.find("\r\n", pos);
-        if (chunkSizeEnd == std::string::npos)
-        {
-			request.statusCode = 0;
-			return INCOMPLETE;
-		}
-        std::string chunkSize = buffer.substr(pos, chunkSizeEnd - pos);
-		size_t semicolon = chunkSize.find(';');
-		if (semicolon != std::string::npos)
-			chunkSize = chunkSize.substr(0, semicolon);
-        size_t chunkLength;
-        if (!hexStringToSizeT(chunkSize, chunkLength))
-		{
-			request.statusCode = 400;
-            return ERROR;
-		}
+        size_t		chunkSizeEnd;
+        size_t		chunkLength;
+        ParseResult	result;
+
+		result = parseChunkSize(buffer, request.chunkPos, chunkSizeEnd, chunkLength, request);
+        if (result != COMPLETE)
+            return result;
         if (chunkLength == 0)
-			return parseFinalChunk(buffer, chunkSizeEnd, request);
-        size_t chunkDataStart = chunkSizeEnd + 2;
-        if (chunkLength > buffer.size() - chunkDataStart)
-        {
-			request.statusCode = 0;
-			return INCOMPLETE;
-		}
-        size_t chunkDataEnd = chunkDataStart + chunkLength;
-        if (buffer.size() - chunkDataEnd < 2)
-        {
-			request.statusCode = 0;
-			return INCOMPLETE;
-		}
-        if (buffer[chunkDataEnd] != '\r' || buffer[chunkDataEnd + 1] != '\n')
-        {
-			request.statusCode = 400;
-			return ERROR;
-		}
-		if (chunkLength > clientMaxBodySize - request.body.size())
-		{
-			request.statusCode = 413;
-			return ERROR;
-		}
-        request.body.append(buffer, chunkDataStart, chunkLength);
-        pos = chunkDataEnd + 2;
+            return parseFinalChunk(buffer, chunkSizeEnd, request);
+        result = appendChunkData(buffer, request, chunkSizeEnd + 2, chunkLength, clientMaxBodySize);
+        if (result != COMPLETE)
+            return result;
     }
 }
 
 ParseResult parseBody(const std::string &buffer, HttpRequest &request)
 {
-    size_t bodyStart = buffer.find("\r\n\r\n");
-    if (bodyStart == std::string::npos)
-	{
-		request.statusCode = 0;
-        return INCOMPLETE;
-	}
-    bodyStart += 4;
-    size_t available = buffer.size() - bodyStart;
-    if (available < request.expectedBodyLength)
+    if (buffer.size() - request.bodyStart < request.expectedBodyLength)
     {
-		request.statusCode = 0;
+        request.statusCode = 0;
         return INCOMPLETE;
-	}
-    request.body = buffer.substr(bodyStart, request.expectedBodyLength);
-	request.consumedBytes = bodyStart + request.expectedBodyLength;
+    }
+
+    request.body = buffer.substr(request.bodyStart, request.expectedBodyLength);
+    request.consumedBytes = request.bodyStart + request.expectedBodyLength;
     return COMPLETE;
 }
