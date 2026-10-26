@@ -6,7 +6,7 @@
 /*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:28:37 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/26 16:38:21 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ void checkClientTimeouts(t_serverState &ctx)
 void checkCgiTimeouts(t_serverState &ctx)
 {
     const time_t now = time(NULL);
-    const time_t cgiTimeout = 5;
+    const time_t cgiTimeout = 15;
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
     while (it != ctx.clients.end())
@@ -202,7 +202,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		{
 			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
 			resetInstructions(ctx.clients[fd], requestValidation(ctx.clients[fd].httpRequest, ctx.clients[fd].serverConf));
-			ctx.clients[fd].responseInstructions.body = ctx.clients[fd].httpRequest.body;///and cgi body?
+			ctx.clients[fd].responseInstructions.body.swap(ctx.clients[fd].httpRequest.body);///and cgi body?
 			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, ctx.clients[fd].httpRequest) == 0)
 				return ;
 		}

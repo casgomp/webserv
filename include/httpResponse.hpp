@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:40:21 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/20 15:09:41 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/26 16:36:31 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ void		cgiResponse(s_responseInstructions &result,
 		std::string &cgiHeaders, std::string &body,
 		std::map<std::string, std::string> &parsedHeaders);
 
-std::string	buildHttpResponse(const t_responseInstructions &instructions,
+std::string	buildHttpResponse(t_responseInstructions &result,
 		const std::map<int, std::string> &errorPages);
 
 
