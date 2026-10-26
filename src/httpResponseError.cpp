@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponseError.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 14:59:16 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/20 15:25:18 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/26 11:15:14 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
 	reasonPhrase[429] = "Too Many Requests";
 	reasonPhrase[431] = "Request Header Fields Too Large";
 	reasonPhrase[500] = "Internal Server Error";
+	reasonPhrase[501] = "Not Implemented";
 	reasonPhrase[503] = "Service Unavailable";
 	reasonPhrase[504] = "Gateway Timeout";
 }

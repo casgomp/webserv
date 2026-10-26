@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configParse.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:13:03 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 11:30:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/26 11:53:47 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,5 @@ t_block									parseConfig(const char *filename);
 void									readConfigToString(const char *filename, std::string &str);
 t_block									recurseConfig(const std::string &str);
 std::pair<std::string, std:: string>	splitter(const std::string &chunk);
-void									printConfig(t_block conf, int depth = 0);
 
 #endif

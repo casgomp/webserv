@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configInterfaceUtils.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 18:58:09 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/26 11:50:35 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,6 @@ void	addCgiExtension(t_locationConf &locationConf, const std::string &input)
 	if (ext.empty() || ext.at(0) != '.')
 		throw std::runtime_error("extension must start with '.' (cgi extension/interpreter)");
 	locationConf.cgiExtension[ext.substr(1)] = vec.at(1);
-	// std::cout << "*******************locationConf.cgiExtension[" << ext.substr(1) << "] = " << locationConf.cgiExtension[ext.substr(1)] << std::endl;
 }
 
 void	addRedirection(t_locationConf &locationConf, const std::string &input)
@@ -136,11 +135,6 @@ void	addErrorPages(t_serverConf &serverConf, const std::string &input)
 
 void	addListenAddressPort(t_serverConf &serverConf, const std::string &input)
 {
-	// listen 127.0.0.1:8000;
-	// listen 127.0.0.1;
-	// listen 8000;
-	// listen *:8000;
-	// listen localhost:8000;
 	std::pair<std::string, std::string>	pair;
 	size_t								found;
 

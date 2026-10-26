@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configParse.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/17 15:32:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/09/22 13:23:21 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/26 11:51:28 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,6 @@
 # include <iostream>
 
 # include "configParse.hpp"
-
-void	printConfig(t_block conf, int depth)
-{
-	std::string	indent(depth * 2, ' ');
-	size_t		i;
-
-	i = 0;
-	while (i < conf.directives.size())
-	{
-		std::cout << indent << conf.directives[i].first << " = " << conf.directives[i].second << std::endl;
-		i ++;
-	}
-	if (!(conf.children.empty()))
-		std::cout << indent << "**children" << std::endl;
-	i = 0;
-	while (i < conf.children.size())
-	{
-		std::cout << indent << "  " << conf.children[i].first.first << " = " << conf.children[i].first.second << std::endl;
-		if (!(conf.children[i].second.directives.empty() && conf.children[i].second.children.empty()))
-			printConfig(conf.children[i].second, depth + 1);
-		i ++;
-	}
-}
 
 std::pair<std::string, std:: string>	splitter(const std::string &chunk)
 {
