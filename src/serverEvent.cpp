@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 17:43:22 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/26 11:28:37 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,13 +170,9 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	ctx.clients[fd].request.append(buf, byteCount);
 	int requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize);
 	if (requestStatus == INCOMPLETE)
-	{
-		std::cout << "*********requestStatus: INCOMPLETE" << std::endl;
 		return ;
-	}
 	else if (requestStatus == ERROR)
 	{
-		std::cout << "*********requestStatus: ERROR" << std::endl;
 		ctx.clients[fd].waitingForClient = false;
 		ctx.clients[fd].responseInstructions.keepAlive = false;//check with Erjon if makes sense here or he handles it somewhere else.
 		try
@@ -192,7 +188,6 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	}
 	else if (requestStatus == COMPLETE)
 	{
-		std::cout << "*********requestStatus: COMPLETE" << std::endl;
 		ctx.clients[fd].request.erase(0, ctx.clients[fd].httpRequest.consumedBytes);
 		ctx.clients[fd].waitingForClient = false;
 		ctx.clients[fd].responseInstructions.method = ctx.clients[fd].httpRequest.requestLine.method;

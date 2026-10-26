@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidation.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 18:05:14 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/26 11:20:48 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,10 +43,8 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		return (responseInstructions);
 	}
 	normalizePath(httpRequest.requestLine.target, normalizedTarget);
-	std::cout << "normalizedTarget = " << normalizedTarget << std::endl;
 	resolvedPath = joinedPath(location->root, normalizedTarget);
 	isFile = (pathIsFile(resolvedPath));
-	std::cout << "isFile = " << isFile << std::endl;
 	if (!isFile)
 	{
 		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method!= "POST")
@@ -85,8 +83,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	}
 	if (httpRequest.requestLine.method == "GET")
 	{
-		std::cout << "*****GET request validation******" << std::endl;
-		std::cout << "resolvedPath1: " << resolvedPath << std::endl;////////////////////////////////////////
 		if (!isFile)
 		{
 			if (!location->index.empty())
@@ -102,7 +98,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 				return (buildErrorInstructions(404, serverConf));
 		if (access(resolvedPath.c_str(), R_OK) != 0)
 			return (buildErrorInstructions(403, serverConf));
-		std::cout << "resolvedPath2: " << resolvedPath << std::endl;////////////////////////////////////////
 		responseInstructions.resolvedPath = resolvedPath;
 		responseInstructions.contentType = getContentType(resolvedPath);
 		responseInstructions.statusCode = 200;
@@ -110,13 +105,15 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	}
 	else if (httpRequest.requestLine.method == "POST")
 	{
-		std::cout << "*****POST request validation******" << std::endl;
 		if (httpRequest.body.size() > location->clientMaxBodySize)
 			return (buildErrorInstructions(413, serverConf));
 		if (getContentType(resolvedPath) == "application/octet-stream")
 		{
 			if (!isFile)
-				return (buildErrorInstructions(400, serverConf));
+			{
+				responseInstructions.statusCode = 200;
+				return (responseInstructions);
+			}
 			return (buildErrorInstructions(415, serverConf));
 		}
 		if (isFile)
@@ -136,7 +133,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	}
 	else if (httpRequest.requestLine.method == "DELETE")
 	{
-		std::cout << "*****DELETE request validation******" << std::endl;
 		if (!isFile)
 			return (buildErrorInstructions(403, serverConf));
 		if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)

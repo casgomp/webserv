@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidationUtils.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 18:10:02 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/26 11:21:28 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,7 +97,6 @@ void	normalizePath(const std::string &target, std::string &normalizedTarget)
 	std::vector<std::string>	vec;
 	std::string					segment;
 
-	// std::cout << "target is = " << target << std::endl;
 	while (getline(ss, segment,'/'))
 	{
 		if (segment.empty() || segment == ".")
@@ -131,7 +130,6 @@ std::string createRedirectPath(t_locationConf *location)
 		path = location->redirection.second;
 	else
 		path = joinedPath(location->root, location->redirection.second);
-	// std::cout << "path**************" << path << std::endl;
 	return (path);
 }
 
@@ -140,7 +138,6 @@ int	validateMethod(const std::vector<std::string> &allowedMethods,
 {
 	int	status = 0;
 
-	std::cout << "validate method: root = " << root << std::endl;
 	if (!(requestMethod == "GET" || requestMethod == "POST" || requestMethod == "DELETE"))
 		return (405);
 	else if (std::find(allowedMethods.begin(), allowedMethods.end(), requestMethod) == allowedMethods.end())
@@ -162,7 +159,6 @@ t_locationConf*	matchLocation(std::vector<t_locationConf> &locations, const std:
 	len = 0;
 	for (size_t i = 0; i < locations.size(); i ++)
 	{
-		// std::cout << "****target = " << target << " ; location[i].path = " << locations[i].path << std::endl;
 		path = locations[i].path;
 		if (target.compare(0, path.size(), path) != 0)
 			continue ;
@@ -171,11 +167,9 @@ t_locationConf*	matchLocation(std::vector<t_locationConf> &locations, const std:
 		lenCurr = path.size();
 		if (lenCurr > len)
 		{
-			// std::cout << "**candidate location[i]path = " << locations[i].path << std::endl;
 			len = lenCurr;
 			location = &locations[i];
 		}
 	}
-	// std::cout << "**location = " << location->path << std::endl;
 	return (location);
 }

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverInit.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 16:03:47 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/26 11:22:48 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,26 +55,22 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 			fdServer = socket(p->ai_family, p->ai_socktype | SOCK_NONBLOCK | SOCK_CLOEXEC, p->ai_protocol);
 			if (fdServer < 0)
 			{
-				// std::cout << "socket" << std::endl;//DEBUGGING
 				continue;
 			}
 			yes = 1;
 			if (setsockopt(fdServer, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes)) < 0)
 			{
 				close(fdServer);
-				// std::cout << "setsockopt" << std::endl;//DEBUGGING
 				continue ;
 			}
 			if (bind(fdServer, p->ai_addr, p->ai_addrlen) < 0)
 			{
 				close(fdServer);
-				// std::cout << "bind " << address << ":" << port << std::endl;//DEBUGGING
 				continue ;
 			}
 			if (listen(fdServer, backlog) < 0)
 			{
 				close(fdServer);
-				// std::cout << "listen" << std::endl;//DEBUGGING
 				continue ;
 			}
 			break ;
@@ -83,7 +79,6 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 		if (p == NULL)
 			throw std::runtime_error(strerror(errno));
 		listeningSockets[fdServer] = std::make_pair(it->first.first, it->first.second);
-		std::cout << "listening on " << it->first.first << ":" << it->first.second << std::endl;//DEBUGGING*********
 	}
 	return (listeningSockets);
 }

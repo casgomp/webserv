@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configInterface.cpp                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/31 13:37:40 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/16 18:44:46 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/26 11:18:45 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ t_locationConf	getLocationConfig(const t_block &locationTreeConf, const t_server
 	locationConf.index = serverConf.index;
 	for (size_t i = 0; i < locationTreeConf.directives.size(); i ++)
 	{
-		std::cout << "locationTreeConf for loop************directive = " << locationTreeConf.directives[i].first << std::endl;
 		if (locationTreeConf.directives.at(i).first == "root")
 		{
 			checkIfValidDir(locationTreeConf.directives.at(i).second.c_str());
@@ -66,7 +65,6 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 	serverConf.index = httpConf.index;
 	for (size_t i = 0; i < serverTreeConf.directives.size(); i ++)
 	{
-		std::cout << "serverTreeConf for loop************directive = " << serverTreeConf.directives[i].first << std::endl;
 		if (serverTreeConf.directives.at(i).first == "root")
 		{
 			checkIfValidDir(serverTreeConf.directives.at(i).second.c_str());
@@ -101,7 +99,6 @@ t_serverConf	getServerConfig(const t_block &serverTreeConf, const t_httpConf &ht
 			throw std::runtime_error("invalid block directive argument (location)");
 		locationConf = getLocationConfig(locationTree.at(i).second, serverConf);
 		locationConf.path = locationTree.at(i).first.second;
-		std::cout << "*******************locationConf.path = " << locationConf.path << std::endl;
 		serverConf.locations.push_back(locationConf);
 		if (locationConf.clientMaxBodySize > serverConf.ceilingClientMaxBodySize)
 			serverConf.ceilingClientMaxBodySize = locationConf.clientMaxBodySize;
@@ -127,7 +124,6 @@ t_httpConf	getConfigInterface(const t_block &pTreeConf)
 		throw std::runtime_error("invalid block directive name (http)");
 	for (size_t i = 0; i < httpTree.second.directives.size(); i ++)
 	{
-		std::cout << "httpTree for loop************" << std::endl;
 		if (httpTree.second.directives.at(i).first == "root")
 		{
 			checkIfValidDir(httpTree.second.directives.at(i).second.c_str());
