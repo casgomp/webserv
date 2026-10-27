@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidationUtils.hpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:16:23 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 13:53:37 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 22:56:07 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 t_locationConf*						matchLocation(std::vector<t_locationConf> &locations, const std::string &target);
 int									validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod);
 std::string							createRedirectPath(t_locationConf *location);
+bool								decodePercentPath(const std::string &target, std::string &decodedTarget);
 void								normalizePath(const std::string &target, std::string &normalizedTarget);
 std::string							joinedPath(std::string root, std::string normalizedTarget);
 bool								pathIsFile(const std::string &resolvedPath);

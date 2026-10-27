@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidation.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 18:21:53 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 23:01:45 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,17 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	t_locationConf 			*location;
 	int						status;
 	std::string				normalizedTarget;
+	std::string				decodedTarget;
 	std::string				resolvedPath;
 	bool					isFile = 0;
 
-	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
+	if (!decodePercentPath(httpRequest.requestLine.target, decodedTarget))
+		return (buildErrorInstructions(400, serverConf));
+
+	normalizePath(decodedTarget, normalizedTarget);
+	if (normalizedTarget.empty())
+		return (buildErrorInstructions(403, serverConf));
+	location = matchLocation(serverConf->locations, decodedTarget);
 	if (location == NULL)
 		return (buildErrorInstructions(404, serverConf));
 	status = validateMethod(location->allowedMethods, httpRequest.requestLine.method);
@@ -42,7 +49,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		responseInstructions.redirectLocation = createRedirectPath(location);
 		return (responseInstructions);
 	}
-	normalizePath(httpRequest.requestLine.target, normalizedTarget);
 	resolvedPath = joinedPath(location->root, normalizedTarget);
 	isFile = (pathIsFile(resolvedPath));
 	if (isFile && httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] == '/')
@@ -67,8 +73,8 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		ext = resolvedPath.substr(dot + 1);
 		it = location->cgiExtension.find(ext);
-		if ((isFile || 
-				(!isFile && httpRequest.requestLine.method == "POST"))  
+		if ((isFile ||
+				(!isFile && httpRequest.requestLine.method == "POST"))
 				&& it != location->cgiExtension.end())
 		{
 			if (isFile && access(resolvedPath.c_str(), R_OK) != 0)

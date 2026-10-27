@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidationUtils.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 17:56:37 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 22:56:34 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,45 @@ std::string	joinedPath(std::string root, std::string normalizedTarget)
 	return (nRoot + "/" + nTarget);
 }
 
+bool decodePercentPath(const std::string &target, std::string &decodedTarget)
+{
+	decodedTarget.clear();
+
+	for (size_t i = 0; i < target.size(); i++)
+	{
+		if (target[i] != '%')
+		{
+			decodedTarget += target[i];
+			continue;
+		}
+
+		if (i + 2 >= target.size())
+			return false;
+
+		char hi = target[i + 1];
+		char lo = target[i + 2];
+
+		if (!std::isxdigit(static_cast<unsigned char>(hi)) ||
+			!std::isxdigit(static_cast<unsigned char>(lo)))
+			return false;
+
+		int high = std::isdigit(static_cast<unsigned char>(hi))
+			? hi - '0' : std::tolower(static_cast<unsigned char>(hi)) - 'a' + 10;
+		int low = std::isdigit(static_cast<unsigned char>(lo))
+			? lo - '0' : std::tolower(static_cast<unsigned char>(lo)) - 'a' + 10;
+
+		char decoded = static_cast<char>(high * 16 + low);
+
+		if (decoded == '\0')
+			return false;
+
+		decodedTarget += decoded;
+		i += 2;
+	}
+
+	return true;
+}
+
 void	normalizePath(const std::string &target, std::string &normalizedTarget)
 {
 	std::stringstream			ss(target);
@@ -154,7 +193,7 @@ t_locationConf*	matchLocation(std::vector<t_locationConf> &locations, const std:
 		if (target.compare(0, path.size(), path) != 0)
 			continue ;
 		if (path.size() < target.size() && path[path.size() - 1] != '/' && target[path.size()] != '/')
-			continue ; 
+			continue ;
 		lenCurr = path.size();
 		if (lenCurr > len)
 		{
