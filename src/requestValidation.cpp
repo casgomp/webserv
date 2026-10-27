@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidation.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:20:48 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/27 16:40:06 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
 	if (location == NULL)
 		return (buildErrorInstructions(404, serverConf));
-	status = validateMethod(location->allowedMethods, location->root, httpRequest.requestLine.method);
+	status = validateMethod(location->allowedMethods, httpRequest.requestLine.method);
 	if (status != 0)
 		return (buildErrorInstructions(status, serverConf));
 	if (location->redirection.first != 0)
@@ -45,9 +45,11 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	normalizePath(httpRequest.requestLine.target, normalizedTarget);
 	resolvedPath = joinedPath(location->root, normalizedTarget);
 	isFile = (pathIsFile(resolvedPath));
+	if (isFile && httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] == '/')
+    	return (buildErrorInstructions(404, serverConf));
 	if (!isFile)
 	{
-		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method!= "POST")
+		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method != "POST")
 			return (buildErrorInstructions(404, serverConf));
 		else if (pathIsDir(resolvedPath) &&
 					httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
@@ -123,7 +125,11 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		}
 		else
 		{
-			if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
+			std::string parent = resolvedPath.substr(0, resolvedPath.find_last_of('/'));
+
+			if (!pathIsDir(parent))
+				return (buildErrorInstructions(404, serverConf));
+			if (access(parent.c_str(), X_OK | W_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
 		}
 		responseInstructions.resolvedPath = resolvedPath;
@@ -133,11 +139,13 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	}
 	else if (httpRequest.requestLine.method == "DELETE")
 	{
+		std::cout << "before respomse path = " << resolvedPath << std::endl;
 		if (!isFile)
 			return (buildErrorInstructions(403, serverConf));
 		if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
 			return (buildErrorInstructions(403, serverConf));
 		responseInstructions.statusCode = 204;
+		responseInstructions.resolvedPath = resolvedPath;
 		return (responseInstructions);
 	}
 	return (responseInstructions);

@@ -142,9 +142,9 @@ void	ServerTests::test_validateMethod()
 	allowedMethods.push_back("GET");
 	allowedMethods.push_back("DELETE");
 	location.allowedMethods = allowedMethods;
-	check(validateMethod(location.allowedMethods, location.root, "GET") == 0, "validateMethod returns 0 if request method is allowed in location");
-	check(validateMethod(location.allowedMethods, location.root,"PIZZA") == 405, "validateMethod returns 405 if request method is invalid");
-	check(validateMethod(location.allowedMethods, location.root,"POST") == 403, "validateMethod returns 403 if request method is now allowed in location");
+	check(validateMethod(location.allowedMethods, "GET") == 0, "validateMethod returns 0 if request method is allowed in location");
+	check(validateMethod(location.allowedMethods, "PIZZA") == 405, "validateMethod returns 405 if request method is invalid");
+	check(validateMethod(location.allowedMethods, "POST") == 405, "validateMethod returns 403 if request method is now allowed in location");
 }
 
 void	ServerTests::test_matchLocation()
@@ -228,9 +228,19 @@ void	ServerTests::test_requestRouting()
 	check(clients[fd].serverConf == &server1, "request routing: routes to server1 when Host matches server1's name");
 
 	HttpRequest httpRequest2;
-	httpRequest1.headers["host"] = "nonexistent.com";
+	httpRequest2.headers["host"] = "nonexistent.com";
 	requestRouting(fd, clients, listenServers, httpRequest2);
 	check(clients[fd].serverConf == &server0, "request routing: falls back to first-listed server when Host matches nothing");
+
+	HttpRequest httpRequest3;
+	httpRequest3.headers["host"] = "mayonesa.com:8080";
+	requestRouting(fd, clients, listenServers, httpRequest3);
+	check(clients[fd].serverConf == &server1, "request routing: Host with a port still matches by name");
+
+	HttpRequest httpRequest4;
+	httpRequest4.headers["host"] = "MAYONESA.COM";
+	requestRouting(fd, clients, listenServers, httpRequest4);
+	check(clients[fd].serverConf == &server1, "request routing: Host matching is case-insensitive");
 }
 
 void	ServerTests::test_serverInit()

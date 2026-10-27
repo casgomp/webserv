@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidationUtils.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:21:28 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/27 13:53:21 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,8 +133,7 @@ std::string createRedirectPath(t_locationConf *location)
 	return (path);
 }
 
-int	validateMethod(const std::vector<std::string> &allowedMethods, 
-	const std::string &root, const std::string &requestMethod)
+int	validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod)
 {
 	int	status = 0;
 
@@ -142,9 +141,7 @@ int	validateMethod(const std::vector<std::string> &allowedMethods,
 		return (405);
 	else if (std::find(allowedMethods.begin(), allowedMethods.end(), requestMethod) == allowedMethods.end())
 	{
-		if (root == "testers")
-			return (405);
-		return (403);
+		return (405);
 	}
 	return(status);
 }

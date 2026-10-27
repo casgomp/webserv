@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponseError.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/20 14:59:16 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/26 11:15:14 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/27 14:02:47 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ static void	initReasonPhrases(std::map<int, std::string> &reasonPhrase)
 	reasonPhrase[404] = "Not Found";
 	reasonPhrase[405] = "Method Not Allowed";
 	reasonPhrase[413] = "Content Too Large";
+	reasonPhrase[414] = "URI Too Long";
 	reasonPhrase[415] = "Unsupported Media Type";
 	reasonPhrase[429] = "Too Many Requests";
 	reasonPhrase[431] = "Request Header Fields Too Large";

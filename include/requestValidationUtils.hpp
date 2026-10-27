@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:16:23 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 18:05:08 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 13:53:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,7 @@
 # include "configConf.hpp"
 
 t_locationConf*						matchLocation(std::vector<t_locationConf> &locations, const std::string &target);
-int									validateMethod(const std::vector<std::string> &allowedMethods,
-													const std::string &root, const std::string &requestMethod);
+int									validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod);
 std::string							createRedirectPath(t_locationConf *location);
 void								normalizePath(const std::string &target, std::string &normalizedTarget);
 std::string							joinedPath(std::string root, std::string normalizedTarget);
