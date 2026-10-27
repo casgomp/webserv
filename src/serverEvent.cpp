@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:28:37 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/27 11:15:48 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ void checkClientTimeouts(t_serverState &ctx)
 void checkCgiTimeouts(t_serverState &ctx)
 {
     const time_t now = time(NULL);
-    const time_t cgiTimeout = 5;
+    const time_t cgiTimeout = 15;
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
     while (it != ctx.clients.end())
@@ -169,8 +169,21 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	ctx.clients[fd].lastActivity = time(NULL);
 	ctx.clients[fd].request.append(buf, byteCount);
 	int requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize);
+
 	if (requestStatus == INCOMPLETE)
+	{
+		if (ctx.clients[fd].httpRequest.stage == BODY
+			&& ctx.clients[fd].httpRequest.isChunked
+			&& ctx.clients[fd].httpRequest.chunkPos >= 65536
+			&& ctx.clients[fd].httpRequest.chunkPos <= ctx.clients[fd].request.size())
+		{
+			size_t processed = ctx.clients[fd].httpRequest.chunkPos;
+
+			ctx.clients[fd].request.erase(0, processed);
+			ctx.clients[fd].httpRequest.chunkPos = 0;
+		}
 		return ;
+	}
 	else if (requestStatus == ERROR)
 	{
 		ctx.clients[fd].waitingForClient = false;
@@ -189,6 +202,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	else if (requestStatus == COMPLETE)
 	{
 		ctx.clients[fd].request.erase(0, ctx.clients[fd].httpRequest.consumedBytes);
+		std::string(ctx.clients[fd].request).swap(ctx.clients[fd].request);
 		ctx.clients[fd].waitingForClient = false;
 		ctx.clients[fd].responseInstructions.method = ctx.clients[fd].httpRequest.requestLine.method;
 		if (ctx.clients[fd].httpRequest.headers.find("connection") == ctx.clients[fd].httpRequest.headers.end()
@@ -202,7 +216,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		{
 			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
 			resetInstructions(ctx.clients[fd], requestValidation(ctx.clients[fd].httpRequest, ctx.clients[fd].serverConf));
-			ctx.clients[fd].responseInstructions.body = ctx.clients[fd].httpRequest.body;///and cgi body?
+			ctx.clients[fd].responseInstructions.body.swap(ctx.clients[fd].httpRequest.body);///and cgi body?
 			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, ctx.clients[fd].httpRequest) == 0)
 				return ;
 		}

@@ -3,13 +3,14 @@
 /*                                                        :::      ::::::::   */
 /*   cgiHandle.cpp                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/10 13:10:29 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 18:32:36 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/26 16:38:06 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+# include <iostream>
 # include <errno.h>
 # include <stdint.h>
 # include <sys/epoll.h>
@@ -105,7 +106,7 @@ void	handleCgiStdout(t_serverState &ctx, int fd, int clientFd, const uint32_t &e
 	byteCount = read(fd, buf, sizeof(buf));
 	if (byteCount == 0)
 	{
-		ctx.clients[clientFd].responseInstructions.body = ctx.clients[clientFd].cgiProcess.output;
+		ctx.clients[clientFd].responseInstructions.body.swap(ctx.clients[clientFd].cgiProcess.output);
 		cleanupCgi(ctx.clients[clientFd].cgiProcess, ctx.fdPipeToClient, false, &wstatus);
 		if (WIFEXITED(wstatus) && WEXITSTATUS(wstatus) == 0 && !ctx.clients[clientFd].responseInstructions.body.empty())
 			ctx.clients[clientFd].responseInstructions.cgi.success = true;
@@ -143,8 +144,7 @@ int	cgiStart(t_serverState &ctx, int fd, const HttpRequest &httpRequest)
 	}
 	else
 	{
-		ctx.clients[fd].cgiProcess = ctx.clients[fd].cgiProcess;
-		ctx.clients[fd].cgiProcess.body = httpRequest.body;
+		ctx.clients[fd].cgiProcess.body.swap(ctx.clients[fd].responseInstructions.body);
 		if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, 0) < 0)
 		{
 			int err = errno;

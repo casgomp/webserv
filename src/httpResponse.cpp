@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/20 16:25:59 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/26 16:36:08 by ebara            ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,16 +185,14 @@ static bool writePostBody(const std::string &path, const std::string &requestBod
 	return true;
 }
 
-std::string	buildHttpResponse(const t_responseInstructions &instructions,
+std::string	buildHttpResponse(t_responseInstructions &result,
 								 const std::map<int, std::string> &errorPages)
 {
 	std::string							response;
 	std::string							body;
 	std::string							cgiHeaders;
-	t_responseInstructions				result;
 	std::map<std::string, std::string>	parsedHeaders;
 
-	result = instructions;
 	if (result.isCgi)
 		cgiResponse(result, cgiHeaders, body, parsedHeaders);
 	else if (result.method == "DELETE" && result.statusCode == 204)
