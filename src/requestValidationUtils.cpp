@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 13:53:21 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 17:56:37 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,13 +124,7 @@ void	normalizePath(const std::string &target, std::string &normalizedTarget)
 
 std::string createRedirectPath(t_locationConf *location)
 {
-	std::string	path;
-	//if redirect path has no / at start return path, otherwise append root path.
-	if (location->redirection.second[0] != '/')
-		path = location->redirection.second;
-	else
-		path = joinedPath(location->root, location->redirection.second);
-	return (path);
+	return (location->redirection.second);
 }
 
 int	validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod)

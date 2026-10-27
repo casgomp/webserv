@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:45:27 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 17:15:09 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 18:18:00 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@ void	buildCgiEnvpRequestHeaders(std::vector<std::string>	&cgiEnvp, const HttpReq
 	}
 }
 
-std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest)
+std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest, size_t bodySize)
 {
 	std::vector<std::string>	cgiEnvp;
 	std::ostringstream			oss;
@@ -52,7 +52,7 @@ std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest)
 	std::string					path = httpRequest.requestLine.target;
 
 	buildCgiEnvpRequestHeaders(cgiEnvp, httpRequest);
-	oss << httpRequest.body.size();
+	oss << bodySize;
 	std::string					len = oss.str();
 	cgiEnvp.push_back("SERVER_PROTOCOL=" + protocol);
 	cgiEnvp.push_back("REQUEST_METHOD=" + method);
@@ -99,7 +99,7 @@ int	executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd
 	args.push_back(ctx.clients[fd].responseInstructions.cgi.interpreter);
 	args.push_back(ctx.clients[fd].responseInstructions.resolvedPath);
 	std::vector<char *>	argv = toCharPtrs(args);
-	std::vector<std::string>	env = buildCgiEnvp(httpRequest);
+	std::vector<std::string>	env = buildCgiEnvp(httpRequest, ctx.clients[fd].responseInstructions.body.size());
 	std::vector<char *>	envp = toCharPtrs(env);
 	if (pipe(pipeR) == -1)
 		return (-1);

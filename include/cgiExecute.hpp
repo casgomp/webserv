@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/23 15:47:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 17:06:17 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 18:17:09 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 # include "cgiTypes.hpp"
 
 int							executeCgi(const HttpRequest &httpRequest, t_serverState &ctx, const int &fd);
-std::vector<std::string>	buildCgiEnvp(HttpRequest &httpRequest);
+std::vector<std::string>	buildCgiEnvp(const HttpRequest &httpRequest, size_t bodySize);
 int							fcntlSet(int pipeFd, int *pipeR, int *pipeW, int cmd, int arg);
 void						buildCgiEnvpRequestHeaders(std::vector<std::string>	&cgiEnvp, const HttpRequest &httpRequest);
 

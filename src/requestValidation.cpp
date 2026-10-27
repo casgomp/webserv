@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 16:40:06 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 18:21:53 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		{
 			responseInstructions.statusCode = 301;
 			responseInstructions.isRedirect = true;
-			responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
+			responseInstructions.redirectLocation = normalizedTarget + '/';
 			return (responseInstructions);
 		}
 	}
@@ -73,6 +73,8 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		{
 			if (isFile && access(resolvedPath.c_str(), R_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
+			if (httpRequest.body.size() > location->clientMaxBodySize)
+				return (buildErrorInstructions(413, serverConf));
 			responseInstructions.isCgi = true;
 			responseInstructions.cgi.interpreter = it->second;
 			responseInstructions.resolvedPath = resolvedPath;
@@ -87,14 +89,26 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		if (!isFile)
 		{
-			if (!location->index.empty())
-				resolvedPath = joinedPath(resolvedPath, location->index.at(0));
-			else if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
-				resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
-			else if (location->autoindex)
-				responseInstructions.isAutoIndex = true;
-			else
-				return (buildErrorInstructions(403, serverConf));
+			bool indexFound = false;
+			for (size_t i = 0; i < location->index.size(); i++)
+			{
+				std::string candidate = joinedPath(resolvedPath, location->index[i]);
+				if (pathIsFile(candidate))
+				{
+					resolvedPath = candidate;
+					indexFound = true;
+					break ;
+				}
+			}
+			if (!indexFound)
+			{
+				if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
+					resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
+				else if (location->autoindex)
+					responseInstructions.isAutoIndex = true;
+				else
+					return  (buildErrorInstructions(403, serverConf));
+			}
 		}
 		if (access(resolvedPath.c_str(), F_OK) != 0)
 				return (buildErrorInstructions(404, serverConf));

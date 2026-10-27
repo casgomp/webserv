@@ -126,7 +126,7 @@ void	ServerTests::test_createRedirectPath()
 	location.root = "content/";
 
 	location.redirection.second = "/new-page";
-	check(createRedirectPath(&location) == "content/new-page",
+	check(createRedirectPath(&location) == "/new-page",
 		"createRedirectPath prepends root when target starts with '/'");
 
 	location.redirection.second = "example";
