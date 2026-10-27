@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 17:45:56 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 22:35:43 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 #include <cerrno>
+#include <set>
 
 # include "serverEvent.hpp"
 # include "serverInit.hpp"
@@ -82,7 +83,6 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	}
 	ctx.clients[fd].bytesSent += byteCount;
 	ctx.clients[fd].lastActivity = time(NULL);
-	ctx.clients[fd].httpRequest = HttpRequest();
 	if (ctx.clients[fd].bytesSent == ctx.clients[fd].response.size())
 	{
 		if (!ctx.clients[fd].responseInstructions.keepAlive)
@@ -90,10 +90,16 @@ void	handleClientSend(t_serverState &ctx, int fd)
 			closeClientConnection(ctx, fd, 0);
 			return ;
 		}
+		ctx.clients[fd].httpRequest = HttpRequest();
+
 		ctx.clients[fd].response.clear();
 		ctx.clients[fd].bytesSent = 0;
 		ctx.clients[fd].waitingForClient = true;
 		ctx.clients[fd].lastActivity = time(NULL);
+
+		if (!ctx.clients[fd].request.empty())
+			ctx.pendingRequests.insert(fd);
+
 		if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLIN) < 0)
 		{
 			closeClientConnection(ctx, fd, errno);
@@ -150,6 +156,9 @@ void checkCgiTimeouts(t_serverState &ctx)
     }
 }
 
+void processBufferedRequest(t_serverState &ctx, int fd,
+    size_t ceilingClientMaxBodySize, t_listenServers &listenServers);
+
 void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
 {
 	int				byteCount;
@@ -168,7 +177,12 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	}
 	ctx.clients[fd].lastActivity = time(NULL);
 	ctx.clients[fd].request.append(buf, byteCount);
-	int requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize);
+	processBufferedRequest(ctx, fd, ceilingClientMaxBodySize, listenServers);
+}
+
+void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
+{
+	int	requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize);
 
 	if (requestStatus == INCOMPLETE)
 	{
@@ -243,6 +257,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	int						nreadyfds;
 	int						clientFd;
 	size_t					ceilingClientMaxBodySize = 0;
+	std::set<int>			pendingRequests;
 
 	ctx.epfd = epoll_create(1);
 	if (ctx.epfd < 0)
@@ -271,7 +286,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	setupSignals();
 	while (!signalReceived)
 	{
-		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, 1000);
+		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, ctx.pendingRequests.empty() ? 1000 : 0);
 		if (nreadyfds < 0)
 		{
 			if (errno == EINTR)
@@ -313,6 +328,19 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					handleClientReceive(ctx, fd, ceilingClientMaxBodySize, listenServers);
 				else if (evs[i].events & EPOLLOUT)
 					handleClientSend(ctx, fd);
+			}
+		}
+		if (!ctx.pendingRequests.empty())
+		{
+			int pendingFd = *ctx.pendingRequests.begin();
+			ctx.pendingRequests.erase(ctx.pendingRequests.begin());
+
+			if (ctx.clients.find(pendingFd) != ctx.clients.end()
+				&& ctx.clients[pendingFd].waitingForClient
+				&& !ctx.clients[pendingFd].request.empty())
+			{
+				processBufferedRequest(ctx, pendingFd,
+					ceilingClientMaxBodySize, listenServers);
 			}
 		}
 		checkClientTimeouts(ctx);

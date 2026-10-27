@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverClean.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 11:30:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/19 16:01:04 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/27 22:38:05 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ void	closeClientConnection(t_serverState &ctx, int fd, int err)
 	{
 		if (ctx.clients.find(fd) != ctx.clients.end() && ctx.clients[fd].cgiProcess.pid > 0)
 			cleanupCgi(ctx.clients[fd].cgiProcess, ctx.fdPipeToClient, true, NULL);
+		ctx.pendingRequests.erase(fd);
 		ctx.clients.erase(fd);
 		close(fd);
 	}

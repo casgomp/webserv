@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/22 11:15:04 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/24 16:36:59 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/27 22:31:13 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 // # include <utility>
 # include <string>
+# include <set>
 
 # include "configConf.hpp"
 # include "configConf.hpp"
@@ -63,6 +64,7 @@ typedef struct	s_serverState {
 	int						epfd;
 	std::map<int, t_client>	clients;
 	std::map<int, int>		fdPipeToClient;
+	std::set<int>			pendingRequests;
 	s_serverState() : epfd (-1) {}
 } t_serverState;
 
