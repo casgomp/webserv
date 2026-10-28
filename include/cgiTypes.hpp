@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/17 16:06:16 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/20 02:11:55 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/28 21:12:52 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,11 @@
 
 # include <string>
 # include <sys/types.h>
+# include <ctime>
 
 typedef struct s_cgiProcess {
 	pid_t		pid;
-	time_t		startTime;
+	std::time_t	startTime;
 	int			stdinFd;
 	int			stdoutFd;
 	std::string	body;

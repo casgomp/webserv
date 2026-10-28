@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
+/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/28 13:15:49 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/29 00:09:52 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,8 +110,8 @@ void	handleClientSend(t_serverState &ctx, int fd)
 
 void checkClientTimeouts(t_serverState &ctx)
 {
-    const time_t now = time(NULL);
-    const time_t idleTimeout = 60;
+    const std::time_t now = std::time(NULL);
+    const std::time_t idleTimeout = 60;
 
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
@@ -128,8 +128,8 @@ void checkClientTimeouts(t_serverState &ctx)
 
 void checkCgiTimeouts(t_serverState &ctx)
 {
-    const time_t now = time(NULL);
-    const time_t cgiTimeout = 15;
+    const std::time_t now = std::time(NULL);
+    const std::time_t cgiTimeout = 15;
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
     while (it != ctx.clients.end())
@@ -154,30 +154,6 @@ void checkCgiTimeouts(t_serverState &ctx)
                 closeClientConnection(ctx, fd, errno);
         }
     }
-}
-
-void processBufferedRequest(t_serverState &ctx, int fd,
-    size_t ceilingClientMaxBodySize, t_listenServers &listenServers);
-
-void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
-{
-	int				byteCount;
-	char			buf[BUFFER_SIZE];
-
-	byteCount = recv(fd, buf, sizeof(buf), 0);
-	if (byteCount == 0)
-	{
-		closeClientConnection(ctx, fd, EPOLLIN);
-		return ;
-	}
-	if (byteCount < 0)
-	{
-		closeClientConnection(ctx, fd, errno);
-		return ;
-	}
-	ctx.clients[fd].lastActivity = time(NULL);
-	ctx.clients[fd].request.append(buf, byteCount);
-	processBufferedRequest(ctx, fd, ceilingClientMaxBodySize, listenServers);
 }
 
 void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
@@ -249,6 +225,27 @@ void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxB
 	}
 }
 
+void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
+{
+	int				byteCount;
+	char			buf[BUFFER_SIZE];
+
+	byteCount = recv(fd, buf, sizeof(buf), 0);
+	if (byteCount == 0)
+	{
+		closeClientConnection(ctx, fd, EPOLLIN);
+		return ;
+	}
+	if (byteCount < 0)
+	{
+		closeClientConnection(ctx, fd, errno);
+		return ;
+	}
+	ctx.clients[fd].lastActivity = time(NULL);
+	ctx.clients[fd].request.append(buf, byteCount);
+	processBufferedRequest(ctx, fd, ceilingClientMaxBodySize, listenServers);
+}
+
 void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets)
 {
 	t_serverState			ctx;
@@ -257,7 +254,6 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	int						nreadyfds;
 	int						clientFd;
 	size_t					ceilingClientMaxBodySize = 0;
-	std::set<int>			pendingRequests;
 
 	ctx.epfd = epoll_create(1);
 	if (ctx.epfd < 0)
