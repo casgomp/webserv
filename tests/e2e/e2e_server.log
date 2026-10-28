@@ -3,57 +3,57 @@ Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
@@ -65,11 +65,11 @@ Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
@@ -85,10 +85,10 @@ Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-Error: Success
-Error: Success
-Error: Success
-Error: Success
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
@@ -96,6 +96,7 @@ Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
+Success: closed client connection
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
@@ -116,16 +117,10 @@ Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-before respomse path = www/all/del1.txt
-try to delete
-path= www/all/del1.txt
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
-before respomse path = www/all/subdir
 Connection: Graceful close happened on the associated file descriptor
-Connection: Graceful close happened on the associated file descriptor
-before respomse path = www/all/locked/f.txt
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor
 Connection: Graceful close happened on the associated file descriptor

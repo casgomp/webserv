@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidation.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 23:01:45 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/28 17:31:44 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,8 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 					resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
 				else if (location->autoindex)
 					responseInstructions.isAutoIndex = true;
+				else if (!location->index.empty())
+					return (buildErrorInstructions(404, serverConf));
 				else
 					return  (buildErrorInstructions(403, serverConf));
 			}
@@ -159,7 +161,6 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	}
 	else if (httpRequest.requestLine.method == "DELETE")
 	{
-		std::cout << "before respomse path = " << resolvedPath << std::endl;
 		if (!isFile)
 			return (buildErrorInstructions(403, serverConf));
 		if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)

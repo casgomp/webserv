@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverEvent.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 22:35:43 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/28 13:15:49 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,7 +188,7 @@ void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxB
 	{
 		if (ctx.clients[fd].httpRequest.stage == BODY
 			&& ctx.clients[fd].httpRequest.isChunked
-			&& ctx.clients[fd].httpRequest.chunkPos >= 65536
+			&& ctx.clients[fd].httpRequest.chunkPos >= BUFFER_SIZE
 			&& ctx.clients[fd].httpRequest.chunkPos <= ctx.clients[fd].request.size())
 		{
 			size_t processed = ctx.clients[fd].httpRequest.chunkPos;
@@ -201,7 +201,7 @@ void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxB
 	else if (requestStatus == ERROR)
 	{
 		ctx.clients[fd].waitingForClient = false;
-		ctx.clients[fd].responseInstructions.keepAlive = false;//check with Erjon if makes sense here or he handles it somewhere else.
+		ctx.clients[fd].responseInstructions.keepAlive = false;
 		try
 		{
 			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
@@ -210,7 +210,7 @@ void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxB
 		{
 			std::cerr << e.what() << std::endl;
 		}
-		resetErrorInstructions(ctx, fd, ctx.clients[fd].httpRequest.statusCode ? ctx.clients[fd].httpRequest.statusCode: 400);//status code is always be set in httpRequest?
+		resetErrorInstructions(ctx, fd, ctx.clients[fd].httpRequest.statusCode ? ctx.clients[fd].httpRequest.statusCode: 400);
 		ctx.clients[fd].request.clear();
 	}
 	else if (requestStatus == COMPLETE)
@@ -230,7 +230,7 @@ void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxB
 		{
 			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
 			resetInstructions(ctx.clients[fd], requestValidation(ctx.clients[fd].httpRequest, ctx.clients[fd].serverConf));
-			ctx.clients[fd].responseInstructions.body.swap(ctx.clients[fd].httpRequest.body);///and cgi body?
+			ctx.clients[fd].responseInstructions.body.swap(ctx.clients[fd].httpRequest.body);
 			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, ctx.clients[fd].httpRequest) == 0)
 				return ;
 		}

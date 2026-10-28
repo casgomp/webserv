@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverClean.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 11:30:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 22:38:05 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/28 17:29:40 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,8 +56,10 @@ void	closeClientConnection(t_serverState &ctx, int fd, int err)
 		std::cerr << "Connection: Abrupt close happened on the associated file descriptor" << std::endl;
 	else if (err == EPOLLIN)
 		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
-	else if (err == -1) //WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
+	else if (err == -1)
 		std::cerr << "Connection: Client idle timeout" << std::endl;
+	else if (err == 0)
+		std::cerr << "Success: closed client connection" << std::endl;
 	else
 		std::cerr << "Error: " << strerror(err) << std::endl;
 }

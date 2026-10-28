@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/27 15:44:03 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/28 17:31:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -169,8 +169,6 @@ static void	buildHeaders(std::string &response,
 
 static bool deleteFile(const std::string &path)
 {
-	std::cout << "try to delete\n";
-	std::cout << "path= " << path << std::endl;
     return std::remove(path.c_str()) == 0;
 }
 

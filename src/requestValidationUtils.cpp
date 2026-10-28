@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidationUtils.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 22:56:34 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/28 13:17:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,8 @@ bool	pathIsFile(const std::string &resolvedPath)
 {
 	struct stat	statbuf;
 
-	if (stat(resolvedPath.c_str(), &statbuf) == 0)//return: success=0, error=-1
-		return (S_ISREG(statbuf.st_mode));//return: true, or false
+	if (stat(resolvedPath.c_str(), &statbuf) == 0)
+		return (S_ISREG(statbuf.st_mode));
 	return (false);
 }
 
