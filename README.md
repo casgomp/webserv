@@ -94,8 +94,6 @@ reviewed, tested and discussed by the team before it went into the repository.
 - **Review:** explaining specific functions and suggesting small fixes, which were
   applied and tested by the team.
 
-> **TODO (team):** confirm this list and add anything that is missing.
-
 ## Configuration
 
 The format follows the nginx style: `http { server { location ... } }`, one
@@ -144,9 +142,6 @@ http {
 | `allowed_methods <GET\|POST\|DELETE>...` | `location` | accepted methods; others get `405` |
 | `return <3xx> <url>` | `location` | HTTP redirection |
 | `cgi_extension <.ext> <interpreter>` | `location` | run files with this extension through the interpreter |
-
-`location` paths are matched by longest prefix on path-segment boundaries
-(`/fruits` matches `/fruits/red` but not `/fruitsaaaa`).
 
 Ready-made examples are in `config/`.
 
