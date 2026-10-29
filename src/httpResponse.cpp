@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   httpResponse.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/16 10:41:02 by erjonbara         #+#    #+#             */
-/*   Updated: 2026/10/26 16:36:08 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/28 17:31:25 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 #include <dirent.h>
 #include <cstdio>
+#include <iostream>
 
 static std::string	escapeHtml(const std::string &text)
 {

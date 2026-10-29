@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidationUtils.cpp                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/19 15:59:14 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:21:28 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/28 13:17:41 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,8 @@ bool	pathIsFile(const std::string &resolvedPath)
 {
 	struct stat	statbuf;
 
-	if (stat(resolvedPath.c_str(), &statbuf) == 0)//return: success=0, error=-1
-		return (S_ISREG(statbuf.st_mode));//return: true, or false
+	if (stat(resolvedPath.c_str(), &statbuf) == 0)
+		return (S_ISREG(statbuf.st_mode));
 	return (false);
 }
 
@@ -89,6 +89,45 @@ std::string	joinedPath(std::string root, std::string normalizedTarget)
 	if (!normalizedTarget.empty() && normalizedTarget.at(0) == '/')
 		nTarget = normalizedTarget.substr(1);
 	return (nRoot + "/" + nTarget);
+}
+
+bool decodePercentPath(const std::string &target, std::string &decodedTarget)
+{
+	decodedTarget.clear();
+
+	for (size_t i = 0; i < target.size(); i++)
+	{
+		if (target[i] != '%')
+		{
+			decodedTarget += target[i];
+			continue;
+		}
+
+		if (i + 2 >= target.size())
+			return false;
+
+		char hi = target[i + 1];
+		char lo = target[i + 2];
+
+		if (!std::isxdigit(static_cast<unsigned char>(hi)) ||
+			!std::isxdigit(static_cast<unsigned char>(lo)))
+			return false;
+
+		int high = std::isdigit(static_cast<unsigned char>(hi))
+			? hi - '0' : std::tolower(static_cast<unsigned char>(hi)) - 'a' + 10;
+		int low = std::isdigit(static_cast<unsigned char>(lo))
+			? lo - '0' : std::tolower(static_cast<unsigned char>(lo)) - 'a' + 10;
+
+		char decoded = static_cast<char>(high * 16 + low);
+
+		if (decoded == '\0')
+			return false;
+
+		decodedTarget += decoded;
+		i += 2;
+	}
+
+	return true;
 }
 
 void	normalizePath(const std::string &target, std::string &normalizedTarget)
@@ -124,17 +163,10 @@ void	normalizePath(const std::string &target, std::string &normalizedTarget)
 
 std::string createRedirectPath(t_locationConf *location)
 {
-	std::string	path;
-	//if redirect path has no / at start return path, otherwise append root path.
-	if (location->redirection.second[0] != '/')
-		path = location->redirection.second;
-	else
-		path = joinedPath(location->root, location->redirection.second);
-	return (path);
+	return (location->redirection.second);
 }
 
-int	validateMethod(const std::vector<std::string> &allowedMethods, 
-	const std::string &root, const std::string &requestMethod)
+int	validateMethod(const std::vector<std::string> &allowedMethods, const std::string &requestMethod)
 {
 	int	status = 0;
 
@@ -142,9 +174,7 @@ int	validateMethod(const std::vector<std::string> &allowedMethods,
 		return (405);
 	else if (std::find(allowedMethods.begin(), allowedMethods.end(), requestMethod) == allowedMethods.end())
 	{
-		if (root == "testers")
-			return (405);
-		return (403);
+		return (405);
 	}
 	return(status);
 }
@@ -163,7 +193,7 @@ t_locationConf*	matchLocation(std::vector<t_locationConf> &locations, const std:
 		if (target.compare(0, path.size(), path) != 0)
 			continue ;
 		if (path.size() < target.size() && path[path.size() - 1] != '/' && target[path.size()] != '/')
-			continue ; 
+			continue ;
 		lenCurr = path.size();
 		if (lenCurr > len)
 		{

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   requestValidation.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/14 17:39:15 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:20:48 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/28 17:31:44 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,20 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	t_locationConf 			*location;
 	int						status;
 	std::string				normalizedTarget;
+	std::string				decodedTarget;
 	std::string				resolvedPath;
 	bool					isFile = 0;
 
-	location = matchLocation(serverConf->locations, httpRequest.requestLine.target);
+	if (!decodePercentPath(httpRequest.requestLine.target, decodedTarget))
+		return (buildErrorInstructions(400, serverConf));
+
+	normalizePath(decodedTarget, normalizedTarget);
+	if (normalizedTarget.empty())
+		return (buildErrorInstructions(403, serverConf));
+	location = matchLocation(serverConf->locations, decodedTarget);
 	if (location == NULL)
 		return (buildErrorInstructions(404, serverConf));
-	status = validateMethod(location->allowedMethods, location->root, httpRequest.requestLine.method);
+	status = validateMethod(location->allowedMethods, httpRequest.requestLine.method);
 	if (status != 0)
 		return (buildErrorInstructions(status, serverConf));
 	if (location->redirection.first != 0)
@@ -42,19 +49,20 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		responseInstructions.redirectLocation = createRedirectPath(location);
 		return (responseInstructions);
 	}
-	normalizePath(httpRequest.requestLine.target, normalizedTarget);
 	resolvedPath = joinedPath(location->root, normalizedTarget);
 	isFile = (pathIsFile(resolvedPath));
+	if (isFile && httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] == '/')
+    	return (buildErrorInstructions(404, serverConf));
 	if (!isFile)
 	{
-		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method!= "POST")
+		if (!pathIsDir(resolvedPath) && httpRequest.requestLine.method != "POST")
 			return (buildErrorInstructions(404, serverConf));
 		else if (pathIsDir(resolvedPath) &&
 					httpRequest.requestLine.target[httpRequest.requestLine.target.size() - 1] != '/')
 		{
 			responseInstructions.statusCode = 301;
 			responseInstructions.isRedirect = true;
-			responseInstructions.redirectLocation = httpRequest.requestLine.target + '/';
+			responseInstructions.redirectLocation = normalizedTarget + '/';
 			return (responseInstructions);
 		}
 	}
@@ -65,12 +73,14 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		ext = resolvedPath.substr(dot + 1);
 		it = location->cgiExtension.find(ext);
-		if ((isFile || 
-				(!isFile && httpRequest.requestLine.method == "POST"))  
+		if ((isFile ||
+				(!isFile && httpRequest.requestLine.method == "POST"))
 				&& it != location->cgiExtension.end())
 		{
 			if (isFile && access(resolvedPath.c_str(), R_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
+			if (httpRequest.body.size() > location->clientMaxBodySize)
+				return (buildErrorInstructions(413, serverConf));
 			responseInstructions.isCgi = true;
 			responseInstructions.cgi.interpreter = it->second;
 			responseInstructions.resolvedPath = resolvedPath;
@@ -85,14 +95,28 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 	{
 		if (!isFile)
 		{
-			if (!location->index.empty())
-				resolvedPath = joinedPath(resolvedPath, location->index.at(0));
-			else if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
-				resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
-			else if (location->autoindex)
-				responseInstructions.isAutoIndex = true;
-			else
-				return (buildErrorInstructions(403, serverConf));
+			bool indexFound = false;
+			for (size_t i = 0; i < location->index.size(); i++)
+			{
+				std::string candidate = joinedPath(resolvedPath, location->index[i]);
+				if (pathIsFile(candidate))
+				{
+					resolvedPath = candidate;
+					indexFound = true;
+					break ;
+				}
+			}
+			if (!indexFound)
+			{
+				if (pathIsFile(joinedPath(resolvedPath, FALLBACK_INDEX)))
+					resolvedPath = joinedPath(resolvedPath, FALLBACK_INDEX);
+				else if (location->autoindex)
+					responseInstructions.isAutoIndex = true;
+				else if (!location->index.empty())
+					return (buildErrorInstructions(404, serverConf));
+				else
+					return  (buildErrorInstructions(403, serverConf));
+			}
 		}
 		if (access(resolvedPath.c_str(), F_OK) != 0)
 				return (buildErrorInstructions(404, serverConf));
@@ -123,7 +147,11 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		}
 		else
 		{
-			if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
+			std::string parent = resolvedPath.substr(0, resolvedPath.find_last_of('/'));
+
+			if (!pathIsDir(parent))
+				return (buildErrorInstructions(404, serverConf));
+			if (access(parent.c_str(), X_OK | W_OK) != 0)
 				return (buildErrorInstructions(403, serverConf));
 		}
 		responseInstructions.resolvedPath = resolvedPath;
@@ -138,6 +166,7 @@ t_responseInstructions requestValidation(HttpRequest &httpRequest, t_serverConf 
 		if (access(resolvedPath.substr(0, resolvedPath.find_last_of('/')).c_str(), X_OK | W_OK) != 0)
 			return (buildErrorInstructions(403, serverConf));
 		responseInstructions.statusCode = 204;
+		responseInstructions.resolvedPath = resolvedPath;
 		return (responseInstructions);
 	}
 	return (responseInstructions);

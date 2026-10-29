@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   configInterfaceUtils.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/03 18:16:37 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:50:35 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/28 13:16:42 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 # include <string>
 # include <sys/types.h>
 # include <unistd.h>
-# include <iostream>//
+# include <iostream>
 
 # include "configInterfaceUtils.hpp"
 # include "configConf.hpp"

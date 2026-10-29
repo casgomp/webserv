@@ -6,7 +6,7 @@
 /*   By: erjonbara <erjonbara@student.42.fr>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/06 16:50:38 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/27 11:15:48 by erjonbara        ###   ########.fr       */
+/*   Updated: 2026/10/29 00:09:52 by erjonbara        ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <sys/types.h>
 # include <sys/wait.h>
 #include <cerrno>
+#include <set>
 
 # include "serverEvent.hpp"
 # include "serverInit.hpp"
@@ -82,7 +83,6 @@ void	handleClientSend(t_serverState &ctx, int fd)
 	}
 	ctx.clients[fd].bytesSent += byteCount;
 	ctx.clients[fd].lastActivity = time(NULL);
-	ctx.clients[fd].httpRequest = HttpRequest();
 	if (ctx.clients[fd].bytesSent == ctx.clients[fd].response.size())
 	{
 		if (!ctx.clients[fd].responseInstructions.keepAlive)
@@ -90,10 +90,16 @@ void	handleClientSend(t_serverState &ctx, int fd)
 			closeClientConnection(ctx, fd, 0);
 			return ;
 		}
+		ctx.clients[fd].httpRequest = HttpRequest();
+
 		ctx.clients[fd].response.clear();
 		ctx.clients[fd].bytesSent = 0;
 		ctx.clients[fd].waitingForClient = true;
 		ctx.clients[fd].lastActivity = time(NULL);
+
+		if (!ctx.clients[fd].request.empty())
+			ctx.pendingRequests.insert(fd);
+
 		if (epollSet(ctx.epfd, EPOLL_CTL_MOD, fd, EPOLLIN) < 0)
 		{
 			closeClientConnection(ctx, fd, errno);
@@ -104,8 +110,8 @@ void	handleClientSend(t_serverState &ctx, int fd)
 
 void checkClientTimeouts(t_serverState &ctx)
 {
-    const time_t now = time(NULL);
-    const time_t idleTimeout = 60;
+    const std::time_t now = std::time(NULL);
+    const std::time_t idleTimeout = 60;
 
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
@@ -122,8 +128,8 @@ void checkClientTimeouts(t_serverState &ctx)
 
 void checkCgiTimeouts(t_serverState &ctx)
 {
-    const time_t now = time(NULL);
-    const time_t cgiTimeout = 15;
+    const std::time_t now = std::time(NULL);
+    const std::time_t cgiTimeout = 15;
     std::map<int, t_client>::iterator it = ctx.clients.begin();
 
     while (it != ctx.clients.end())
@@ -150,31 +156,15 @@ void checkCgiTimeouts(t_serverState &ctx)
     }
 }
 
-void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
+void processBufferedRequest(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
 {
-	int				byteCount;
-	char			buf[BUFFER_SIZE];
-
-	byteCount = recv(fd, buf, sizeof(buf), 0);
-	if (byteCount == 0)
-	{
-		closeClientConnection(ctx, fd, EPOLLIN);
-		return ;
-	}
-	if (byteCount < 0)
-	{
-		closeClientConnection(ctx, fd, errno);
-		return ;
-	}
-	ctx.clients[fd].lastActivity = time(NULL);
-	ctx.clients[fd].request.append(buf, byteCount);
-	int requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize);
+	int	requestStatus = parseRequest(ctx.clients[fd].request, ctx.clients[fd].httpRequest, ceilingClientMaxBodySize);
 
 	if (requestStatus == INCOMPLETE)
 	{
 		if (ctx.clients[fd].httpRequest.stage == BODY
 			&& ctx.clients[fd].httpRequest.isChunked
-			&& ctx.clients[fd].httpRequest.chunkPos >= 65536
+			&& ctx.clients[fd].httpRequest.chunkPos >= BUFFER_SIZE
 			&& ctx.clients[fd].httpRequest.chunkPos <= ctx.clients[fd].request.size())
 		{
 			size_t processed = ctx.clients[fd].httpRequest.chunkPos;
@@ -187,7 +177,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 	else if (requestStatus == ERROR)
 	{
 		ctx.clients[fd].waitingForClient = false;
-		ctx.clients[fd].responseInstructions.keepAlive = false;//check with Erjon if makes sense here or he handles it somewhere else.
+		ctx.clients[fd].responseInstructions.keepAlive = false;
 		try
 		{
 			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
@@ -196,7 +186,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		{
 			std::cerr << e.what() << std::endl;
 		}
-		resetErrorInstructions(ctx, fd, ctx.clients[fd].httpRequest.statusCode ? ctx.clients[fd].httpRequest.statusCode: 400);//status code is always be set in httpRequest?
+		resetErrorInstructions(ctx, fd, ctx.clients[fd].httpRequest.statusCode ? ctx.clients[fd].httpRequest.statusCode: 400);
 		ctx.clients[fd].request.clear();
 	}
 	else if (requestStatus == COMPLETE)
@@ -216,7 +206,7 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		{
 			requestRouting(fd, ctx.clients, listenServers, ctx.clients[fd].httpRequest);
 			resetInstructions(ctx.clients[fd], requestValidation(ctx.clients[fd].httpRequest, ctx.clients[fd].serverConf));
-			ctx.clients[fd].responseInstructions.body.swap(ctx.clients[fd].httpRequest.body);///and cgi body?
+			ctx.clients[fd].responseInstructions.body.swap(ctx.clients[fd].httpRequest.body);
 			if (ctx.clients[fd].responseInstructions.isCgi && cgiStart(ctx, fd, ctx.clients[fd].httpRequest) == 0)
 				return ;
 		}
@@ -233,6 +223,27 @@ void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBody
 		closeClientConnection(ctx, fd, errno);
 		return ;
 	}
+}
+
+void	handleClientReceive(t_serverState &ctx, int fd, size_t ceilingClientMaxBodySize, t_listenServers &listenServers)
+{
+	int				byteCount;
+	char			buf[BUFFER_SIZE];
+
+	byteCount = recv(fd, buf, sizeof(buf), 0);
+	if (byteCount == 0)
+	{
+		closeClientConnection(ctx, fd, EPOLLIN);
+		return ;
+	}
+	if (byteCount < 0)
+	{
+		closeClientConnection(ctx, fd, errno);
+		return ;
+	}
+	ctx.clients[fd].lastActivity = time(NULL);
+	ctx.clients[fd].request.append(buf, byteCount);
+	processBufferedRequest(ctx, fd, ceilingClientMaxBodySize, listenServers);
 }
 
 void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSockets)
@@ -271,7 +282,7 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 	setupSignals();
 	while (!signalReceived)
 	{
-		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, 1000);
+		nreadyfds = epoll_wait(ctx.epfd, evs, MAX_EVENTS, ctx.pendingRequests.empty() ? 1000 : 0);
 		if (nreadyfds < 0)
 		{
 			if (errno == EINTR)
@@ -313,6 +324,19 @@ void	serverEvent(t_listenServers &listenServers, t_listeningSockets &listeningSo
 					handleClientReceive(ctx, fd, ceilingClientMaxBodySize, listenServers);
 				else if (evs[i].events & EPOLLOUT)
 					handleClientSend(ctx, fd);
+			}
+		}
+		if (!ctx.pendingRequests.empty())
+		{
+			int pendingFd = *ctx.pendingRequests.begin();
+			ctx.pendingRequests.erase(ctx.pendingRequests.begin());
+
+			if (ctx.clients.find(pendingFd) != ctx.clients.end()
+				&& ctx.clients[pendingFd].waitingForClient
+				&& !ctx.clients[pendingFd].request.empty())
+			{
+				processBufferedRequest(ctx, pendingFd,
+					ceilingClientMaxBodySize, listenServers);
 			}
 		}
 		checkClientTimeouts(ctx);

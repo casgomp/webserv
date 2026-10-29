@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   serverInit.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/09/04 14:56:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:22:48 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/28 13:18:02 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ t_listeningSockets	serverInit(t_listenServers &listenServers)
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE;
-	for (t_listenServers::iterator it = listenServers.begin(); it != listenServers.end(); it ++)//loop for every key in address:port pairs map
+	for (t_listenServers::iterator it = listenServers.begin(); it != listenServers.end(); it ++)
 	{
 		if (it->first.first == "")
 			address = NULL;

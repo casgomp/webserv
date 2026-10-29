@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HTTP Amigos</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<main>
+	<header>
+		<p class="eyebrow">webserv</p>
+		<h1>Welcome to <span>HTTP Amigos</span></h1>
+		<p class="credit">This project was done by Erjon and Pedro.</p>
+	</header>
+
+	<section class="card" aria-labelledby="send-title">
+		<h2 id="send-title">Send a request to this server</h2>
+		<form id="form" novalidate>
+			<div class="row">
+				<div class="field method">
+					<label for="method">Method</label>
+					<select id="method">
+						<option value="GET">GET</option>
+						<option value="POST">POST</option>
+						<option value="DELETE">DELETE</option>
+					</select>
+				</div>
+				<div class="field grow">
+					<label for="url">URL</label>
+					<input id="url" type="text" value="/" autocomplete="off" spellcheck="false">
+				</div>
+			</div>
+
+			<fieldset id="bodyBox" hidden>
+				<legend>Body</legend>
+				<div class="tabs">
+					<label class="tab"><input type="radio" name="bodyKind" value="text" checked><span>Write it</span></label>
+					<label class="tab"><input type="radio" name="bodyKind" value="file"><span>Upload a file</span></label>
+				</div>
+				<div id="textBox">
+					<textarea id="bodyText" aria-label="Request body" placeholder="Type the body to send"></textarea>
+				</div>
+				<div id="fileBox" hidden>
+					<input id="bodyFile" type="file" aria-label="File to upload">
+				</div>
+			</fieldset>
+
+			<p id="hint" class="hint"></p>
+			<p id="error" class="error" role="alert" hidden></p>
+
+			<div class="actions">
+				<button id="send" type="submit">Send GET</button>
+			</div>
+		</form>
+
+		<div id="result" hidden aria-live="polite">
+			<div class="summary">
+				<span id="badge" class="badge"></span>
+				<span id="verdict" class="verdict"></span>
+			</div>
+			<div class="meta" id="meta"></div>
+			<div class="actions">
+				<button id="openBody" type="button" class="ghost">Open body in a new window</button>
+				<button id="copyRaw" type="button" class="ghost">Copy raw response</button>
+			</div>
+			<pre id="raw" tabindex="0"></pre>
+			<p class="note">Rebuilt by the browser from the response: header names appear in lower case and the status line assumes HTTP/1.1.</p>
+		</div>
+	</section>
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>

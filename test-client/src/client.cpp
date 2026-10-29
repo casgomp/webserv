@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ebara <ebara@student.42.fr>                +#+  +:+       +#+        */
+/*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/09 15:08:51 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/26 11:54:39 by ebara            ###   ########.fr       */
+/*   Updated: 2026/10/28 13:18:12 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,3 @@ int	client()
 	close (csock);
 	return (0);
 }
-
-
-//getaddrinfo
-//socket
-//connect

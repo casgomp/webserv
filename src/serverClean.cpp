@@ -6,7 +6,7 @@
 /*   By: pecastro <pecastro@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/09 11:30:19 by pecastro          #+#    #+#             */
-/*   Updated: 2026/10/19 16:01:04 by pecastro         ###   ########.fr       */
+/*   Updated: 2026/10/28 17:29:40 by pecastro         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ void	closeClientConnection(t_serverState &ctx, int fd, int err)
 	{
 		if (ctx.clients.find(fd) != ctx.clients.end() && ctx.clients[fd].cgiProcess.pid > 0)
 			cleanupCgi(ctx.clients[fd].cgiProcess, ctx.fdPipeToClient, true, NULL);
+		ctx.pendingRequests.erase(fd);
 		ctx.clients.erase(fd);
 		close(fd);
 	}
@@ -55,8 +56,10 @@ void	closeClientConnection(t_serverState &ctx, int fd, int err)
 		std::cerr << "Connection: Abrupt close happened on the associated file descriptor" << std::endl;
 	else if (err == EPOLLIN)
 		std::cerr << "Connection: Graceful close happened on the associated file descriptor" << std::endl;
-	else if (err == -1) //WHAT ABOUT TIMEOUT? WHAT KIND OF DISCONNECTION IS THAT?
+	else if (err == -1)
 		std::cerr << "Connection: Client idle timeout" << std::endl;
+	else if (err == 0)
+		std::cerr << "Success: closed client connection" << std::endl;
 	else
 		std::cerr << "Error: " << strerror(err) << std::endl;
 }
